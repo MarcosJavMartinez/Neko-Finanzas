@@ -41,7 +41,8 @@ try {
     } catch { ws = null; await sleep(250); }
   }
   await send("Page.enable");
-  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: Number(height), deviceScaleFactor: 1, mobile: true });
+  // Ancho del celular simulado: 390 px, o el que diga ANCHO (por ejemplo ANCHO=320).
+  await send("Emulation.setDeviceMetricsOverride", { width: Number(process.env.ANCHO) || 390, height: Number(height), deviceScaleFactor: 1, mobile: true });
   // Primera carga: sin splash ni tutorial, tema claro (salvo que el js-antes diga otra cosa).
   await send("Page.navigate", { url: `http://localhost:${PORT}/` });
   await sleep(1500);

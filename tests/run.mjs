@@ -194,7 +194,13 @@ async function withDevTools(fn) {
 }
 
 if (wanted("Sin conexión", "offline")) try {
-  const out = await withDevTools(async ({ send, evaluate }) => {
+  const out = await withDevTools(async ({ send, evaluate, on }) => {
+    // Privacidad: la app no tiene que pedir nada a otros servidores.
+    const external = new Set();
+    on("Network.requestWillBeSent", (p) => {
+      const u = p.request.url;
+      if (/^https?:/.test(u) && !u.startsWith(BASE)) external.add(new URL(u).hostname);
+    });
     await send("Page.navigate", { url: `${BASE}/#/inicio` });
     await sleep(8000); // que el service worker se instale y guarde todo
     const sw = await evaluate(`(async () => {
@@ -215,12 +221,12 @@ if (wanted("Sin conexión", "offline")) try {
       const storage = await import("/js/core/storage.js");
       await storage.flush();
       const saved = (await storage.loadData()).transactions.length;
-      return { online: navigator.onLine, hero, screen: document.querySelector("#view").dataset.screen, saved: saved - before };
+      return { online: navigator.onLine, hero, screen: document.querySelector("#view").dataset.screen, saved: saved - before, fonts: document.fonts.check("700 16px Outfit") && document.fonts.check("400 16px Inter") };
     })()`);
-    return { sw, flow };
+    return { sw, flow, external: [...external] };
   });
-  const ok = out.sw.controlled && out.sw.count > 40 && !out.flow.online && out.flow.hero && out.flow.screen === "reportes" && out.flow.saved === 1;
-  record("Sin conexión (service worker real)", ok, `${out.sw.cache}: ${out.sw.count} archivos · sin red: inicio ${out.flow.hero}, navega y guarda`);
+  const ok = out.sw.controlled && out.sw.count > 40 && !out.flow.online && out.flow.hero && out.flow.screen === "reportes" && out.flow.saved === 1 && out.flow.fonts && !out.external.length;
+  record("Sin conexión (service worker real)", ok, `${out.sw.cache}: ${out.sw.count} archivos · sin red: inicio ${out.flow.hero}, navega y guarda · fuentes sin red=${out.flow.fonts} · pedidos externos: ${out.external.join(", ") || "ninguno"}`);
 } catch (error) {
   record("Sin conexión (service worker real)", false, error.message);
 }

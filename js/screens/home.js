@@ -24,6 +24,11 @@ import { needsIosInstall } from "../ui/install.js";
 
 const RECENT_COUNT = 5;
 
+/** Montos largos (millones) achican la letra para no partirse en dos líneas. */
+function heroSize(text) {
+  return text.length > 13 ? "is-xlong" : text.length > 10 ? "is-long" : "";
+}
+
 /** "facturas", "facturas y cuotas", "facturas, cuotas y deudas"… */
 function reserveLabel(summary) {
   const parts = ["facturas", summary.scheduled.amount > 0 && "cuotas", summary.debts.amount > 0 && "deudas"].filter(Boolean);
@@ -89,7 +94,7 @@ export default {
             <p id="hero-label" class="hero-label">Saldo disponible</p>
             <button type="button" class="hero-eye" data-action="toggle-amounts" aria-pressed="${isMasked() ? "true" : "false"}" aria-label="${isMasked() ? "Mostrar montos" : "Ocultar montos"}" title="${isMasked() ? "Mostrar montos" : "Ocultar montos"}">${icon(isMasked() ? "eyeOff" : "eye", 18)}</button>
           </div>
-          <p class="hero-amount ${negative ? "is-negative" : ""}" data-pulse="hero" data-count="${isMasked() ? 0 : summary.available}">${m(summary.available)}</p>
+          <p class="hero-amount ${negative ? "is-negative" : ""} ${heroSize(m(summary.available))}" data-pulse="hero" data-count="${isMasked() ? 0 : summary.available}">${m(summary.available)}</p>
           <p class="hero-sub">de <strong>${m(summary.total)}</strong> totales</p>
         </div>
         <img class="hero-art" src="img/hero-wallet.png" alt="" width="132" height="120" />

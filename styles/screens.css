@@ -1955,3 +1955,36 @@ button.more-item {
 .loan-payment .icon-btn {
   flex-shrink: 0;
 }
+
+/* El saldo nunca se parte en dos líneas: con millones, la letra achica */
+.hero-amount {
+  white-space: nowrap;
+}
+
+.hero-amount.is-long {
+  font-size: clamp(1.9rem, 8.6vw, 2.6rem);
+}
+
+.hero-amount.is-xlong {
+  font-size: clamp(1.6rem, 7.2vw, 2.2rem);
+}
+
+.hero-text {
+  flex: 1;
+}
+
+/* Celulares muy angostos: la billetera achica para dejarle lugar al saldo */
+@media (max-width: 359px) {
+  .hero-art {
+    width: 84px;
+    height: auto;
+  }
+
+  .hero-amount.is-long {
+    font-size: 1.75rem;
+  }
+
+  .hero-amount.is-xlong {
+    font-size: 1.45rem;
+  }
+}

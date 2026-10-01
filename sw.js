@@ -4,12 +4,19 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v20";
+const CACHE_VERSION = "neko-finanzas-v21";
 const APP_SHELL = [
   "./",
   "index.html",
   "boot.js",
   "manifest.json",
+  "styles/fonts.css",
+  "fonts/inter-latin.woff2",
+  "fonts/inter-latin-ext.woff2",
+  "fonts/outfit-latin.woff2",
+  "fonts/outfit-latin-ext.woff2",
+  "fonts/nunito-latin.woff2",
+  "fonts/nunito-latin-ext.woff2",
   "styles/tokens.css",
   "styles/base.css",
   "styles/components.css",
@@ -74,9 +81,6 @@ const APP_SHELL = [
   "img/hero-wallet.png",
 ];
 
-// Las fuentes de Google también se guardan para que offline se vea igual.
-const FONT_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com"];
-
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_VERSION).then((cache) => cache.addAll(APP_SHELL)));
   self.skipWaiting();
@@ -93,12 +97,11 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
-  const sameOrigin = url.origin === self.location.origin;
-  const isFont = FONT_HOSTS.includes(url.hostname);
-  if (!sameOrigin && !isFont) return;
+  // Solo archivos de la app: no hay pedidos a otros servidores.
+  if (url.origin !== self.location.origin) return;
 
   // Fuentes: cache primero (no cambian nunca).
-  if (isFont) {
+  if (url.pathname.includes("/fonts/")) {
     event.respondWith(
       caches.match(request).then(
         (cached) =>
