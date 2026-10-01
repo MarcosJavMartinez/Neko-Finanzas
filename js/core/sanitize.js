@@ -43,6 +43,10 @@ export function isISODate(v) {
   return y >= 1900 && y <= 2200 && date.getMonth() === m - 1 && date.getDate() === d;
 }
 const date = (v) => (isISODate(v) ? v : "");
+const dayOfMonth = (v, fallback) => {
+  const n = Math.trunc(finite(v));
+  return n >= 1 && n <= 31 ? n : fallback;
+};
 const time = (v) => (typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? v : "");
 
 export function sanitizeState(input) {
@@ -125,6 +129,7 @@ export function sanitizeState(input) {
         kind,
         opening: Number.isFinite(opening) ? opening : 0,
         archived: bool(a.archived),
+        ...(kind === "credit" ? { closingDay: dayOfMonth(a.closingDay, 25), dueDay: dayOfMonth(a.dueDay, 5) } : {}),
       });
     }
   }
@@ -186,6 +191,12 @@ export function sanitizeState(input) {
       createdAt: str(t.createdAt, 40) || day,
     };
     if (id(t.billId)) tx.billId = t.billId;
+    // Compra en cuotas: cada cuota es un gasto con su número ("2 de 6").
+    if (isObj(t.installment) && id(t.installment.group)) {
+      const of = Math.trunc(finite(t.installment.of));
+      const n = Math.trunc(finite(t.installment.n));
+      if (of >= 2 && of <= 60 && n >= 1 && n <= of) tx.installment = { group: t.installment.group, n, of };
+    }
     if (isObj(t.recurrence) && FREQUENCIES[t.recurrence.freq] && isISODate(t.recurrence.nextDate) && type === "income") {
       tx.recurrence = { freq: t.recurrence.freq, nextDate: t.recurrence.nextDate };
     }

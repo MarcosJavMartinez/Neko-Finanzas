@@ -8,10 +8,10 @@ import { toast } from "../toast.js";
 import { segmented, txRow } from "../components.js";
 import { textField, emojiPicker, colorPicker, formActions, readForm, fieldError, clearErrors } from "./fields.js";
 import * as store from "../../core/store.js";
-import { todayISO } from "../../core/dates.js";
+import { todayISO, formatDate } from "../../core/dates.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
 import { formatMoney, amountToInput, parseAmount, convert, CURRENCY_CODES } from "../../core/money.js";
-import { accountBalance, findAccount } from "../../core/finance.js";
+import { accountBalance, cardStatus, findAccount, findCategory } from "../../core/finance.js";
 import { ACCOUNT_KINDS } from "../../data/defaults.js";
 
 const ACCOUNT_ICONS = ["👛", "💵", "🏦", "📱", "💳", "🐷", "💰", "🪙", "🏧", "💶", "💴", "🧾"];
@@ -55,9 +55,14 @@ function readMoney(form, name) {
 export function openAccountForm({ account } = {}) {
   const state = store.getState();
   const isEdit = Boolean(account);
-  const current = account || { name: "", icon: "🏦", color: "#08a7c8", currency: state.settings.mainCurrency, kind: "bank", opening: 0 };
+  const current = account || { name: "", icon: "🏦", color: "#08a7c8", currency: state.settings.mainCurrency, kind: "bank", opening: 0, closingDay: 25, dueDay: 5 };
   const used = isEdit ? store.countAccountUsage(account.id) : 0;
-  const kinds = Object.entries(ACCOUNT_KINDS).map(([value, k]) => ({ value, label: k.label }));
+  const isCard = current.kind === "credit";
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const daySelect = (name, label, value) => html`<div class="field">
+    <label class="field-label" for="f-${name}">${label}</label>
+    <select id="f-${name}" name="${name}">${days.map((d) => html`<option value="${d}" ${d === value ? "selected" : ""}>${d}</option>`)}</select>
+  </div>`;
 
   openSheet({
     title: isEdit ? "Editar cuenta" : "Nueva cuenta",
@@ -65,7 +70,15 @@ export function openAccountForm({ account } = {}) {
       ${textField({ name: "name", label: "Nombre", value: current.name, required: true, placeholder: "Ej.: Cuenta sueldo, Efectivo, Billetera" })}
       <div class="field">
         <span class="field-label">Tipo</span>
-        ${segmented("kind", kinds, current.kind)}
+        <div class="kind-picker" role="radiogroup" aria-label="Tipo de cuenta">
+          ${Object.entries(ACCOUNT_KINDS).map(
+            ([value, k]) => html`<label class="kind-option"><input type="radio" name="kind" value="${value}" ${value === current.kind ? "checked" : ""} /><span>${k.icon} ${k.label}</span></label>`
+          )}
+        </div>
+      </div>
+      <div class="field-row" data-card-fields ${isCard ? "" : "hidden"}>
+        ${daySelect("closingDay", "Cierra el día", current.closingDay || 25)}
+        ${daySelect("dueDay", "Vence el día", current.dueDay || 5)}
       </div>
       <div class="field">
         <span class="field-label">Moneda</span>
@@ -73,7 +86,12 @@ export function openAccountForm({ account } = {}) {
           ? html`<p class="field-hint">${icon("lock", 14)} ${current.currency}: no se puede cambiar porque la cuenta ya tiene movimientos.</p>`
           : segmented("currency", CURRENCY_CODES.map((c) => ({ value: c, label: c })), current.currency)}
       </div>
-      ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: current.opening, hint: "Lo que tenía esta cuenta antes de cargar movimientos. Puede ser negativo (con un “-” adelante)." })}
+      <div data-opening-normal ${isCard ? "hidden" : ""}>
+        ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: isCard ? 0 : current.opening, hint: "Lo que tenía esta cuenta antes de cargar movimientos. Puede ser negativo (con un “-” adelante)." })}
+      </div>
+      <div data-opening-card ${isCard ? "" : "hidden"}>
+        ${fixedAmountField({ name: "openingDebt", label: "Deuda al empezar", currency: current.currency, value: isCard && current.opening < 0 ? -current.opening : 0, hint: "Lo que ya debías en la tarjeta (sin las cuotas que todavía no llegaron)." })}
+      </div>
       ${emojiPicker(current.icon, { choices: ACCOUNT_ICONS })}
       ${colorPicker(current.color)}
       ${isEdit
@@ -88,10 +106,16 @@ export function openAccountForm({ account } = {}) {
       const form = panel.querySelector("form");
       // La moneda del saldo inicial sigue a la elegida.
       form.addEventListener("change", (event) => {
-        if (event.target.name === "currency") form.querySelector('[data-currency-for="opening"]').textContent = event.target.value;
-        if (event.target.name === "kind" && !isEdit) {
-          const iconInput = form.querySelector(`input[name=icon][value="${ACCOUNT_KINDS[event.target.value].icon}"]`);
-          if (iconInput) iconInput.checked = true;
+        if (event.target.name === "currency") form.querySelectorAll('[data-currency-for^="opening"]').forEach((el) => (el.textContent = event.target.value));
+        if (event.target.name === "kind") {
+          const card = event.target.value === "credit";
+          form.querySelector("[data-card-fields]").hidden = !card;
+          form.querySelector("[data-opening-normal]").hidden = card;
+          form.querySelector("[data-opening-card]").hidden = !card;
+          if (!isEdit) {
+            const iconInput = form.querySelector(`input[name=icon][value="${ACCOUNT_KINDS[event.target.value].icon}"]`);
+            if (iconInput) iconInput.checked = true;
+          }
         }
       });
       form.addEventListener("submit", (event) => {
@@ -99,9 +123,13 @@ export function openAccountForm({ account } = {}) {
         clearErrors(form);
         const data = readForm(form);
         if (!data.name.trim()) return fieldError(form, "name", "Poné un nombre para la cuenta.");
-        const openingText = form.elements.opening.value.trim();
-        const opening = openingText ? parseAmount(openingText) : 0;
-        if (!Number.isFinite(opening) || Math.abs(opening) > MAX_AMOUNT) return fieldError(form, "opening", "Ese monto no es válido.");
+        const card = data.kind === "credit";
+        const field = card ? "openingDebt" : "opening";
+        const openingText = form.elements[field].value.trim();
+        const typed = openingText ? parseAmount(openingText) : 0;
+        if (!Number.isFinite(typed) || Math.abs(typed) > MAX_AMOUNT || (card && typed < 0)) return fieldError(form, field, "Ese monto no es válido.");
+        // En una tarjeta, la deuda es saldo negativo.
+        const opening = card ? -typed : typed;
         const saved = store.saveAccount({
           id: account?.id,
           name: data.name,
@@ -111,6 +139,8 @@ export function openAccountForm({ account } = {}) {
           icon: data.icon,
           color: data.color,
           archived: Boolean(data.archived),
+          closingDay: Number(data.closingDay),
+          dueDay: Number(data.dueDay),
         });
         close();
         toast(isEdit ? "Cuenta actualizada" : `Cuenta “${saved.name}” creada`);
@@ -135,7 +165,7 @@ export function openAccountForm({ account } = {}) {
 // Transferir entre cuentas
 // ---------------------------------------------------------------------------
 
-export function openTransferForm({ tx, fromId } = {}) {
+export function openTransferForm({ tx, fromId, toId, amount: presetAmount, description: presetDescription } = {}) {
   const state = store.getState();
   const active = state.accounts.filter((a) => !a.archived);
   if (!tx && active.length < 2) {
@@ -144,7 +174,7 @@ export function openTransferForm({ tx, fromId } = {}) {
   }
   const isEdit = Boolean(tx);
   const from = tx?.accountId || fromId || store.defaultAccountId();
-  const to = tx?.toAccountId || active.find((a) => a.id !== from)?.id;
+  const to = tx?.toAccountId || toId || active.find((a) => a.id !== from)?.id;
 
   openSheet({
     title: isEdit ? "Editar transferencia" : "Mover plata",
@@ -155,7 +185,7 @@ export function openTransferForm({ tx, fromId } = {}) {
         <span class="transfer-arrow" aria-hidden="true">${icon("chevronRight", 20)}</span>
         ${accountSelect(state, { name: "toId", label: "Hacia", value: to })}
       </div>
-      ${fixedAmountField({ name: "amount", label: "Monto", currency: findAccount(state, from)?.currency, value: tx?.amount })}
+      ${fixedAmountField({ name: "amount", label: "Monto", currency: findAccount(state, from)?.currency, value: tx?.amount || presetAmount })}
       <div data-to-amount hidden>
         ${fixedAmountField({ name: "toAmount", label: "Llega a la otra cuenta", currency: findAccount(state, to)?.currency, value: tx?.toAmount, hint: "Sugerido con tu tipo de cambio. Si cambiaste a otro valor, corregilo." })}
       </div>
@@ -164,7 +194,7 @@ export function openTransferForm({ tx, fromId } = {}) {
         <input id="f-date" name="date" type="date" value="${tx?.date || todayISO()}" required />
         <p class="field-error" data-error-for="date"></p>
       </div>
-      ${textField({ name: "description", label: "Descripción", value: tx?.description || "", placeholder: "Ej.: Retiro del cajero, compra de dólares" })}
+      ${textField({ name: "description", label: "Descripción", value: tx?.description || presetDescription || "", placeholder: "Ej.: Retiro del cajero, compra de dólares" })}
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Mover plata", deletable: isEdit })}
     </form>`,
     onMount(panel, close) {
@@ -236,6 +266,7 @@ export function openAccountDetail(accountId) {
   const account = findAccount(state, accountId);
   if (!account) return;
   const entry = accountBalance(state, accountId);
+  const card = account.kind === "credit" ? cardStatus(state, account) : null;
   const recent = state.transactions
     .filter((t) => (t.accountId === accountId || t.toAccountId === accountId) && t.date <= todayISO())
     .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
@@ -244,15 +275,35 @@ export function openAccountDetail(accountId) {
     title: accountLabel(account),
     body: html`<div class="account-detail">
       <p class="account-detail-label">${ACCOUNT_KINDS[account.kind]?.label || "Cuenta"}${account.archived ? " · archivada" : ""}</p>
-      <p class="account-detail-balance ${entry.balance < 0 ? "is-negative" : ""}">${formatMoney(entry.balance, account.currency)}</p>
+      ${card
+        ? html`<p class="account-detail-balance ${card.debt > 0 ? "is-negative" : ""}">${card.debt > 0 ? formatMoney(card.debt, account.currency) : "Sin deuda"}</p>
+            <p class="fine-print">${card.debt > 0 ? "Deuda de hoy · " : ""}Cierra el ${formatDate(card.closing)} · vence el ${formatDate(card.due)}</p>`
+        : html`<p class="account-detail-balance ${entry.balance < 0 ? "is-negative" : ""}">${formatMoney(entry.balance, account.currency)}</p>`}
       ${account.currency !== state.settings.mainCurrency ? html`<p class="fine-print">≈ ${formatMoney(entry.balanceMain, state.settings.mainCurrency)}</p>` : ""}
       <div class="account-detail-actions">
-        <button type="button" class="btn btn-soft btn-sm" data-do="transfer">${icon("swap", 16)} Mover plata</button>
+        ${card
+          ? html`<button type="button" class="btn btn-primary btn-sm" data-do="pay-card">${icon("check", 16)} Pagar tarjeta</button>`
+          : html`<button type="button" class="btn btn-soft btn-sm" data-do="transfer">${icon("swap", 16)} Mover plata</button>`}
         <button type="button" class="btn btn-ghost btn-sm" data-do="edit">${icon("edit", 16)} Editar</button>
       </div>
+      ${card && card.upcoming.length
+        ? html`<h3 class="section-title section-title-spaced">Cuotas por venir · ${formatMoney(card.upcomingTotal, account.currency)}</h3>
+            <div class="rows rows-plain">
+              ${card.upcoming.map(
+                (g) => html`<div class="row installment-row">
+                  <span class="row-main">
+                    <span class="row-title">${g.title || findCategory(state, g.categoryId)?.name || "Compra"}</span>
+                    <span class="row-meta">${g.of > 1 ? `Quedan ${g.remaining} de ${g.of} cuotas` : "Gasto programado"} · próxima el ${formatDate(g.next)}</span>
+                  </span>
+                  <span class="account-balance">${formatMoney(g.amount / g.remaining, g.currency)}${g.remaining > 1 ? html`<span class="muted-text">/mes</span>` : ""}</span>
+                </div>`
+              )}
+            </div>
+            <p class="fine-print">${icon("info", 14)} Cada cuota baja tu total cuando llega su fecha, y las del próximo mes ya se reservan de tu disponible.</p>`
+        : ""}
       <h3 class="section-title section-title-spaced">Últimos movimientos</h3>
       ${recent.length
-        ? html`<div class="tx-list">${recent.map((t) => txRow(state, t, { withDate: true }))}</div>`
+        ? html`<div class="tx-list">${recent.map((t) => txRow(state, t, { withDate: true, hideAccount: true }))}</div>`
         : html`<p class="muted-text">Todavía no hay movimientos en esta cuenta.</p>`}
     </div>`,
     onMount(panel, close) {
@@ -261,6 +312,8 @@ export function openAccountDetail(accountId) {
         if (!what) return;
         close();
         if (what === "transfer") openTransferForm({ fromId: accountId });
+        // Pagar la tarjeta: mover plata desde la cuenta principal a la tarjeta.
+        if (what === "pay-card") openTransferForm({ fromId: store.defaultAccountId(), toId: accountId, amount: card.debt || undefined, description: `Pago de ${account.name}` });
         if (what === "edit") openAccountForm({ account: store.getState().accounts.find((a) => a.id === accountId) });
       });
     },

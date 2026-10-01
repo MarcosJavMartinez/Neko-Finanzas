@@ -25,11 +25,13 @@ export function buildDemoState(today = todayISO()) {
   const CASH = "acc-demo-efectivo";
   const WALLET = "acc-demo-billetera";
   const USD = "acc-demo-dolares";
+  const CARD = "acc-demo-tarjeta";
   state.accounts = [
     { id: BANK, name: "Cuenta sueldo", icon: "🏦", color: "#08a7c8", currency: "ARS", kind: "bank", opening: 350000, archived: false },
     { id: CASH, name: "Efectivo", icon: "💵", color: "#2ba66a", currency: "ARS", kind: "cash", opening: 45000, archived: false },
     { id: WALLET, name: "Billetera virtual", icon: "📱", color: "#3a86d4", currency: "ARS", kind: "wallet", opening: 30000, archived: false },
     { id: USD, name: "Dólares", icon: "🐷", color: "#d99a2b", currency: "USD", kind: "savings", opening: 600, archived: false },
+    { id: CARD, name: "Tarjeta de crédito", icon: "💳", color: "#7651e8", currency: "ARS", kind: "credit", opening: 0, archived: false, closingDay: 25, dueDay: 5 },
   ];
   // En qué cuenta cae cada gasto del ejemplo (por subcategoría o categoría).
   const ACCOUNT_FOR = {
@@ -43,6 +45,8 @@ export function buildDemoState(today = todayISO()) {
     "exp-entretenimiento": CASH,
     "exp-salud": WALLET,
     "exp-hogar": CASH,
+    "exp-ropa": CARD,
+    "exp-compras": CARD,
     "inc-propinas": CASH,
   };
   const tx = (type, amount, date, categoryId, description, extra = {}) => {
@@ -89,6 +93,21 @@ export function buildDemoState(today = todayISO()) {
     tx("expense", between(20000, 60000), day(11), "exp-hogar", index % 2 ? "Ferretería" : "Arreglo de la canilla", { subcategoryId: "exp-hogar.reparaciones" });
     tx("expense", between(25000, 60000), day(18), "exp-compras", index % 2 ? "Auriculares" : "Regalo de cumpleaños", { subcategoryId: index % 2 ? "exp-compras.tecnologia" : "exp-compras.regalos" });
     [9, 23].forEach((d) => tx("expense", between(8000, 16000), day(d), "exp-transporte", "", { subcategoryId: "exp-transporte.sube" }));
+  });
+
+  // --- Tarjeta: una heladera en 6 cuotas y el pago mensual del resumen -------
+  const fridgeDay = `${months[2]}-10`;
+  const fridgeGroup = uid("cuotas");
+  for (let k = 0; k < 6; k++) {
+    const date = addMonths(fridgeDay, k, 10);
+    state.transactions.push({ id: uid("tx"), type: "expense", amount: 120000, currency: "ARS", date, time: "", categoryId: "exp-hogar", subcategoryId: "", description: "Heladera", accountId: CARD, installment: { group: fridgeGroup, n: k + 1, of: 6 }, createdAt: fridgeDay });
+  }
+  // Cada mes se paga lo que se gastó con la tarjeta el mes anterior.
+  months.forEach((key, index) => {
+    if (!index) return;
+    const prev = months[index - 1];
+    const spent = state.transactions.filter((t) => t.accountId === CARD && t.type === "expense" && t.date.startsWith(prev) && t.date <= today).reduce((s, t) => s + t.amount, 0);
+    if (spent) transfer(spent, `${key}-05`, BANK, CARD, "Pago de la tarjeta");
   });
 
   // --- Facturas y servicios ------------------------------------------------

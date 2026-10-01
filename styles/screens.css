@@ -1869,3 +1869,18 @@ button.more-item {
   color: var(--muted);
   transform: rotate(90deg);
 }
+
+.installment-row .account-balance {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.installment-row .muted-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.installment-row .row-meta {
+  white-space: normal;
+}

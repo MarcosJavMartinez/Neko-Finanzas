@@ -25,7 +25,9 @@
  *
  *    A RESERVAR        = facturas pendientes que vencen dentro del horizonte
  *                      de reserva (por defecto, los próximos 30 días; se
- *                      cambia en Configuración) + las vencidas sin pagar.
+ *                      cambia en Configuración) + las vencidas sin pagar
+ *                      + gastos programados (con fecha futura, como las
+ *                      próximas cuotas de una compra) dentro del horizonte.
  *                      Una factura semanal cuenta una vez por cada
  *                      vencimiento dentro del horizonte. Cuando se paga,
  *                      se registra como gasto y sale de la reserva.
@@ -221,12 +223,70 @@ export function upcomingBills(state, today = todayISO(), limit = 4) {
 // Resumen principal
 // ---------------------------------------------------------------------------
 
+/**
+ * Gastos con fecha futura dentro del horizonte de reserva (cuotas que
+ * vienen, gastos programados). Todavía no bajaron tu total, pero ya están
+ * comprometidos.
+ */
+export function scheduledReserve(state, today = todayISO()) {
+  const until = reserveHorizonEnd(state, today);
+  const items = state.transactions
+    .filter((tx) => tx.type === "expense" && tx.date > today && tx.date <= until)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  return { amount: sumMain(state, items), items, until };
+}
+
 export function balanceSummary(state, today = todayISO()) {
   const total = totalBalance(state, today);
   const inGoals = totalInGoals(state);
   const reserve = billReserve(state, today);
-  const available = total - inGoals - reserve.amount;
-  return { total, inGoals, reserved: reserve.amount, reserve, available };
+  const scheduled = scheduledReserve(state, today);
+  const reserved = reserve.amount + scheduled.amount;
+  const available = total - inGoals - reserved;
+  return { total, inGoals, reserved, reserve, scheduled, available };
+}
+
+// ---------------------------------------------------------------------------
+// Tarjetas de crédito
+// ---------------------------------------------------------------------------
+
+/** Próxima fecha (hoy incluido) que cae en ese día del mes (o el último día si no existe). */
+function nextDayOfMonth(day, today) {
+  const [y, m] = today.split("-").map(Number);
+  for (let k = 0; k < 2; k++) {
+    const last = new Date(y, m - 1 + k + 1, 0).getDate();
+    const d = new Date(y, m - 1 + k, Math.min(day, last));
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    if (iso >= today) return iso;
+  }
+  return today;
+}
+
+/**
+ * Estado de una tarjeta: deuda de hoy, próximo cierre y vencimiento, y las
+ * compras en cuotas que todavía tienen cuotas por venir.
+ */
+export function cardStatus(state, account, today = todayISO()) {
+  const entry = accountBalance(state, account.id, today);
+  const debt = Math.max(0, -(entry?.balance || 0));
+  const future = state.transactions.filter((t) => t.accountId === account.id && t.type === "expense" && t.date > today);
+  const groups = new Map();
+  for (const t of future) {
+    const key = t.installment?.group || t.id;
+    const g = groups.get(key) || { key, title: t.description, categoryId: t.categoryId, of: t.installment?.of || 1, remaining: 0, amount: 0, next: t.date, currency: account.currency };
+    g.remaining++;
+    g.amount += convert(t.amount, t.currency, account.currency, state.rates);
+    if (t.date < g.next) g.next = t.date;
+    groups.set(key, g);
+  }
+  return {
+    debt,
+    balance: entry?.balance || 0,
+    closing: nextDayOfMonth(account.closingDay || 25, today),
+    due: nextDayOfMonth(account.dueDay || 5, today),
+    upcoming: [...groups.values()].sort((a, b) => a.next.localeCompare(b.next)),
+    upcomingTotal: future.reduce((s, t) => s + convert(t.amount, t.currency, account.currency, state.rates), 0),
+  };
 }
 
 // ---------------------------------------------------------------------------

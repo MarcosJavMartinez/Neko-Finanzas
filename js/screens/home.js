@@ -95,7 +95,7 @@ export default {
                 ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}
                 <span class="avail-pct">${Math.round(availablePct)}%</span>
               </div>
-              <a href="#/facturas" class="avail-reserve" data-pulse="reserve" title="Facturas que vencen en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para facturas</a>
+              <a href="#/facturas" class="avail-reserve" data-pulse="reserve" title="Facturas y cuotas que vencen en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${summary.scheduled.amount > 0 ? "facturas y cuotas" : "facturas"}</a>
             </div>`}
       ${trio}
     </section>`;

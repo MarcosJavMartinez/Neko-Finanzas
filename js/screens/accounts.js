@@ -5,12 +5,28 @@ import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { txRow } from "../ui/components.js";
 import { formatMoney } from "../core/money.js";
-import { accountBalances } from "../core/finance.js";
+import { accountBalances, cardStatus } from "../core/finance.js";
+import { formatDate } from "../core/dates.js";
 import { ACCOUNT_KINDS } from "../data/defaults.js";
 
 export function accountRow(state, entry) {
   const { account, balance, balanceMain } = entry;
   const main = state.settings.mainCurrency;
+  if (account.kind === "credit") {
+    // Tarjeta: se muestra lo que debés (en rojo), no un saldo negativo.
+    const card = cardStatus(state, account);
+    return html`<button type="button" class="row account-row" data-action="account-detail" data-id="${account.id}">
+      <span class="cat-bubble cat-bubble-md" style="--c:${account.color}" aria-hidden="true">${account.icon}</span>
+      <span class="row-main">
+        <span class="row-title">${account.name}</span>
+        <span class="row-meta">Tarjeta · vence el ${formatDate(card.due)}${card.upcoming.length ? ` · ${card.upcoming.length} en cuotas` : ""}</span>
+      </span>
+      <span class="account-amount">
+        <span class="account-balance ${card.debt > 0 ? "is-negative" : ""}">${card.debt > 0 ? formatMoney(-card.debt, account.currency) : "Sin deuda"}</span>
+        ${card.debt > 0 ? html`<span class="approx">deuda de hoy</span>` : ""}
+      </span>
+    </button>`;
+  }
   return html`<button type="button" class="row account-row" data-action="account-detail" data-id="${account.id}">
     <span class="cat-bubble cat-bubble-md" style="--c:${account.color}" aria-hidden="true">${account.icon}</span>
     <span class="row-main">

@@ -97,7 +97,7 @@ export function appFooter() {
  * en una línea; categoría (y fecha/hora) debajo. Van todas dentro de una
  * misma superficie (.tx-list), no como tarjetas sueltas.
  */
-export function txRow(state, tx, { withDate = false } = {}) {
+export function txRow(state, tx, { withDate = false, hideAccount = false } = {}) {
   if (tx.type === "transfer") return transferRow(state, tx, { withDate });
   const category = findCategory(state, tx.categoryId);
   const sub = findSubcategory(category, tx.subcategoryId);
@@ -107,7 +107,7 @@ export function txRow(state, tx, { withDate = false } = {}) {
   const where = sub && title !== sub.name ? `${category.name} · ${sub.name}` : category?.name;
   const when = withDate ? [shortDay(tx.date), tx.time].filter(Boolean).join(" ") : tx.time;
   // Con más de una cuenta, se ve de dónde salió o a dónde entró la plata.
-  const account = state.accounts.length > 1 ? state.accounts.find((a) => a.id === tx.accountId) : null;
+  const account = state.accounts.length > 1 && !hideAccount ? state.accounts.find((a) => a.id === tx.accountId) : null;
   const meta = [where, account && `${account.icon} ${account.name}`, when].filter(Boolean).join(" · ");
   // Recién cargado: entra con la animación de "producto nuevo" de Neko Lista.
   const isNew = tx.createdAt.includes("T") && Date.now() - Date.parse(tx.createdAt) < 2500;
@@ -117,6 +117,7 @@ export function txRow(state, tx, { withDate = false } = {}) {
       <span class="tx-top">
         <span class="tx-name">${title}</span>
         ${tx.billId ? html`<span class="tag tag-bill">${icon("receipt", 12)}Factura</span>` : ""}
+        ${tx.installment ? html`<span class="tag tag-installment" title="Cuota ${tx.installment.n} de ${tx.installment.of}">${tx.installment.n}/${tx.installment.of}</span>` : ""}
         ${tx.recurrence ? html`<span class="tag" title="Se repite">${icon("repeat", 12)}</span>` : ""}
         ${tx.date > todayISO() ? html`<span class="tag tag-future" title="Fecha futura: todavía no cuenta en tu saldo">Programado</span>` : ""}
         <span class="tx-leader" aria-hidden="true"></span>

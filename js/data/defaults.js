@@ -94,7 +94,14 @@ export const ACCOUNT_KINDS = {
   bank: { label: "Banco", icon: "🏦" },
   wallet: { label: "Billetera virtual", icon: "📱" },
   savings: { label: "Ahorro", icon: "🐷" },
+  // Tarjeta de crédito: su saldo es lo que debés (negativo). Lo que gastás con
+  // ella baja tu total en el momento; pagarla es mover plata del banco a la
+  // tarjeta (no es un gasto nuevo).
+  credit: { label: "Tarjeta de crédito", icon: "💳" },
 };
+
+/** Cuotas que se ofrecen al comprar con tarjeta. */
+export const INSTALLMENT_OPTIONS = [1, 2, 3, 6, 9, 12, 18, 24];
 
 /** La cuenta con la que arranca la app (y a la que va lo de cuentas borradas). */
 export const DEFAULT_ACCOUNT_ID = "acc-principal";

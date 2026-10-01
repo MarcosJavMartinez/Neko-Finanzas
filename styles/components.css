@@ -2322,3 +2322,60 @@ details[open] > :not(summary) {
 .transfer-bubble {
   --c: var(--brand);
 }
+
+/* Cuota de una compra en cuotas ("2/6") */
+.tag-installment {
+  color: var(--goal-ink);
+  background: var(--goal-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tipo de cuenta: grilla de opciones (entran las cinco en un celular) */
+.kind-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kind-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.kind-option input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.kind-option span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-2);
+  transition: border-color var(--dur-fast), background var(--dur-fast), transform var(--dur-fast) var(--ease-spring);
+}
+
+.kind-option input:checked + span {
+  border-color: var(--action);
+  background: var(--brand-soft);
+  color: var(--action-ink);
+  animation: choice-pop 260ms var(--ease-spring);
+}
+
+.kind-option input:focus-visible + span {
+  outline: 3px solid var(--focus);
+}
+
+.kind-option:active span {
+  transform: scale(0.97);
+}

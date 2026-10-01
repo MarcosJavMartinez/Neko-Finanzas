@@ -126,6 +126,7 @@ for (const [name, file, opts] of [
   ["Accesibilidad y 10.000 movimientos", "a11y.js"],
   ["Calendario, configuración, asistente, colores", "quick-wins.js"],
   ["Cuentas y transferencias", "accounts.js"],
+  ["Tarjeta de crédito y cuotas", "credit-card.js"],
   [
     "Datos: IndexedDB, copias automáticas, iPhone, pestañas",
     "storage.js",

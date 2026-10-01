@@ -10,7 +10,7 @@ import { initStorage, loadData, saveData, clearData, onWriteError, saveSnapshot,
 import { ACCOUNT_KINDS, DEFAULT_ACCOUNT_ID, createEmptyState, DEFAULT_CATEGORIES, defaultSubcategories, FALLBACK_CATEGORY, PALETTE, PALETTE_V1, SCHEMA_VERSION, uid } from "../data/defaults.js";
 import { buildDemoState } from "../data/demo.js";
 import { sanitizeState } from "./sanitize.js";
-import { nextDate, todayISO } from "./dates.js";
+import { addMonths, nextDate, todayISO } from "./dates.js";
 
 let state = null;
 const listeners = new Set();
@@ -160,9 +160,9 @@ function withValidCategory(s, item, type) {
   return { ...item, categoryId, subcategoryId: subOk ? item.subcategoryId : "" };
 }
 
-/** Cuenta por defecto: la primera activa (la de la app recién instalada). */
+/** Cuenta por defecto: la primera activa que no sea tarjeta (la de la app recién instalada). */
 export function defaultAccountId(s = state) {
-  return (s.accounts.find((a) => !a.archived) || s.accounts[0]).id;
+  return (s.accounts.find((a) => !a.archived && a.kind !== "credit") || s.accounts.find((a) => !a.archived) || s.accounts[0]).id;
 }
 
 /** Un movimiento siempre pertenece a una cuenta que existe. */
@@ -251,8 +251,17 @@ export function saveAccount(data) {
       opening: Number.isFinite(data.opening) ? Math.round(data.opening * 100) / 100 : 0,
       archived: Boolean(data.archived),
     };
+    if (kind === "credit") {
+      const day = (v, fallback) => (Number.isInteger(Number(v)) && v >= 1 && v <= 31 ? Number(v) : fallback);
+      values.closingDay = day(data.closingDay, 25);
+      values.dueDay = day(data.dueDay, 5);
+    }
     if (existing) {
       const used = s.transactions.some((t) => t.accountId === existing.id || t.toAccountId === existing.id);
+      if (kind !== "credit") {
+        delete existing.closingDay;
+        delete existing.dueDay;
+      }
       Object.assign(existing, values, used ? {} : { currency: data.currency || existing.currency });
       // Siempre tiene que quedar al menos una cuenta activa.
       if (!s.accounts.some((a) => !a.archived)) existing.archived = false;
@@ -275,6 +284,49 @@ export function deleteAccount(id) {
 }
 
 export { DEFAULT_ACCOUNT_ID };
+
+// ---------------------------------------------------------------------------
+// Compras en cuotas (tarjeta de crédito)
+// ---------------------------------------------------------------------------
+
+/**
+ * Divide una compra en cuotas mensuales iguales (la última ajusta los
+ * centavos). La primera cuota tiene la fecha de la compra y las demás caen
+ * mes a mes: quedan "programadas" y se reservan cuando entran en el
+ * horizonte de reserva, igual que una factura.
+ */
+export function addInstallmentPurchase(data, count) {
+  const n = Math.max(2, Math.min(60, Math.trunc(count)));
+  const total = Math.round(data.amount * 100) / 100;
+  const base = Math.floor((total / n) * 100) / 100;
+  const group = uid("cuotas");
+  const day = Number(data.date.slice(8));
+  return commit((s) => {
+    const created = [];
+    for (let k = 0; k < n; k++) {
+      const amount = k === n - 1 ? Math.round((total - base * (n - 1)) * 100) / 100 : base;
+      const tx = withValidAccount(
+        s,
+        withValidCategory(
+          s,
+          { time: "", description: "", ...data, id: uid("tx"), amount, date: addMonths(data.date, k, day), installment: { group, n: k + 1, of: n }, createdAt: new Date().toISOString() },
+          data.type
+        )
+      );
+      delete tx.recurrence;
+      s.transactions.push(tx);
+      created.push(tx);
+    }
+    return created;
+  });
+}
+
+/** Borra todas las cuotas de una compra. */
+export function deleteInstallmentGroup(group) {
+  commit((s) => {
+    s.transactions = s.transactions.filter((t) => t.installment?.group !== group);
+  });
+}
 
 export function deleteTransaction(id) {
   commit((s) => {
