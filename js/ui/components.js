@@ -98,6 +98,7 @@ export function appFooter() {
  * misma superficie (.tx-list), no como tarjetas sueltas.
  */
 export function txRow(state, tx, { withDate = false } = {}) {
+  if (tx.type === "transfer") return transferRow(state, tx, { withDate });
   const category = findCategory(state, tx.categoryId);
   const sub = findSubcategory(category, tx.subcategoryId);
   const isIncome = tx.type === "income";
@@ -105,7 +106,9 @@ export function txRow(state, tx, { withDate = false } = {}) {
   // "Hogar · Alquiler", salvo que el título ya sea el nombre de la subcategoría.
   const where = sub && title !== sub.name ? `${category.name} · ${sub.name}` : category?.name;
   const when = withDate ? [shortDay(tx.date), tx.time].filter(Boolean).join(" ") : tx.time;
-  const meta = [where, when].filter(Boolean).join(" · ");
+  // Con más de una cuenta, se ve de dónde salió o a dónde entró la plata.
+  const account = state.accounts.length > 1 ? state.accounts.find((a) => a.id === tx.accountId) : null;
+  const meta = [where, account && `${account.icon} ${account.name}`, when].filter(Boolean).join(" · ");
   // Recién cargado: entra con la animación de "producto nuevo" de Neko Lista.
   const isNew = tx.createdAt.includes("T") && Date.now() - Date.parse(tx.createdAt) < 2500;
   return html`<button type="button" class="tx-row ${isNew ? "is-new" : ""}" data-action="edit-tx" data-id="${tx.id}">
@@ -122,6 +125,31 @@ export function txRow(state, tx, { withDate = false } = {}) {
       <span class="tx-bottom">
         <span class="tx-meta">${meta}</span>
         ${approx(state, tx.amount, tx.currency)}
+      </span>
+    </span>
+  </button>`;
+}
+
+/** Transferencia entre cuentas: no es ingreso ni gasto (monto en neutro). */
+function transferRow(state, tx, { withDate }) {
+  const from = state.accounts.find((a) => a.id === tx.accountId);
+  const to = state.accounts.find((a) => a.id === tx.toAccountId);
+  const when = withDate ? [shortDay(tx.date), tx.time].filter(Boolean).join(" ") : tx.time;
+  const meta = [`${from?.name || "?"} → ${to?.name || "?"}`, when].filter(Boolean).join(" · ");
+  const isNew = tx.createdAt.includes("T") && Date.now() - Date.parse(tx.createdAt) < 2500;
+  const fx = tx.currency !== tx.toCurrency ? html`<span class="approx">→ ${formatMoney(tx.toAmount, tx.toCurrency)}</span>` : "";
+  return html`<button type="button" class="tx-row tx-transfer ${isNew ? "is-new" : ""}" data-action="edit-transfer" data-id="${tx.id}">
+    <span class="cat-bubble cat-bubble-md transfer-bubble" aria-hidden="true">${icon("swap", 18)}</span>
+    <span class="tx-body">
+      <span class="tx-top">
+        <span class="tx-name">${tx.description || "Transferencia"}</span>
+        ${tx.date > todayISO() ? html`<span class="tag tag-future" title="Fecha futura: todavía no cuenta en tu saldo">Programado</span>` : ""}
+        <span class="tx-leader" aria-hidden="true"></span>
+        <span class="tx-amount is-transfer">${formatMoney(tx.amount, tx.currency)}</span>
+      </span>
+      <span class="tx-bottom">
+        <span class="tx-meta">${meta}</span>
+        ${fx}
       </span>
     </span>
   </button>`;

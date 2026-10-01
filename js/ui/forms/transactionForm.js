@@ -21,6 +21,8 @@ import {
   replaceSubcategoryPicker,
 } from "./fields.js";
 import { bindCategoryPickers } from "./categoryForm.js";
+import { accountSelect } from "./accountForms.js";
+import { getLastAccount, setLastAccount } from "../../core/prefs.js";
 import * as store from "../../core/store.js";
 import { todayISO, FREQUENCIES } from "../../core/dates.js";
 import { formatMoney } from "../../core/money.js";
@@ -47,6 +49,11 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
     description: "",
   };
   const bill = current.billId && state.bills.find((b) => b.id === current.billId);
+  // Cuenta: la del movimiento, o la última usada, o la principal.
+  const activeAccounts = state.accounts.filter((a) => !a.archived);
+  const lastAccount = activeAccounts.find((a) => a.id === getLastAccount())?.id;
+  const accountId = current.accountId || lastAccount || store.defaultAccountId();
+  const showAccount = activeAccounts.length > 1 || (current.accountId && !activeAccounts.some((a) => a.id === current.accountId));
 
   openSheet({
     title: isEdit ? (current.type === "income" ? "Editar ingreso" : "Editar gasto") : "Nuevo movimiento",
@@ -54,6 +61,7 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
       ${bill ? "" : segmented("type", [{ value: "income", label: "Ingreso", icon: "arrowDown" }, { value: "expense", label: "Gasto", icon: "arrowUp" }], current.type, { size: "segmented-lg" })}
       ${bill ? html`<p class="notice notice-info">${icon("receipt", 16)}Es el pago de la factura “${bill.name}”. Si lo borrás, la factura vuelve a quedar pendiente.</p>` : ""}
       ${amountField({ value: current.amount, currency: current.currency, autofocus: !isEdit, tone: `tone-${current.type}` })}
+      ${showAccount ? accountSelect(state, { value: accountId, label: current.type === "income" ? "Cuenta" : "Cuenta o medio de pago" }) : ""}
       ${categoryPicker(state, current.type, current.categoryId, { limit: 6 })}
       ${subcategoryPicker(findCategory(state, current.categoryId), current.subcategoryId)}
       <div class="field-row">
@@ -106,7 +114,9 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
           categoryId: data.categoryId || FALLBACK_CATEGORY[selectedType],
           subcategoryId: "",
           description: data.description.trim(),
+          accountId: data.accountId || accountId,
         };
+        setLastAccount(values.accountId);
         // Solo se guarda la subcategoría si pertenece a la categoría elegida.
         if (findSubcategory(findCategory(store.getState(), values.categoryId), data.subcategoryId)) values.subcategoryId = data.subcategoryId;
         if (selectedType === "income" && data.recurrence) {

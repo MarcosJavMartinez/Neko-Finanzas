@@ -19,7 +19,9 @@ export default {
     const reserve = billReserve(state);
     const budgets = budgetsOverview(state, currentMonthKey());
     const alerts = budgets.items.filter((b) => b.level === "near" || b.level === "over").length;
+    const activeAccounts = state.accounts.filter((a) => !a.archived).length;
     const items = [
+      { href: "#/cuentas", icon: "wallet", title: "Cuentas", sub: activeAccounts > 1 ? `${activeAccounts} cuentas · efectivo, banco, billeteras` : "Efectivo, banco, billeteras virtuales" },
       { href: "#/presupuestos", icon: "pie", title: "Presupuestos", sub: state.budgets.length ? `${state.budgets.length} activos${alerts ? ` · ${alerts} para mirar` : ""}` : "Repartí tus ingresos" },
       { href: "#/facturas", icon: "receipt", title: "Facturas y servicios", sub: state.bills.length ? `${formatMoney(reserve.amount, main)} a reservar` : "Luz, internet, suscripciones…" },
       { href: "#/reportes", icon: "chart", title: "Reportes", sub: "Tu mes de un vistazo" },

@@ -7,7 +7,7 @@
 // un ingreso recurrente solo se registra cuando el usuario lo confirma.
 
 import { initStorage, loadData, saveData, clearData, onWriteError, saveSnapshot, listSnapshots, loadSnapshot } from "./storage.js";
-import { createEmptyState, DEFAULT_CATEGORIES, defaultSubcategories, FALLBACK_CATEGORY, PALETTE, PALETTE_V1, SCHEMA_VERSION, uid } from "../data/defaults.js";
+import { ACCOUNT_KINDS, DEFAULT_ACCOUNT_ID, createEmptyState, DEFAULT_CATEGORIES, defaultSubcategories, FALLBACK_CATEGORY, PALETTE, PALETTE_V1, SCHEMA_VERSION, uid } from "../data/defaults.js";
 import { buildDemoState } from "../data/demo.js";
 import { sanitizeState } from "./sanitize.js";
 import { nextDate, todayISO } from "./dates.js";
@@ -65,7 +65,7 @@ export function isPristineDemo(s = state) {
 
 /** Sin nada cargado: ni movimientos, ni facturas, ni metas, ni saldo inicial. */
 export function isEmptyState(s = state) {
-  return !s.transactions.length && !s.bills.length && !s.goals.length && !s.budgets.length && !s.settings.openingBalance;
+  return !s.transactions.length && !s.bills.length && !s.goals.length && !s.budgets.length && s.accounts.every((a) => !a.opening);
 }
 
 export function getState() {
@@ -160,13 +160,23 @@ function withValidCategory(s, item, type) {
   return { ...item, categoryId, subcategoryId: subOk ? item.subcategoryId : "" };
 }
 
+/** Cuenta por defecto: la primera activa (la de la app recién instalada). */
+export function defaultAccountId(s = state) {
+  return (s.accounts.find((a) => !a.archived) || s.accounts[0]).id;
+}
+
+/** Un movimiento siempre pertenece a una cuenta que existe. */
+function withValidAccount(s, item) {
+  return { ...item, accountId: find(s.accounts, item.accountId) ? item.accountId : defaultAccountId(s) };
+}
+
 // ---------------------------------------------------------------------------
 // Transacciones
 // ---------------------------------------------------------------------------
 
 export function addTransaction(data) {
   return commit((s) => {
-    const tx = withValidCategory(s, { id: uid("tx"), time: "", description: "", createdAt: new Date().toISOString(), ...data }, data.type);
+    const tx = withValidAccount(s, withValidCategory(s, { id: uid("tx"), time: "", description: "", createdAt: new Date().toISOString(), ...data }, data.type));
     s.transactions.push(tx);
     return tx;
   });
@@ -175,9 +185,96 @@ export function addTransaction(data) {
 export function updateTransaction(id, data) {
   commit((s) => {
     const tx = find(s.transactions, id);
-    if (tx) Object.assign(tx, withValidCategory(s, { ...tx, ...data }, data.type || tx.type));
+    if (tx && tx.type !== "transfer") Object.assign(tx, withValidAccount(s, withValidCategory(s, { ...tx, ...data }, data.type || tx.type)));
   });
 }
+
+// ---------------------------------------------------------------------------
+// Cuentas y transferencias
+// ---------------------------------------------------------------------------
+
+/**
+ * Transferencia entre dos cuentas: { fromId, toId, amount, toAmount?, date,
+ * description }. Si las cuentas tienen distinta moneda, toAmount es lo que
+ * llega (por ejemplo, pesos que se convierten en dólares).
+ */
+function transferValues(s, data) {
+  const from = find(s.accounts, data.fromId);
+  const to = find(s.accounts, data.toId);
+  if (!from || !to || from.id === to.id) throw new Error("Elegí dos cuentas distintas");
+  if (!(data.amount > 0)) throw new Error("Ingresá un monto mayor a cero");
+  const toAmount = from.currency === to.currency ? data.amount : data.toAmount;
+  if (!(toAmount > 0)) throw new Error("Ingresá cuánto llega a la otra cuenta");
+  return {
+    type: "transfer",
+    amount: data.amount,
+    currency: from.currency,
+    accountId: from.id,
+    toAccountId: to.id,
+    toAmount,
+    toCurrency: to.currency,
+    date: data.date || todayISO(),
+    time: data.time || "",
+    description: (data.description || "").trim(),
+  };
+}
+
+export function addTransfer(data) {
+  return commit((s) => {
+    const tx = { id: uid("tx"), createdAt: new Date().toISOString(), ...transferValues(s, data) };
+    s.transactions.push(tx);
+    return tx;
+  });
+}
+
+export function updateTransfer(id, data) {
+  commit((s) => {
+    const tx = find(s.transactions, id);
+    if (tx?.type === "transfer") Object.assign(tx, transferValues(s, data));
+  });
+}
+
+export function countAccountUsage(id) {
+  return state.transactions.filter((t) => t.accountId === id || t.toAccountId === id).length;
+}
+
+/** Crea o actualiza una cuenta. La moneda solo cambia si no tiene movimientos. */
+export function saveAccount(data) {
+  return commit((s) => {
+    const existing = data.id && find(s.accounts, data.id);
+    const kind = Object.prototype.hasOwnProperty.call(ACCOUNT_KINDS, data.kind) ? data.kind : "cash";
+    const values = {
+      name: (data.name || "").trim().slice(0, 40) || "Cuenta",
+      icon: data.icon || ACCOUNT_KINDS[kind].icon,
+      color: /^#[0-9a-f]{6}$/i.test(data.color || "") ? data.color : "#08a7c8",
+      kind,
+      opening: Number.isFinite(data.opening) ? Math.round(data.opening * 100) / 100 : 0,
+      archived: Boolean(data.archived),
+    };
+    if (existing) {
+      const used = s.transactions.some((t) => t.accountId === existing.id || t.toAccountId === existing.id);
+      Object.assign(existing, values, used ? {} : { currency: data.currency || existing.currency });
+      // Siempre tiene que quedar al menos una cuenta activa.
+      if (!s.accounts.some((a) => !a.archived)) existing.archived = false;
+      return existing;
+    }
+    const account = { id: uid("acc"), currency: data.currency || s.settings.mainCurrency, ...values, archived: false };
+    s.accounts.push(account);
+    return account;
+  });
+}
+
+/** Solo se borra una cuenta sin movimientos (si tiene, se puede archivar). */
+export function deleteAccount(id) {
+  if (state.accounts.length <= 1) throw new Error("Tiene que quedar al menos una cuenta");
+  if (countAccountUsage(id)) throw new Error("Esta cuenta tiene movimientos: podés archivarla");
+  commit((s) => {
+    s.accounts = without(s.accounts, id);
+    if (!s.accounts.some((a) => !a.archived)) s.accounts[0].archived = false;
+  });
+}
+
+export { DEFAULT_ACCOUNT_ID };
 
 export function deleteTransaction(id) {
   commit((s) => {
@@ -253,11 +350,11 @@ export function deleteBill(id) {
  * Paga el vencimiento actual: registra un gasto con el monto de la factura
  * y, si es recurrente, pasa al próximo vencimiento.
  */
-export function payBill(id, { date = todayISO(), amount, currency } = {}) {
+export function payBill(id, { date = todayISO(), amount, currency, accountId } = {}) {
   return commit((s) => {
     const bill = find(s.bills, id);
     if (!bill) return null;
-    const tx = {
+    const tx = withValidAccount(s, {
       id: uid("tx"),
       type: "expense",
       amount: amount ?? bill.amount,
@@ -268,8 +365,9 @@ export function payBill(id, { date = todayISO(), amount, currency } = {}) {
       subcategoryId: bill.subcategoryId || "",
       description: bill.name,
       billId: bill.id,
+      accountId,
       createdAt: new Date().toISOString(),
-    };
+    });
     s.transactions.push(tx);
     bill.payments.push({ txId: tx.id, dueDate: bill.dueDate, paidAt: date });
     if (bill.recurring) bill.dueDate = nextDate(bill.dueDate, bill.frequency, bill.dueDay);
@@ -478,6 +576,10 @@ export function startFresh({ keepSetup = true } = {}) {
       fresh.rates = { ...s.rates };
       fresh.settings.mainCurrency = s.settings.mainCurrency;
       fresh.categories = s.categories;
+      // Las cuentas propias se conservan (sin saldo: se empieza de cero); las
+      // del ejemplo no.
+      if (!s.settings.isDemo) fresh.accounts = s.accounts.map((acc) => ({ ...acc, opening: 0 }));
+      else fresh.accounts[0].currency = s.settings.mainCurrency;
     }
     state = fresh;
   });

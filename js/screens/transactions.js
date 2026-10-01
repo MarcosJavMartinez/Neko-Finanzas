@@ -18,20 +18,23 @@ const FILTERS = [
 ];
 
 // Estado de la pantalla (no se guarda: vuelve a "este mes / todas").
-const view = { month: currentMonthKey(), filter: "all", query: "", categoryId: "" };
+const view = { month: currentMonthKey(), filter: "all", query: "", categoryId: "", accountId: "" };
 
 function applyFilter(state, txs) {
   let list = txs;
   if (view.filter === "income") list = list.filter((t) => t.type === "income");
   if (view.filter === "expense") list = list.filter((t) => t.type === "expense" && !t.billId);
   if (view.filter === "bill") list = list.filter((t) => t.billId);
+  if (view.filter === "transfer") list = list.filter((t) => t.type === "transfer");
   if (view.categoryId) list = list.filter((t) => t.categoryId === view.categoryId);
+  if (view.accountId) list = list.filter((t) => t.accountId === view.accountId || t.toAccountId === view.accountId);
   const query = normalize(view.query);
   if (query) {
+    const accountName = (id) => state.accounts.find((a) => a.id === id)?.name;
     list = list.filter((t) => {
       const category = findCategory(state, t.categoryId);
       const sub = findSubcategory(category, t.subcategoryId);
-      return normalize([t.description, category?.name, sub?.name].join(" ")).includes(query);
+      return normalize([t.description, category?.name, sub?.name, accountName(t.accountId), accountName(t.toAccountId), t.type === "transfer" ? "transferencia" : ""].join(" ")).includes(query);
     });
   }
   return list;
@@ -52,6 +55,15 @@ function openFilters() {
         <span class="field-label">Tipo</span>
         ${segmented("f-type", FILTERS, view.filter)}
       </div>
+      ${state.accounts.length > 1
+        ? html`<div class="field">
+            <label class="field-label" for="f-acc">Cuenta</label>
+            <select id="f-acc" name="f-acc">
+              <option value="">Todas las cuentas</option>
+              ${state.accounts.map((a) => html`<option value="${a.id}" ${a.id === view.accountId ? "selected" : ""}>${a.icon} ${a.name}</option>`)}
+            </select>
+          </div>`
+        : ""}
       <div class="field">
         <label class="field-label" for="f-cat">Categoría</label>
         <select id="f-cat" name="f-cat">
@@ -74,11 +86,12 @@ function openFilters() {
         event.preventDefault();
         view.filter = form.elements["f-type"].value;
         view.categoryId = form.elements["f-cat"].value;
+        view.accountId = form.elements["f-acc"]?.value || "";
         close();
         window.dispatchEvent(new Event("neko:rerender"));
       });
       form.querySelector("[data-clear]").addEventListener("click", () => {
-        Object.assign(view, { filter: "all", categoryId: "", query: "" });
+        Object.assign(view, { filter: "all", categoryId: "", accountId: "", query: "" });
         close();
         window.dispatchEvent(new Event("neko:rerender"));
       });
@@ -95,7 +108,7 @@ export default {
     placeholder: "Buscar transacción...",
     input: "tx-search",
     filtersAction: "tx-filters",
-    filtersOn: Boolean(view.categoryId),
+    filtersOn: Boolean(view.categoryId || view.accountId),
   }),
   render(state) {
     const main = state.settings.mainCurrency;
@@ -106,7 +119,9 @@ export default {
     const groups = new Map();
     txs.forEach((tx) => groups.set(tx.date, [...(groups.get(tx.date) || []), tx]));
     const category = view.categoryId && findCategory(state, view.categoryId);
-    const filtered = view.filter !== "all" || view.query || view.categoryId;
+    const account = view.accountId && state.accounts.find((a) => a.id === view.accountId);
+    const filtered = view.filter !== "all" || view.query || view.categoryId || view.accountId;
+    const filters = state.accounts.length > 1 ? [...FILTERS, { value: "transfer", label: "Transferencias" }] : FILTERS;
 
     return html`
       <button type="button" class="btn btn-primary btn-block btn-add reveal" data-action="add-expense">${icon("plus", 20)}Agregar transacción</button>
@@ -116,17 +131,21 @@ export default {
         <span class="mt mt-expense">${icon("arrowUp", 14)}${formatMoney(totals.expense, main)}</span>
       </div>
       <div class="filter-chips" role="tablist" aria-label="Filtrar movimientos">
-        ${FILTERS.map(
+        ${filters.map(
           (f) => html`<button type="button" role="tab" class="chip chip-filter ${view.filter === f.value ? "is-active" : ""}" aria-selected="${view.filter === f.value}" data-action="tx-filter" data-value="${f.value}">${f.label}</button>`
         )}
       </div>
       ${category
         ? html`<p class="active-filter">Categoría: <strong>${category.icon} ${category.name}</strong> <button type="button" class="chip chip-action" data-action="tx-clear-category">${icon("close", 12)}Quitar</button></p>`
         : ""}
+      ${account
+        ? html`<p class="active-filter">Cuenta: <strong>${account.icon} ${account.name}</strong> <button type="button" class="chip chip-action" data-action="tx-clear-account">${icon("close", 12)}Quitar</button></p>`
+        : ""}
       ${txs.length
         ? html`<section class="card tx-card reveal">
             ${[...groups.entries()].map(([date, items]) => {
-              const net = items.reduce((s, t) => s + (t.type === "income" ? 1 : -1) * toMain(state, t.amount, t.currency), 0);
+              // Las transferencias no suman ni restan: solo cambian de cuenta.
+              const net = items.reduce((s, t) => s + (t.type === "transfer" ? 0 : (t.type === "income" ? 1 : -1) * toMain(state, t.amount, t.currency)), 0);
               return html`<div class="day-group">
                 <h3 class="day-head"><span>${formatDayHeading(date)}</span><span class="day-net">${formatMoney(net, main, { sign: true })}</span></h3>
                 <div class="tx-list">${items.map((tx) => txRow(state, tx))}</div>
@@ -156,6 +175,10 @@ export default {
     },
     "tx-clear-category"() {
       view.categoryId = "";
+      return true;
+    },
+    "tx-clear-account"() {
+      view.accountId = "";
       return true;
     },
   },

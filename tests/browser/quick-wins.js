@@ -72,7 +72,8 @@ return (async () => {
     form.elements.salary.value = "900";
     form.requestSubmit(); await wait(500);
     const st = store.getState().settings;
-    log(`guardado: moneda=${st.mainCurrency} saldo=${st.openingBalance} (${st.openingCurrency}) referencia=${st.budgetReference} · hoja cerrada=${!sheet()}`);
+    const acc0 = store.getState().accounts[0];
+    log(`guardado: moneda=${st.mainCurrency} saldo=${acc0.opening} (${acc0.currency}) referencia=${st.budgetReference} · hoja cerrada=${!sheet()}`);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {
     log("ERROR " + e.stack);

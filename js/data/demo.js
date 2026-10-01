@@ -3,7 +3,7 @@
 // y con números estables (random con semilla fija). Se borran desde el aviso
 // del inicio o desde Configuración.
 
-import { createEmptyState, uid } from "./defaults.js";
+import { createEmptyState, uid, DEFAULT_ACCOUNT_ID } from "./defaults.js";
 import { addDays, addMonths, lastMonthKeys, parseISO, todayISO, currentMonthKey } from "../core/dates.js";
 
 function seeded(seed) {
@@ -20,21 +20,57 @@ export function buildDemoState(today = todayISO()) {
   const state = createEmptyState();
   const rand = seeded(42);
   const between = (min, max, step = 500) => Math.round((min + rand() * (max - min)) / step) * step;
+  // --- Cuentas -------------------------------------------------------------
+  const BANK = DEFAULT_ACCOUNT_ID;
+  const CASH = "acc-demo-efectivo";
+  const WALLET = "acc-demo-billetera";
+  const USD = "acc-demo-dolares";
+  state.accounts = [
+    { id: BANK, name: "Cuenta sueldo", icon: "🏦", color: "#08a7c8", currency: "ARS", kind: "bank", opening: 350000, archived: false },
+    { id: CASH, name: "Efectivo", icon: "💵", color: "#2ba66a", currency: "ARS", kind: "cash", opening: 45000, archived: false },
+    { id: WALLET, name: "Billetera virtual", icon: "📱", color: "#3a86d4", currency: "ARS", kind: "wallet", opening: 30000, archived: false },
+    { id: USD, name: "Dólares", icon: "🐷", color: "#d99a2b", currency: "USD", kind: "savings", opening: 600, archived: false },
+  ];
+  // En qué cuenta cae cada gasto del ejemplo (por subcategoría o categoría).
+  const ACCOUNT_FOR = {
+    "exp-super.almacen": WALLET,
+    "exp-super.limpieza": WALLET,
+    "exp-super.dietetica": WALLET,
+    "exp-super.carniceria": CASH,
+    "exp-super.verduleria": CASH,
+    "exp-transporte.sube": WALLET,
+    "exp-comida": WALLET,
+    "exp-entretenimiento": CASH,
+    "exp-salud": WALLET,
+    "exp-hogar": CASH,
+    "inc-propinas": CASH,
+  };
   const tx = (type, amount, date, categoryId, description, extra = {}) => {
     if (date > today) return null;
-    const item = { id: uid("tx"), type, amount, currency: "ARS", date, time: "", categoryId, description, createdAt: date, ...extra };
+    // Las facturas se pagan desde el banco; el resto según el tipo de gasto.
+    const accountId = extra.billId ? BANK : ACCOUNT_FOR[extra.subcategoryId] || ACCOUNT_FOR[categoryId] || BANK;
+    const item = { id: uid("tx"), type, amount, currency: "ARS", date, time: "", categoryId, description, accountId, createdAt: date, ...extra };
     state.transactions.push(item);
     return item;
   };
+  const transfer = (amount, date, fromId, toId, description, toAmount = amount, currencies = ["ARS", "ARS"]) => {
+    if (date > today) return;
+    state.transactions.push({ id: uid("tx"), type: "transfer", amount, currency: currencies[0], accountId: fromId, toAccountId: toId, toAmount, toCurrency: currencies[1], date, time: "", description, createdAt: date });
+  };
 
   state.settings.isDemo = true;
-  state.settings.openingBalance = 0;
 
   // --- Ingresos y gastos de los últimos 5 meses -------------------------
   const months = lastMonthKeys(5);
   months.forEach((key, index) => {
     const day = (d) => `${key}-${String(d).padStart(2, "0")}`;
     const isCurrent = key === currentMonthKey();
+
+    // Plata que se mueve entre cuentas (no es gasto ni ingreso).
+    transfer(130000, day(2), BANK, CASH, "Retiro de efectivo");
+    transfer(150000, day(4), BANK, WALLET, "Carga de la billetera");
+    transfer(between(140000, 170000, 10000), day(16), BANK, WALLET, "Carga de la billetera");
+    if (index === 2) transfer(210000, day(16), BANK, USD, "Compra de dólares", 150, ["ARS", "USD"]);
 
     const salary = tx("income", 800000, day(1), "inc-sueldo", "Sueldo", { subcategoryId: "inc-sueldo.mensual" });
     if (isCurrent && salary) salary.recurrence = { freq: "monthly", nextDate: addMonths(salary.date, 1) };

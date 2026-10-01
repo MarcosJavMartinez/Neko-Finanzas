@@ -7,7 +7,9 @@ import { icon } from "../ui/icons.js";
 import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, txRow } from "../ui/components.js";
 import { formatMoney, CURRENCIES, isMasked } from "../core/money.js";
 import { formatDate, currentMonthKey, todayISO } from "../core/dates.js";
+import { accountRow } from "./accounts.js";
 import {
+  accountBalances,
   balanceSummary,
   monthlyTotals,
   pendingRecurringIncomes,
@@ -39,7 +41,7 @@ export default {
       .sort((a, b) => b.date.localeCompare(a.date) || (b.time || "").localeCompare(a.time || "") || b.createdAt.localeCompare(a.createdAt))
       .slice(0, RECENT_COUNT);
     const negative = summary.available < 0;
-    const isEmpty = !state.transactions.length && !state.settings.openingBalance;
+    const isEmpty = !state.transactions.length && state.accounts.every((a) => !a.opening);
     const availablePct = summary.total > 0 ? Math.max(0, Math.min(100, percent(summary.available, summary.total))) : 0;
     const horizonLabel = state.settings.reserveHorizon === "month" ? "hasta fin de mes" : "próximos 30 días";
 
@@ -87,7 +89,7 @@ export default {
       ${negative
         ? html`<p class="hero-alert">${icon("alert", 15)} Lo que apartaste supera lo que tenés. Revisá metas o facturas.</p>`
         : isEmpty
-          ? html`<p class="hero-alert hero-alert-info">Para empezar, registrá un ingreso o cargá tu <a class="inline-link" href="#/ajustes-calculo">saldo inicial</a>.</p>`
+          ? html`<p class="hero-alert hero-alert-info">Para empezar, registrá un ingreso o cargá tu <a class="inline-link" href="#/cuentas">cuánto tenés en tus cuentas</a>.</p>`
           : html`<div class="avail">
               <div class="avail-bar">
                 ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}
@@ -125,6 +127,16 @@ export default {
         ? html`<div class="tx-list">${recent.map((tx) => txRow(state, tx, { withDate: true }))}</div>`
         : emptyState({ title: "Todavía no hay movimientos", text: "Registrá tu primer ingreso o gasto y va a aparecer acá.", actionLabel: "Agregar transacción", action: "add-expense", compact: true, mood: "sleepy" })}
     </section>`;
+
+    // Con más de una cuenta: cuánto hay en cada una.
+    const activeAccounts = accountBalances(state, today).filter((e) => !e.account.archived);
+    const accountsCard = activeAccounts.length > 1
+      ? html`<section class="card reveal">
+          ${sectionHeader("Tus cuentas", { href: "#/cuentas", linkText: "Ver todas" })}
+          <div class="rows rows-plain">${activeAccounts.slice(0, 4).map((e) => accountRow(state, e))}</div>
+          <button type="button" class="btn btn-soft btn-sm btn-block" data-action="add-transfer">${icon("swap", 16)} Mover plata entre cuentas</button>
+        </section>`
+      : "";
 
     const billsCard = html`<section class="card reveal">
       ${sectionHeader("Próximas facturas", { href: "#/facturas", linkText: "Ver todas" })}
@@ -199,7 +211,7 @@ export default {
         : ""}
       <div class="home-grid">
         <div class="home-col">${hero}${savings}${actions}${pending}</div>
-        <div class="home-col">${recents}${billsCard}${budgetsCard}${goalsCard}${ratesCard}</div>
+        <div class="home-col">${accountsCard}${recents}${billsCard}${budgetsCard}${goalsCard}${ratesCard}</div>
       </div>
       <p class="privacy-note">${icon("lock", 14)} Tus datos se guardan solo en este dispositivo.</p>
       ${appFooter()}

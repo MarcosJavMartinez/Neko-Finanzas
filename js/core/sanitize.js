@@ -8,7 +8,7 @@
 
 import { CURRENCY_CODES } from "./money.js";
 import { FREQUENCIES } from "./dates.js";
-import { DEFAULT_CATEGORIES, FALLBACK_CATEGORY, createEmptyState } from "../data/defaults.js";
+import { ACCOUNT_KINDS, DEFAULT_CATEGORIES, FALLBACK_CATEGORY, createEmptyState, defaultAccount } from "../data/defaults.js";
 
 export const MAX_AMOUNT = 1e12;
 const MAX_TEXT = 120;
@@ -64,8 +64,6 @@ export function sanitizeState(input) {
   const settings = {
     ...base.settings,
     mainCurrency: main,
-    openingBalance: Number.isFinite(signed(s.openingBalance)) ? signed(s.openingBalance) : 0,
-    openingCurrency: currency(s.openingCurrency, main),
     reserveHorizon: s.reserveHorizon === "month" ? "month" : "30d",
     budgetReference: positive(s.budgetReference) || 0,
     isDemo: bool(s.isDemo),
@@ -107,11 +105,67 @@ export function sanitizeState(input) {
   };
   const subFor = (catId, subId) => (catById.get(catId)?.subcategories.some((sub) => sub.id === subId) ? subId : "");
 
+  // Cuentas. Datos anteriores a las cuentas (sin "accounts"): el saldo
+  // inicial de Configuración pasa a ser el de una primera cuenta, así el
+  // dinero total no cambia.
+  const accounts = [];
+  const accIds = new Set();
+  if (Array.isArray(data.accounts)) {
+    for (const a of data.accounts) {
+      if (!isObj(a) || !id(a.id) || accIds.has(a.id)) continue;
+      accIds.add(a.id);
+      const kind = Object.prototype.hasOwnProperty.call(ACCOUNT_KINDS, a.kind) ? a.kind : "cash";
+      const opening = signed(a.opening);
+      accounts.push({
+        id: a.id,
+        name: str(a.name, 40) || "Cuenta",
+        icon: emoji(a.icon, ACCOUNT_KINDS[kind].icon),
+        color: color(a.color, "#08a7c8"),
+        currency: currency(a.currency, main),
+        kind,
+        opening: Number.isFinite(opening) ? opening : 0,
+        archived: bool(a.archived),
+      });
+    }
+  }
+  if (!accounts.length) {
+    const legacy = signed(s.openingBalance);
+    const acc = defaultAccount(currency(s.openingCurrency, main), Number.isFinite(legacy) ? legacy : 0);
+    accounts.push(acc);
+    accIds.add(acc.id);
+  }
+  // Cuenta para movimientos sin cuenta (o de una cuenta que ya no existe).
+  const fallbackAccount = (accounts.find((a) => !a.archived) || accounts[0]).id;
+  const accountFor = (accId) => (accIds.has(accId) ? accId : fallbackAccount);
+
   // Movimientos
   const txIds = new Set();
   const transactions = [];
   for (const t of arr(data.transactions)) {
     if (!isObj(t) || !id(t.id) || txIds.has(t.id)) continue;
+    // Transferencia entre cuentas: ni ingreso ni gasto.
+    if (t.type === "transfer") {
+      const amount = positive(t.amount);
+      const toAmount = positive(t.toAmount);
+      const day = date(t.date);
+      if (!amount || !toAmount || !day || !accIds.has(t.accountId) || !accIds.has(t.toAccountId) || t.accountId === t.toAccountId) continue;
+      txIds.add(t.id);
+      transactions.push({
+        id: t.id,
+        type: "transfer",
+        amount,
+        currency: currency(t.currency, main),
+        accountId: t.accountId,
+        toAccountId: t.toAccountId,
+        toAmount,
+        toCurrency: currency(t.toCurrency, main),
+        date: day,
+        time: time(t.time),
+        description: str(t.description, 80),
+        createdAt: str(t.createdAt, 40) || day,
+      });
+      continue;
+    }
     const type = t.type === "income" ? "income" : t.type === "expense" ? "expense" : "";
     const amount = positive(t.amount);
     const day = date(t.date);
@@ -128,6 +182,7 @@ export function sanitizeState(input) {
       categoryId,
       subcategoryId: subFor(categoryId, t.subcategoryId),
       description: str(t.description, 80),
+      accountId: accountFor(t.accountId),
       createdAt: str(t.createdAt, 40) || day,
     };
     if (id(t.billId)) tx.billId = t.billId;
@@ -226,6 +281,7 @@ export function sanitizeState(input) {
     rates,
     ratesUpdatedAt: str(data.ratesUpdatedAt, 40) || base.ratesUpdatedAt,
     categories,
+    accounts,
     transactions,
     bills,
     goals,

@@ -12,13 +12,15 @@ import { MAX_AMOUNT } from "../../core/sanitize.js";
 import * as store from "../../core/store.js";
 
 export function openSetupWizard() {
-  const s = store.getState().settings;
+  const state = store.getState();
+  const s = state.settings;
+  const account = state.accounts.find((a) => a.id === store.defaultAccountId());
   openSheet({
     title: "Tu punto de partida",
     body: html`<form class="form" novalidate>
       <p class="sheet-text">Dos datos y listo. Lo podés cambiar cuando quieras en Configuración.</p>
-      ${amountField({ name: "opening", label: "¿Cuánta plata tenés hoy, sumando todo?", value: s.openingBalance || "", currency: s.mainCurrency })}
-      <p class="field-hint">Efectivo, cuentas y billeteras virtuales. La moneda que elijas queda como principal.</p>
+      ${amountField({ name: "opening", label: "¿Cuánta plata tenés hoy, sumando todo?", value: account?.opening || "", currency: account?.currency || s.mainCurrency })}
+      <p class="field-hint">Efectivo, cuentas y billeteras virtuales, todo junto. Después podés separarlo en Cuentas. La moneda que elijas queda como principal.</p>
       <div class="field">
         <label class="field-label" for="f-salary">¿Cuánto cobrás por mes? <span class="optional">(opcional)</span></label>
         <div class="amount-input">
@@ -43,12 +45,8 @@ export function openSetupWizard() {
         const salary = salaryText ? parseAmount(salaryText) : 0;
         if (!Number.isFinite(salary) || salary < 0 || salary > MAX_AMOUNT) return fieldError(form, "salary", "Ese monto no es válido");
         const currency = form.elements.currency.value || s.mainCurrency;
-        store.updateSettings({
-          mainCurrency: currency,
-          openingBalance: opening,
-          openingCurrency: currency,
-          ...(salary ? { budgetReference: Math.round(salary * 100) / 100 } : {}),
-        });
+        store.updateSettings({ mainCurrency: currency, ...(salary ? { budgetReference: Math.round(salary * 100) / 100 } : {}) });
+        if (account) store.saveAccount({ ...account, currency, opening });
         close();
         toast("¡Listo! Ahora cargá tu primer gasto con «Agregar transacción»");
       });

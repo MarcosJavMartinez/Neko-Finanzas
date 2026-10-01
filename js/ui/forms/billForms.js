@@ -22,6 +22,8 @@ import {
 } from "./fields.js";
 import { bindCategoryPickers } from "./categoryForm.js";
 import * as store from "../../core/store.js";
+import { accountSelect } from "./accountForms.js";
+import { getLastAccount, setLastAccount } from "../../core/prefs.js";
 import { addDays, formatDate, formatDue, parseISO, todayISO, FREQUENCIES } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
 import { formatMoney } from "../../core/money.js";
@@ -137,6 +139,9 @@ export function openPayBill(billId) {
       <p class="sheet-text">Se va a registrar como <strong>gasto</strong> y dejará de estar reservado${bill.recurring ? `. El próximo vencimiento pasa a ${formatDate(FREQUENCIES[bill.frequency].next(bill.dueDate, bill.dueDay))}` : ""}.</p>
       ${amountField({ value: bill.amount, currency: bill.currency, label: "Monto pagado", autofocus: false, tone: "tone-expense" })}
       ${dateField({ name: "date", label: "Fecha de pago", value: todayISO() })}
+      ${state.accounts.filter((a) => !a.archived).length > 1
+        ? accountSelect(state, { label: "Pagada desde", value: state.accounts.find((a) => a.id === getLastAccount() && !a.archived)?.id || store.defaultAccountId() })
+        : ""}
       ${formActions({ submitLabel: "Registrar pago" })}
     </form>`,
     onMount(panel, close) {
@@ -148,8 +153,10 @@ export function openPayBill(billId) {
         if (!(amount > 0)) return fieldError(form, "amount", "Ingresá el monto que pagaste.");
         const date = isISODate(form.elements.date.value) ? form.elements.date.value : todayISO();
         const currency = form.elements.currency.value;
+        const accountId = form.elements.accountId?.value;
+        if (accountId) setLastAccount(accountId);
         const backup = store.snapshot();
-        store.payBill(bill.id, { date, amount, currency });
+        store.payBill(bill.id, { date, amount, currency, accountId });
         close();
         toast(`${bill.name} pagada · se registró el gasto`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });

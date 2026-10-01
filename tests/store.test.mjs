@@ -39,11 +39,14 @@ function invariants(tag) {
   clean.version = s.version;
   check(`[${tag}] estado válido (sanitize no cambia nada)`, JSON.stringify(canon(clean)) === JSON.stringify(canon(JSON.parse(JSON.stringify(s)))), firstDiff(JSON.parse(JSON.stringify(s)), clean));
   const catIds = new Set(s.categories.map((c) => c.id));
-  check(`[${tag}] sin categorías huérfanas`, s.transactions.every((t) => catIds.has(t.categoryId)) && s.bills.every((b) => catIds.has(b.categoryId)), tag);
+  check(`[${tag}] sin categorías huérfanas`, s.transactions.every((t) => t.type === "transfer" || catIds.has(t.categoryId)) && s.bills.every((b) => catIds.has(b.categoryId)), tag);
   const txIds = new Set(s.transactions.map((t) => t.id));
   check(`[${tag}] pagos de facturas apuntan a gastos existentes`, s.bills.every((b) => b.payments.every((p) => txIds.has(p.txId))), tag);
   const billIds = new Set(s.bills.map((b) => b.id));
   check(`[${tag}] gastos de facturas apuntan a facturas existentes`, s.transactions.every((t) => !t.billId || billIds.has(t.billId)), tag);
+  const accIds = new Set(s.accounts.map((a) => a.id));
+  check(`[${tag}] movimientos en cuentas que existen`, s.transactions.every((t) => accIds.has(t.accountId) && (t.type !== "transfer" || (accIds.has(t.toAccountId) && t.toAccountId !== t.accountId))), tag);
+  check(`[${tag}] al menos una cuenta activa`, s.accounts.some((a) => !a.archived), tag);
   const goalIds = new Set(s.goals.map((g) => g.id));
   check(`[${tag}] presupuestos de metas apuntan a metas existentes`, s.budgets.every((b) => b.target.kind !== "goal" || goalIds.has(b.target.goalId)), tag);
   const sum = F.balanceSummary(s);
@@ -55,7 +58,35 @@ const ops = {
   addTx() {
     const type = pick(["income", "expense"]);
     const cat = pick(store.getState().categories.filter((c) => c.type === type));
-    store.addTransaction({ type, amount: int(1, 900000), currency: pick(["ARS", "USD"]), date: D.addDays(D.todayISO(), int(-90, 10)), categoryId: cat.id, subcategoryId: cat.subcategories[0]?.id || "", description: "x" });
+    const accountId = pick([...store.getState().accounts.map((a) => a.id), "cuenta-que-no-existe", undefined]);
+    store.addTransaction({ type, amount: int(1, 900000), currency: pick(["ARS", "USD"]), date: D.addDays(D.todayISO(), int(-90, 10)), categoryId: cat.id, subcategoryId: cat.subcategories[0]?.id || "", description: "x", accountId });
+  },
+  addAccount() {
+    store.saveAccount({ name: "C" + int(1, 99), kind: pick(["cash", "bank", "wallet", "savings", "rara"]), currency: pick(["ARS", "USD"]), opening: int(-1000, 500000), color: pick(["#123456", "red;}"]) });
+  },
+  archiveOrDeleteAccount() {
+    const a = pick(store.getState().accounts);
+    if (!a) return;
+    if (rnd() < 0.5) store.saveAccount({ ...a, archived: !a.archived });
+    else {
+      try {
+        store.deleteAccount(a.id);
+      } catch {
+        /* con movimientos o la última: no se puede, y está bien */
+      }
+    }
+  },
+  transfer() {
+    const accs = store.getState().accounts;
+    const from = pick(accs);
+    const to = pick(accs);
+    const before = F.totalBalance(store.getState());
+    try {
+      store.addTransfer({ fromId: from.id, toId: to.id, amount: int(1, 100000), toAmount: int(1, 100), date: D.todayISO() });
+    } catch {
+      return; // misma cuenta: se rechaza
+    }
+    if (from.currency === to.currency) check("transferir no cambia el total", Math.abs(F.totalBalance(store.getState()) - before) < 0.01, { from: from.id, to: to.id });
   },
   deleteTx() {
     const t = pick(store.getState().transactions);

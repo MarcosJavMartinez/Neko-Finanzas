@@ -7,6 +7,7 @@ La segunda herramienta de [Neko Tools](https://nekotools.site), después de [Nek
 ## ✨ Funcionalidades
 
 - **Saldo disponible real**: dinero total menos lo que hay que reservar para facturas y lo apartado en metas.
+- **Cuentas**: efectivo, banco, billeteras virtuales y ahorro, cada una con su saldo y su moneda. Mover plata entre cuentas (incluso comprar dólares) no es un gasto: el total no cambia.
 - **Ingresos y gastos** con categorías propias (ícono y color), fecha, hora opcional y descripción. Los ingresos pueden repetirse (la app te recuerda registrarlos; nunca los suma sola).
 - **Facturas y servicios** recurrentes (semanal a anual): la app calcula cuánto reservar, y al pagarlas registra el gasto y pasa al próximo vencimiento.
 - **Presupuestos** mensuales por porcentaje de los ingresos o monto fijo, aplicados a categorías, a una meta o "al resto", con avisos suaves.
@@ -22,7 +23,7 @@ La segunda herramienta de [Neko Tools](https://nekotools.site), después de [Nek
 ## 🧮 Cómo se calcula el disponible
 
 ```
-Dinero total  = saldo inicial + ingresos − gastos (con fecha hasta hoy)
+Dinero total  = suma de tus cuentas (saldo inicial de cada una + ingresos − gastos ± transferencias, con fecha hasta hoy)
 A reservar    = facturas pendientes que vencen en los próximos 30 días (o hasta fin de mes) + vencidas
 En metas      = lo apartado en cada meta (no es un gasto: sigue en tu dinero total)
 Disponible    = Dinero total − A reservar − En metas

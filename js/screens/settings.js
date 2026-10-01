@@ -6,7 +6,7 @@ import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { toast } from "../ui/toast.js";
 import { confirmDialog, whenHistorySettled } from "../ui/sheet.js";
-import { segmented, currencyOptions } from "../ui/components.js";
+import { segmented } from "../ui/components.js";
 import { amountToInput, parseAmount } from "../core/money.js";
 import { MAX_AMOUNT } from "../core/sanitize.js";
 import * as store from "../core/store.js";
@@ -153,15 +153,6 @@ const handlers = {
       store.updateSettings({ reserveHorizon: el.value });
       toast("Reserva de facturas actualizada");
     },
-    "set-opening"(el) {
-      const value = el.value.trim() ? parseAmount(el.value) : 0;
-      if (!Number.isFinite(value) || Math.abs(value) > MAX_AMOUNT) return toast("Ese monto no es válido", { type: "error" });
-      store.updateSettings({ openingBalance: Math.round(value * 100) / 100 });
-      toast("Saldo inicial guardado");
-    },
-    "set-opening-currency"(el) {
-      store.updateSettings({ openingCurrency: el.value });
-    },
     "set-reference"(el) {
       const value = el.value.trim() ? parseAmount(el.value) : 0;
       if (!Number.isFinite(value) || value < 0 || value > MAX_AMOUNT) return toast("Ese monto no es válido", { type: "error" });
@@ -209,7 +200,7 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
       <section class="card reveal">
         <h2 class="section-title">Cómo se calcula tu disponible</h2>
         <div class="formula">
-          <span class="formula-row"><span>Dinero total</span><span class="muted-text">saldo inicial + ingresos − gastos</span></span>
+          <span class="formula-row"><span>Dinero total</span><span class="muted-text">la suma de tus cuentas</span></span>
           <span class="formula-row"><span>− A reservar</span><span class="muted-text">facturas pendientes</span></span>
           <span class="formula-row"><span>− En metas</span><span class="muted-text">lo que apartaste</span></span>
           <span class="formula-row formula-total"><span>= Disponible</span></span>
@@ -220,14 +211,11 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
           ${segmented("horizon", [{ value: "30d", label: "Próximos 30 días" }, { value: "month", label: "Hasta fin de mes" }], s.reserveHorizon, { action: "set-horizon" })}
         </div>
 
-        <label class="setting">
-          <span class="setting-label">Saldo inicial</span>
-          <span class="field-hint">Lo que ya tenías antes de empezar a usar la app.</span>
-          <span class="amount-input">
-            <select class="amount-currency" data-change="set-opening-currency" aria-label="Moneda del saldo inicial">${currencyOptions(s.openingCurrency)}</select>
-            <input type="text" inputmode="decimal" value="${amountToInput(s.openingBalance)}" data-change="set-opening" aria-label="Saldo inicial" />
-          </span>
-        </label>
+        <div class="setting">
+          <span class="setting-label">Saldos iniciales</span>
+          <span class="field-hint">Cada cuenta tiene el suyo: lo que tenía antes de que empezaras a cargar movimientos.</span>
+          <a class="btn btn-soft btn-sm" href="#/cuentas">${icon("wallet", 16)} Ir a Cuentas</a>
+        </div>
 
         <label class="setting">
           <span class="setting-label">Ingreso de referencia <span class="optional">(opcional)</span></span>
@@ -361,7 +349,7 @@ export const settingsData = sub("ajustes-datos", "Tus datos", () => html`
 `);
 
 const SECTIONS = [
-  { href: "#/ajustes-calculo", icon: "wallet", title: "Cálculo del disponible", sub: () => "Saldo inicial y reserva de facturas" },
+  { href: "#/ajustes-calculo", icon: "pie", title: "Cálculo del disponible", sub: () => "Reserva de facturas e ingreso de referencia" },
   { href: "#/ajustes-apariencia", icon: "sparkle", title: "Apariencia", sub: () => "Tema, color principal y fondo" },
   { href: "#/ajustes-dispositivo", icon: "phone", title: "En este dispositivo", sub: () => "Vibración, ocultar montos, instalar" },
   { href: "#/ajustes-datos", icon: "shield", title: "Tus datos", sub: () => lastBackupText() },

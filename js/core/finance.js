@@ -8,10 +8,14 @@
  *
  *  Los cuatro números principales (todos en la moneda principal):
  *
- *    DINERO TOTAL      = saldo inicial
- *                        + ingresos registrados (con fecha hasta hoy)
- *                        − gastos registrados   (con fecha hasta hoy)
- *                      Es la plata que realmente tenés, sumando todo.
+ *    DINERO TOTAL      = la suma de tus cuentas, y cada cuenta es
+ *                          su saldo inicial
+ *                        + ingresos registrados en ella (con fecha hasta hoy)
+ *                        − gastos registrados en ella   (con fecha hasta hoy)
+ *                        ± transferencias desde/hacia otras cuentas
+ *                      Es la plata que realmente tenés, sumando todo. Una
+ *                      transferencia no es ingreso ni gasto: solo cambia de
+ *                      cuenta (salvo la diferencia si cambia de moneda).
  *
  *    EN METAS          = lo acumulado en cada meta de ahorro.
  *                      Separar plata para una meta NO es un gasto: el dinero
@@ -80,13 +84,38 @@ export function findSubcategory(category, subId) {
 // Saldos
 // ---------------------------------------------------------------------------
 
+/**
+ * Saldo de cada cuenta (en su moneda y en la principal), en una sola pasada
+ * por los movimientos: [{ account, balance, balanceMain }].
+ */
+export function accountBalances(state, today = todayISO()) {
+  const byId = new Map(state.accounts.map((a) => [a.id, { account: a, balance: a.opening }]));
+  const add = (accountId, amount, currency) => {
+    const entry = byId.get(accountId);
+    if (entry) entry.balance += convert(amount, currency, entry.account.currency, state.rates);
+  };
+  for (const tx of state.transactions) {
+    if (tx.date > today) continue;
+    if (tx.type === "transfer") {
+      add(tx.accountId, -tx.amount, tx.currency);
+      add(tx.toAccountId, tx.toAmount, tx.toCurrency);
+    } else {
+      add(tx.accountId, tx.type === "income" ? tx.amount : -tx.amount, tx.currency);
+    }
+  }
+  return [...byId.values()].map((e) => ({ ...e, balanceMain: toMain(state, e.balance, e.account.currency) }));
+}
+
+export function accountBalance(state, accountId, today = todayISO()) {
+  return accountBalances(state, today).find((e) => e.account.id === accountId) || null;
+}
+
+export function findAccount(state, id) {
+  return state.accounts.find((a) => a.id === id);
+}
+
 export function totalBalance(state, today = todayISO()) {
-  const opening = toMain(state, state.settings.openingBalance || 0, state.settings.openingCurrency);
-  return state.transactions.reduce((sum, tx) => {
-    if (tx.date > today) return sum;
-    const value = toMain(state, tx.amount, tx.currency);
-    return tx.type === "income" ? sum + value : sum - value;
-  }, opening);
+  return accountBalances(state, today).reduce((sum, e) => sum + e.balanceMain, 0);
 }
 
 export function goalSaved(goal) {

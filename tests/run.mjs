@@ -125,6 +125,7 @@ for (const [name, file, opts] of [
   ["Apariencia: paletas, fondo, animaciones", "appearance.js"],
   ["Accesibilidad y 10.000 movimientos", "a11y.js"],
   ["Calendario, configuración, asistente, colores", "quick-wins.js"],
+  ["Cuentas y transferencias", "accounts.js"],
   [
     "Datos: IndexedDB, copias automáticas, iPhone, pestañas",
     "storage.js",

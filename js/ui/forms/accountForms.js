@@ -1,0 +1,269 @@
+// Cuentas (efectivo, banco, billetera virtual, ahorro) y transferencias
+// entre ellas. Transferir no es gastar: la plata cambia de lugar.
+
+import { html } from "../dom.js";
+import { icon } from "../icons.js";
+import { openSheet, confirmDialog } from "../sheet.js";
+import { toast } from "../toast.js";
+import { segmented, txRow } from "../components.js";
+import { textField, emojiPicker, colorPicker, formActions, readForm, fieldError, clearErrors } from "./fields.js";
+import * as store from "../../core/store.js";
+import { todayISO } from "../../core/dates.js";
+import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
+import { formatMoney, amountToInput, parseAmount, convert, CURRENCY_CODES } from "../../core/money.js";
+import { accountBalance, findAccount } from "../../core/finance.js";
+import { ACCOUNT_KINDS } from "../../data/defaults.js";
+
+const ACCOUNT_ICONS = ["👛", "💵", "🏦", "📱", "💳", "🐷", "💰", "🪙", "🏧", "💶", "💴", "🧾"];
+
+/** Nombre con ícono de una cuenta ("🏦 Cuenta sueldo"). */
+export const accountLabel = (account) => (account ? `${account.icon} ${account.name}` : "Cuenta borrada");
+
+/** Selector de cuenta para formularios (las archivadas no se ofrecen, salvo la elegida). */
+export function accountSelect(state, { name = "accountId", label = "Cuenta", value, exclude = "" } = {}) {
+  const options = state.accounts.filter((a) => a.id !== exclude && (!a.archived || a.id === value));
+  return html`<div class="field">
+    <label class="field-label" for="f-${name}">${label}</label>
+    <select id="f-${name}" name="${name}">
+      ${options.map((a) => html`<option value="${a.id}" ${a.id === value ? "selected" : ""}>${accountLabel(a)} · ${a.currency}</option>`)}
+    </select>
+  </div>`;
+}
+
+/** Monto en una moneda fija (la de la cuenta). */
+function fixedAmountField({ name, label, currency, value, hint = "" }) {
+  return html`<div class="field">
+    <label class="field-label" for="f-${name}">${label}</label>
+    <div class="amount-input">
+      <span class="amount-currency amount-currency-static" data-currency-for="${name}">${currency}</span>
+      <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" value="${value ? amountToInput(value) : ""}" />
+    </div>
+    ${hint ? html`<p class="field-hint" data-hint-for="${name}">${hint}</p>` : ""}
+    <p class="field-error" data-error-for="${name}"></p>
+  </div>`;
+}
+
+function readMoney(form, name) {
+  const value = parseAmount(form.elements[name]?.value || "");
+  return Number.isFinite(value) && value > 0 && value <= MAX_AMOUNT ? Math.round(value * 100) / 100 : NaN;
+}
+
+// ---------------------------------------------------------------------------
+// Crear / editar cuenta
+// ---------------------------------------------------------------------------
+
+export function openAccountForm({ account } = {}) {
+  const state = store.getState();
+  const isEdit = Boolean(account);
+  const current = account || { name: "", icon: "🏦", color: "#08a7c8", currency: state.settings.mainCurrency, kind: "bank", opening: 0 };
+  const used = isEdit ? store.countAccountUsage(account.id) : 0;
+  const kinds = Object.entries(ACCOUNT_KINDS).map(([value, k]) => ({ value, label: k.label }));
+
+  openSheet({
+    title: isEdit ? "Editar cuenta" : "Nueva cuenta",
+    body: html`<form class="form" novalidate>
+      ${textField({ name: "name", label: "Nombre", value: current.name, required: true, placeholder: "Ej.: Cuenta sueldo, Efectivo, Billetera" })}
+      <div class="field">
+        <span class="field-label">Tipo</span>
+        ${segmented("kind", kinds, current.kind)}
+      </div>
+      <div class="field">
+        <span class="field-label">Moneda</span>
+        ${used
+          ? html`<p class="field-hint">${icon("lock", 14)} ${current.currency}: no se puede cambiar porque la cuenta ya tiene movimientos.</p>`
+          : segmented("currency", CURRENCY_CODES.map((c) => ({ value: c, label: c })), current.currency)}
+      </div>
+      ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: current.opening, hint: "Lo que tenía esta cuenta antes de cargar movimientos. Puede ser negativo (con un “-” adelante)." })}
+      ${emojiPicker(current.icon, { choices: ACCOUNT_ICONS })}
+      ${colorPicker(current.color)}
+      ${isEdit
+        ? html`<label class="toggle-field">
+            <span><span class="toggle-label">Archivada</span><span class="field-hint">No aparece al cargar movimientos. Su saldo sigue contando en el total.</span></span>
+            <input type="checkbox" name="archived" class="switch" ${current.archived ? "checked" : ""} />
+          </label>`
+        : ""}
+      ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Crear cuenta", deletable: isEdit && !used && state.accounts.length > 1 })}
+    </form>`,
+    onMount(panel, close) {
+      const form = panel.querySelector("form");
+      // La moneda del saldo inicial sigue a la elegida.
+      form.addEventListener("change", (event) => {
+        if (event.target.name === "currency") form.querySelector('[data-currency-for="opening"]').textContent = event.target.value;
+        if (event.target.name === "kind" && !isEdit) {
+          const iconInput = form.querySelector(`input[name=icon][value="${ACCOUNT_KINDS[event.target.value].icon}"]`);
+          if (iconInput) iconInput.checked = true;
+        }
+      });
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearErrors(form);
+        const data = readForm(form);
+        if (!data.name.trim()) return fieldError(form, "name", "Poné un nombre para la cuenta.");
+        const openingText = form.elements.opening.value.trim();
+        const opening = openingText ? parseAmount(openingText) : 0;
+        if (!Number.isFinite(opening) || Math.abs(opening) > MAX_AMOUNT) return fieldError(form, "opening", "Ese monto no es válido.");
+        const saved = store.saveAccount({
+          id: account?.id,
+          name: data.name,
+          kind: data.kind,
+          currency: data.currency || current.currency,
+          opening,
+          icon: data.icon,
+          color: data.color,
+          archived: Boolean(data.archived),
+        });
+        close();
+        toast(isEdit ? "Cuenta actualizada" : `Cuenta “${saved.name}” creada`);
+      });
+      form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
+        const ok = await confirmDialog({ title: `¿Eliminar “${account.name}”?`, text: "La cuenta no tiene movimientos, así que no se pierde nada.", confirmLabel: "Eliminar", danger: true });
+        if (!ok) return;
+        try {
+          const backup = store.snapshot();
+          store.deleteAccount(account.id);
+          close();
+          toast("Cuenta eliminada", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        } catch (error) {
+          toast(error.message, { type: "error" });
+        }
+      });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Transferir entre cuentas
+// ---------------------------------------------------------------------------
+
+export function openTransferForm({ tx, fromId } = {}) {
+  const state = store.getState();
+  const active = state.accounts.filter((a) => !a.archived);
+  if (!tx && active.length < 2) {
+    toast("Necesitás al menos dos cuentas para mover plata entre ellas", { type: "info" });
+    return openAccountForm();
+  }
+  const isEdit = Boolean(tx);
+  const from = tx?.accountId || fromId || store.defaultAccountId();
+  const to = tx?.toAccountId || active.find((a) => a.id !== from)?.id;
+
+  openSheet({
+    title: isEdit ? "Editar transferencia" : "Mover plata",
+    body: html`<form class="form" novalidate>
+      <p class="sheet-text">Pasar plata de una cuenta a otra no es un gasto: tu total no cambia.</p>
+      <div class="field-row field-row-transfer">
+        ${accountSelect(state, { name: "fromId", label: "Desde", value: from })}
+        <span class="transfer-arrow" aria-hidden="true">${icon("chevronRight", 20)}</span>
+        ${accountSelect(state, { name: "toId", label: "Hacia", value: to })}
+      </div>
+      ${fixedAmountField({ name: "amount", label: "Monto", currency: findAccount(state, from)?.currency, value: tx?.amount })}
+      <div data-to-amount hidden>
+        ${fixedAmountField({ name: "toAmount", label: "Llega a la otra cuenta", currency: findAccount(state, to)?.currency, value: tx?.toAmount, hint: "Sugerido con tu tipo de cambio. Si cambiaste a otro valor, corregilo." })}
+      </div>
+      <div class="field">
+        <label class="field-label" for="f-date">Fecha</label>
+        <input id="f-date" name="date" type="date" value="${tx?.date || todayISO()}" required />
+        <p class="field-error" data-error-for="date"></p>
+      </div>
+      ${textField({ name: "description", label: "Descripción", value: tx?.description || "", placeholder: "Ej.: Retiro del cajero, compra de dólares" })}
+      ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Mover plata", deletable: isEdit })}
+    </form>`,
+    onMount(panel, close) {
+      const form = panel.querySelector("form");
+      const toBox = form.querySelector("[data-to-amount]");
+      let toEdited = isEdit;
+      // Con monedas distintas se pide cuánto llega (sugerido con tu tipo de cambio).
+      const sync = () => {
+        const s = store.getState();
+        const a = findAccount(s, form.elements.fromId.value);
+        const b = findAccount(s, form.elements.toId.value);
+        form.querySelector('[data-currency-for="amount"]').textContent = a?.currency || "";
+        form.querySelector('[data-currency-for="toAmount"]').textContent = b?.currency || "";
+        const differ = a && b && a.currency !== b.currency;
+        toBox.hidden = !differ;
+        const amount = readMoney(form, "amount");
+        if (differ && !toEdited && amount > 0) form.elements.toAmount.value = amountToInput(Math.round(convert(amount, a.currency, b.currency, s.rates) * 100) / 100);
+        const hint = form.querySelector('[data-hint-for="toAmount"]');
+        if (hint && differ) hint.textContent = `Sugerido con tu tipo de cambio (${formatMoney(convert(1, b.currency, a.currency, s.rates), a.currency, { reveal: true })} por ${b.currency}). Si cambiaste a otro valor, corregilo.`;
+      };
+      form.addEventListener("input", (event) => {
+        if (event.target.name === "toAmount") toEdited = true;
+        if (event.target.name === "amount") sync();
+      });
+      form.addEventListener("change", (event) => {
+        if (event.target.name === "fromId" || event.target.name === "toId") {
+          toEdited = false;
+          sync();
+        }
+      });
+      sync();
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearErrors(form);
+        const data = readForm(form);
+        const amount = readMoney(form, "amount");
+        if (data.fromId === data.toId) return fieldError(form, "amount", "Elegí dos cuentas distintas.");
+        if (!(amount > 0)) return fieldError(form, "amount", "Ingresá un monto mayor a cero.");
+        if (!isISODate(data.date)) return fieldError(form, "date", "Elegí una fecha válida.");
+        const toAmount = toBox.hidden ? amount : readMoney(form, "toAmount");
+        if (!(toAmount > 0)) return fieldError(form, "toAmount", "Ingresá cuánto llega a la otra cuenta.");
+        const values = { fromId: data.fromId, toId: data.toId, amount, toAmount, date: data.date, description: data.description };
+        try {
+          if (isEdit) store.updateTransfer(tx.id, values);
+          else store.addTransfer(values);
+        } catch (error) {
+          return fieldError(form, "amount", error.message);
+        }
+        close();
+        const s = store.getState();
+        toast(isEdit ? "Transferencia actualizada" : `Moviste ${formatMoney(amount, findAccount(s, data.fromId).currency)} a ${findAccount(s, data.toId).name}`);
+      });
+      form.querySelector("[data-form-delete]")?.addEventListener("click", () => {
+        const backup = store.snapshot();
+        store.deleteTransaction(tx.id);
+        close();
+        toast("Transferencia eliminada", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+      });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Detalle de una cuenta
+// ---------------------------------------------------------------------------
+
+export function openAccountDetail(accountId) {
+  const state = store.getState();
+  const account = findAccount(state, accountId);
+  if (!account) return;
+  const entry = accountBalance(state, accountId);
+  const recent = state.transactions
+    .filter((t) => (t.accountId === accountId || t.toAccountId === accountId) && t.date <= todayISO())
+    .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 8);
+  openSheet({
+    title: accountLabel(account),
+    body: html`<div class="account-detail">
+      <p class="account-detail-label">${ACCOUNT_KINDS[account.kind]?.label || "Cuenta"}${account.archived ? " · archivada" : ""}</p>
+      <p class="account-detail-balance ${entry.balance < 0 ? "is-negative" : ""}">${formatMoney(entry.balance, account.currency)}</p>
+      ${account.currency !== state.settings.mainCurrency ? html`<p class="fine-print">≈ ${formatMoney(entry.balanceMain, state.settings.mainCurrency)}</p>` : ""}
+      <div class="account-detail-actions">
+        <button type="button" class="btn btn-soft btn-sm" data-do="transfer">${icon("swap", 16)} Mover plata</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-do="edit">${icon("edit", 16)} Editar</button>
+      </div>
+      <h3 class="section-title section-title-spaced">Últimos movimientos</h3>
+      ${recent.length
+        ? html`<div class="tx-list">${recent.map((t) => txRow(state, t, { withDate: true }))}</div>`
+        : html`<p class="muted-text">Todavía no hay movimientos en esta cuenta.</p>`}
+    </div>`,
+    onMount(panel, close) {
+      panel.addEventListener("click", (event) => {
+        const what = event.target.closest("[data-do]")?.dataset.do;
+        if (!what) return;
+        close();
+        if (what === "transfer") openTransferForm({ fromId: accountId });
+        if (what === "edit") openAccountForm({ account: store.getState().accounts.find((a) => a.id === accountId) });
+      });
+    },
+  });
+}
+

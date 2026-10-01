@@ -24,7 +24,8 @@ const cats = DEFAULT_CATEGORIES;
 function randomState() {
   const s = createEmptyState();
   s.settings.mainCurrency = pick(["ARS", "ARS", "USD", "EUR"]);
-  s.settings.openingBalance = int(-50000, 2000000);
+  s.accounts[0].opening = int(-50000, 2000000);
+  for (let i = 0; i < int(0, 3); i++) s.accounts.push({ id: "acc" + i, name: "C" + i, icon: "🏦", color: "#123456", currency: pick(["ARS", "USD"]), kind: "bank", opening: int(0, 900000), archived: rnd() < 0.2 });
   s.settings.reserveHorizon = pick(["30d", "month"]);
   s.rates = { ARS: 1, USD: int(500, 2500), EUR: int(600, 2800) };
   const nTx = int(0, 150);
@@ -32,6 +33,12 @@ function randomState() {
     const type = pick(["income", "expense"]);
     const cat = pick(cats.filter((c) => c.type === type));
     s.transactions.push({ id: "t" + i, type, amount: pick([int(1, 5000000), rnd() * 1000]), currency: pick(["ARS", "ARS", "USD", "EUR"]), date: randomDate(), time: "", categoryId: cat.id, subcategoryId: pick(["", ...(cat.subcategories || []).map((x) => x.id)]), description: "", createdAt: "2026-01-01" });
+  }
+  // Transferencias entre cuentas al azar (algunas en otra moneda)
+  for (let i = 0; i < int(0, 20) && s.accounts.length > 1; i++) {
+    const from = pick(s.accounts);
+    const to = pick(s.accounts.filter((a) => a !== from));
+    s.transactions.push({ id: "x" + i, type: "transfer", amount: int(1, 300000), currency: from.currency, accountId: from.id, toAccountId: to.id, toAmount: int(1, 300000), toCurrency: to.currency, date: randomDate(), time: "", description: "", createdAt: "2026-01-01" });
   }
   for (let i = 0; i < int(0, 12); i++) {
     const dueDate = D.addDays(TODAY, int(-200, 90));

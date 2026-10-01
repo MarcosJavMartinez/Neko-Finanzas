@@ -2,11 +2,14 @@
 //
 // Formato pensado para planillas en español: separador ";" y coma decimal
 // (el Excel en español espera eso), con BOM para que los acentos se vean
-// bien. Los gastos van en negativo, así una SUMA da el balance.
+// bien. Los gastos van en negativo, así una SUMA da el balance. Las
+// transferencias entre cuentas van con su monto pero sin "monto en moneda
+// principal" (no son ingreso ni gasto: no cambian la suma).
 
-import { findCategory, findSubcategory, toMain } from "./finance.js";
+import { findAccount, findCategory, findSubcategory, toMain } from "./finance.js";
+import { formatMoney } from "./money.js";
 
-const HEADERS = ["Fecha", "Hora", "Tipo", "Categoría", "Subcategoría", "Descripción", "Monto", "Moneda"];
+const HEADERS = ["Fecha", "Hora", "Tipo", "Cuenta", "Categoría", "Subcategoría", "Descripción", "Monto", "Moneda"];
 
 /** Número con coma decimal y sin separador de miles: 1234,5 → "1234,50". */
 function number(value) {
@@ -29,6 +32,12 @@ export function transactionsToCSV(state) {
   const rows = [...state.transactions]
     .sort((a, b) => a.date.localeCompare(b.date) || (a.time || "").localeCompare(b.time || "") || a.createdAt.localeCompare(b.createdAt))
     .map((tx) => {
+      const account = findAccount(state, tx.accountId);
+      if (tx.type === "transfer") {
+        const to = findAccount(state, tx.toAccountId);
+        const fx = tx.currency !== tx.toCurrency ? ` (llegan ${formatMoney(tx.toAmount, tx.toCurrency, { reveal: true })})` : "";
+        return [tx.date, tx.time || "", text("Transferencia"), text(`${account?.name || "?"} → ${to?.name || "?"}`), "", "", text((tx.description || "") + fx), number(tx.amount), tx.currency, ""].join(";");
+      }
       const category = findCategory(state, tx.categoryId);
       const sub = findSubcategory(category, tx.subcategoryId);
       const sign = tx.type === "expense" ? -1 : 1;
@@ -36,6 +45,7 @@ export function transactionsToCSV(state) {
         tx.date,
         tx.time || "",
         text(tx.type === "expense" ? "Gasto" : "Ingreso"),
+        text(account?.name || ""),
         text(category?.name || ""),
         text(sub?.name || ""),
         text(tx.description || ""),

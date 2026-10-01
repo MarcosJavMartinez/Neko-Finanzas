@@ -11,6 +11,7 @@ const KEYS = {
   hideAmounts: "nekoFinanzas.hideAmounts",
   onboardingSeen: "nekoFinanzas.onboardingSeen",
   iosNoticeSnooze: "nekoFinanzas.iosNoticeSnooze",
+  lastAccount: "nekoFinanzas.lastAccount",
 };
 
 const DAY = 86400000;
@@ -66,6 +67,10 @@ export const amountsHidden = () => read(KEYS.hideAmounts) === "1";
 export const setAmountsHidden = (on) => write(KEYS.hideAmounts, on ? "1" : null);
 
 export const onboardingSeen = () => read(KEYS.onboardingSeen) === "1";
+
+/** Última cuenta usada al cargar un movimiento (se propone la próxima vez). */
+export const getLastAccount = () => read(KEYS.lastAccount) || "";
+export const setLastAccount = (id) => write(KEYS.lastAccount, id || null);
 
 /** Aviso de iPhone ("instalala para que no se borren tus datos") pospuesto. */
 export function iosNoticeSnoozed(now = Date.now()) {

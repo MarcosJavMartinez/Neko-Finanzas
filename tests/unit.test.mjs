@@ -79,7 +79,32 @@ const evil = sanitizeState({
 });
 eq("tipos de cambio", evil.rates, { ARS: 1, USD: 1350, EUR: 1470 });
 eq("moneda principal inválida", evil.settings.mainCurrency, "ARS");
-eq("saldo inicial inválido", evil.settings.openingBalance, 0);
+eq("saldo inicial inválido", evil.accounts[0].opening, 0);
+eq("sin saldo inicial en configuración", "openingBalance" in evil.settings, false);
+
+// Datos de antes de las cuentas: el saldo inicial pasa a una primera cuenta y el total no cambia
+const legacy = sanitizeState({ settings: { mainCurrency: "ARS", openingBalance: 5000, openingCurrency: "USD" }, rates: { USD: 1000 }, categories: [], transactions: [{ id: "t1", type: "expense", amount: 1000000, currency: "ARS", date: "2026-01-05", categoryId: "exp-otros" }] });
+eq("legado: una cuenta", legacy.accounts.length, 1);
+eq("legado: saldo y moneda", [legacy.accounts[0].opening, legacy.accounts[0].currency], [5000, "USD"]);
+eq("legado: movimiento en esa cuenta", legacy.transactions[0].accountId, legacy.accounts[0].id);
+eq("legado: total", Math.round(F.totalBalance(legacy, "2026-09-30")), 5000 * 1000 - 1000000);
+
+// Transferencias: no cambian el total (misma moneda), sí los saldos de cada cuenta
+const acc = sanitizeState({
+  rates: { USD: 1000 },
+  categories: [],
+  accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 10000 }, { id: "b", name: "B", currency: "ARS", kind: "cash", opening: 0 }, { id: "u", name: "U", currency: "USD", kind: "savings", opening: 0 }],
+  transactions: [
+    { id: "x1", type: "transfer", amount: 3000, currency: "ARS", accountId: "a", toAccountId: "b", toAmount: 3000, toCurrency: "ARS", date: "2026-02-01" },
+    { id: "x2", type: "transfer", amount: 2000, currency: "ARS", accountId: "a", toAccountId: "u", toAmount: 2, toCurrency: "USD", date: "2026-02-02" },
+    { id: "x3", type: "transfer", amount: 50, currency: "ARS", accountId: "a", toAccountId: "a", toAmount: 50, toCurrency: "ARS", date: "2026-02-02" },
+    { id: "x4", type: "transfer", amount: 50, currency: "ARS", accountId: "a", toAccountId: "fantasma", toAmount: 50, toCurrency: "ARS", date: "2026-02-02" },
+  ],
+});
+eq("transferencias inválidas descartadas", acc.transactions.map((t) => t.id), ["x1", "x2"]);
+eq("saldos por cuenta", F.accountBalances(acc, "2026-09-30").map((e) => Math.round(e.balance)), [5000, 3000, 2]);
+eq("total con transferencias", Math.round(F.totalBalance(acc, "2026-09-30")), 10000);
+eq("transferencias no son gastos", F.monthlyTotals(acc, "2026-02").expense, 0);
 eq("color con CSS inyectado", evil.categories[0].color, "#8b958e");
 eq("ícono con HTML", evil.categories[1].icon, "🏷️");
 eq("categorías: sin duplicadas ni sin id, + respaldo de ingresos", evil.categories.map((c) => c.id), ["exp-otros", "dup", "inc-otros"]);

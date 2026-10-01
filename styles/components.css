@@ -2313,3 +2313,12 @@ details[open] > :not(summary) {
 .snapshot-row .btn {
   flex-shrink: 0;
 }
+
+/* Transferencias entre cuentas: neutras (no son ingreso ni gasto) */
+.tx-amount.is-transfer {
+  color: var(--text-2);
+}
+
+.transfer-bubble {
+  --c: var(--brand);
+}

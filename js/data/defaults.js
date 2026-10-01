@@ -1,7 +1,7 @@
 // Valores iniciales: categorías predeterminadas, paleta, íconos y el estado
 // vacío de la app.
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3; // 3: cuentas y transferencias
 
 /** Paleta de la versión 1 (verde menta), para migrar colores viejos. */
 export const PALETTE_V1 = ["#1f9e74", "#3a86d4", "#e4705f", "#2a9fb0", "#8a63d2", "#d99a2b", "#d65c96", "#7d9a2e"];
@@ -85,6 +85,24 @@ export const DEFAULT_CATEGORIES = [
   cat("inc-otros", "Otros ingresos", "✨", "#8b958e", "income"),
 ];
 
+// ---------------------------------------------------------------------------
+// Cuentas: dónde está la plata (efectivo, banco, billetera virtual, ahorro).
+// ---------------------------------------------------------------------------
+
+export const ACCOUNT_KINDS = {
+  cash: { label: "Efectivo", icon: "💵" },
+  bank: { label: "Banco", icon: "🏦" },
+  wallet: { label: "Billetera virtual", icon: "📱" },
+  savings: { label: "Ahorro", icon: "🐷" },
+};
+
+/** La cuenta con la que arranca la app (y a la que va lo de cuentas borradas). */
+export const DEFAULT_ACCOUNT_ID = "acc-principal";
+
+export function defaultAccount(currency = "ARS", opening = 0) {
+  return { id: DEFAULT_ACCOUNT_ID, name: "Mi plata", icon: "👛", color: "#08a7c8", currency, kind: "cash", opening, archived: false };
+}
+
 /** Categorías de respaldo: no se pueden borrar (reciben lo de las borradas). */
 export const FALLBACK_CATEGORY = { expense: "exp-otros", income: "inc-otros" };
 
@@ -93,8 +111,6 @@ export function createEmptyState() {
     version: SCHEMA_VERSION,
     settings: {
       mainCurrency: "ARS",
-      openingBalance: 0,
-      openingCurrency: "ARS",
       reserveHorizon: "30d", // "30d" | "month"
       budgetReference: 0,
       isDemo: false,
@@ -104,6 +120,7 @@ export function createEmptyState() {
     rates: { ARS: 1, USD: 1350, EUR: 1470 },
     ratesUpdatedAt: new Date().toISOString(),
     categories: DEFAULT_CATEGORIES.map((c) => ({ ...c, subcategories: c.subcategories.map((sub) => ({ ...sub })) })),
+    accounts: [defaultAccount()],
     transactions: [],
     bills: [],
     goals: [],
