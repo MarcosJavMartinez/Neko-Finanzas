@@ -4,7 +4,7 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v17";
+const CACHE_VERSION = "neko-finanzas-v18";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -64,7 +64,7 @@ const APP_SHELL = [
   "img/favicon-32.png",
   "img/favicon-16.png",
   "img/logo-header.png",
-  "img/neko-tools-mark.png",
+  "img/neko-tools-mark-v2.png",
   "img/bg-pattern-light.jpg",
   "img/bg-pattern-dark.jpg",
   "img/hero-wallet.png",

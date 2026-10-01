@@ -43,7 +43,7 @@ export default {
         )}
       </nav>
       <a class="brand-card reveal" href="https://nekotools.site" target="_blank" rel="noopener">
-        <img src="img/neko-tools-mark.png" alt="" width="44" height="44" />
+        <img src="img/neko-tools-mark-v2.png" alt="" width="44" height="44" />
         <span><strong>Neko Finanzas</strong> es parte de <strong>Neko Tools</strong><br /><span class="muted-text">Pequeñas herramientas simples, gratis y privadas.</span></span>
       </a>
       ${appFooter()}
