@@ -58,8 +58,8 @@
   --brand-shadow: rgba(4, 110, 140, 0.28); /* sombra del header y la barra inferior */
 
   /* Acción principal y selección: cian profundo (texto blanco legible) */
-  --action: #0788a8;
-  --action-gradient: linear-gradient(135deg, #0a9fc0 0%, #0788a8 55%, #067f9c 100%);
+  --action: #067f9c; /* 4,6:1 con texto blanco */
+  --action-gradient: linear-gradient(135deg, #0890b0 0%, #067f9c 55%, #056f89 100%);
   --action-soft: var(--brand-soft);
   --action-ink: var(--brand-ink);
   --action-glow: rgba(8, 150, 185, 0.32);

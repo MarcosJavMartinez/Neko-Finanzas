@@ -15,8 +15,9 @@ return (async () => {
       if (i < 3) { s.querySelector("[data-ob=next]").click(); await wait(80); }
     }
     log("pasos: " + steps.join(" → "));
-    s.querySelector("[data-ob=next]").click(); await wait(400);
-    log("tras 'Explorar': abierto=" + !!sheet() + " visto=" + w.localStorage.getItem("nekoFinanzas.onboardingSeen") + " demo=" + (await w.eval('import("/js/core/store.js")')).getState().settings.isDemo);
+    log("pregunta final: " + (s.querySelector(".ob-step:not([hidden]) .ob-question")?.textContent || "NO ✗"));
+    s.querySelector("[data-ob=close]").click(); await wait(400);
+    log("tras 'Ver el ejemplo': abierto=" + !!sheet() + " visto=" + w.localStorage.getItem("nekoFinanzas.onboardingSeen") + " demo=" + (await w.eval('import("/js/core/store.js")')).getState().settings.isDemo);
 
     // Ojito
     const heroTxt = () => d.querySelector(".hero-amount").textContent;
@@ -28,7 +29,7 @@ return (async () => {
     log("transacciones ocultas: " + ((d.querySelector("#view").innerText.match(/\$ ?\d[\d.]*/g) || []).slice(0, 3).join(",") || "ninguno") + " · ejemplo: " + d.querySelector(".tx-amount, [class*=amount]")?.textContent.trim());
     w.location.hash = "#/reportes"; await wait(300);
     log("reportes ocultos: " + ((d.querySelector("#view").innerText.match(/\$ ?\d[\d.]*/g) || []).slice(0, 3).join(",") || "ninguno"));
-    w.location.hash = "#/ajustes"; await wait(300);
+    w.location.hash = "#/ajustes-dispositivo"; await wait(300);
     const sw = d.querySelector("[data-change=set-hide-amounts]");
     log("config ocultar montos marcado=" + sw.checked);
     sw.click(); await wait(200);

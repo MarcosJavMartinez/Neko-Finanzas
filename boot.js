@@ -28,6 +28,8 @@
     "--brand", "--brand-2", "--brand-dark", "--brand-ink", "--brand-soft", "--brand-tint", "--brand-glow",
     "--brand-gradient", "--header-gradient", "--brand-shadow", "--tab-active-ink",
     "--action", "--action-gradient", "--action-glow", "--focus",
+    // Modo oscuro: fondos y tarjetas con un toque del color elegido
+    "--bg", "--surface", "--surface-2", "--track", "--track-strong", "--border", "--border-strong", "--input-border", "--dots", "--bg-veil",
   ];
 
   function read(key) {
@@ -108,8 +110,20 @@
       t["--brand"] = brand;
       t["--brand-2"] = mix(brand, "#ffffff", 0.8);
       t["--brand-dark"] = brand;
-      t["--brand-ink"] = ensure(mix(brand, "#ffffff", 0.85), "#172622", 7, "#ffffff");
-      t["--brand-soft"] = mix(base, "#172622", 0.24);
+      t["--brand-ink"] = ensure(mix(brand, "#ffffff", 0.85), mix(base, "#151b1e", 0.12), 7, "#ffffff");
+      // Superficies oscuras teñidas apenas con el color elegido (en vez del
+      // verde azulado del cian original).
+      t["--bg"] = mix(base, "#0e1214", 0.1);
+      t["--surface"] = mix(base, "#151b1e", 0.12);
+      t["--surface-2"] = mix(base, "#1a2124", 0.13);
+      t["--track"] = mix(base, "#1f282b", 0.16);
+      t["--track-strong"] = mix(base, "#263135", 0.18);
+      t["--border"] = mix(base, "#1e272a", 0.16);
+      t["--border-strong"] = mix(base, "#283337", 0.18);
+      t["--input-border"] = mix(base, "#34413f", 0.2);
+      t["--dots"] = mix(base, "#2c3739", 0.18);
+      t["--bg-veil"] = rgba(t["--bg"], 0.5);
+      t["--brand-soft"] = mix(base, t["--surface"], 0.24);
       t["--brand-tint"] = mix(base, bg, 0.14);
       t["--brand-glow"] = rgba(brand, 0.25);
       t["--brand-gradient"] = gradient(mix(brand, "#ffffff", 0.82), brand, mix(brand, "#000000", 0.86));
@@ -139,26 +153,25 @@
     var palette = read(KEYS.palette);
     var base = palette === "custom" ? read(KEYS.customColor) : PALETTES[palette];
     var metaColor = dark ? "#087f9a" : "#0898ba";
-    BRAND_PROPS.forEach(function (p) { root.style.removeProperty(p); });
-    if (base && HEX.test(base)) {
-      var tokens = brandTokens(base.toLowerCase(), dark);
-      BRAND_PROPS.forEach(function (p) { root.style.setProperty(p, tokens[p]); });
-      metaColor = tokens.meta;
-    }
+    var tokens = base && HEX.test(base) ? brandTokens(base.toLowerCase(), dark) : {};
+    if (tokens.meta) metaColor = tokens.meta;
+
+    // Color de fondo propio: pisa el fondo de la paleta.
+    var bgColor = read(KEYS.bgColor);
+    var hasBgColor = !!(bgColor && HEX.test(bgColor));
+    if (hasBgColor) tokens["--bg"] = bgColor;
+
+    BRAND_PROPS.forEach(function (p) {
+      if (tokens[p]) root.style.setProperty(p, tokens[p]);
+      else root.style.removeProperty(p);
+    });
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", metaColor);
 
     // Fondo: patrón (por defecto), sin imagen, imagen propia o color propio
-    var bgColor = read(KEYS.bgColor);
-    var bgImage = read(KEYS.bgImage);
-    if (bgColor && HEX.test(bgColor)) {
-      root.style.setProperty("--bg", bgColor);
-      bgImage = "none";
-    } else {
-      root.style.removeProperty("--bg");
-    }
+    var bgImage = hasBgColor ? "none" : read(KEYS.bgImage);
     root.setAttribute("data-bg", bgImage === "none" || bgImage === "custom" ? bgImage : "pattern");
-    root.toggleAttribute("data-bg-color", !!(bgColor && HEX.test(bgColor)));
+    root.toggleAttribute("data-bg-color", hasBgColor);
   }
 
   window.NekoAppearance = { apply: apply, palettes: PALETTES };

@@ -20,21 +20,23 @@ return (async () => {
     log("tras 'Hacer backup': banner=" + !!banner() + " lastBackup=" + !!ls("lastBackup"));
 
     // Configuración
-    w.location.hash = "#/ajustes"; await wait(400);
+    w.location.hash = "#/ajustes-datos"; await wait(400);
     const checked = (n) => d.querySelector(`input[name=${n}]:checked`)?.value;
-    log("tema marcado: " + checked("theme") + " · backupEvery: " + checked("backupEvery") + " · estado: " + d.querySelector(".backup-status")?.innerText.trim());
+    log("backupEvery: " + checked("backupEvery") + " · estado: " + d.querySelector(".backup-status")?.innerText.trim());
+    d.querySelector("input[name=backupEvery][value=never]").click(); await wait(100);
+    log("backupEvery nunca guardado=" + ls("backupEvery"));
+    w.location.hash = "#/ajustes-apariencia"; await wait(400);
+    log("tema marcado: " + checked("theme"));
     d.querySelector("input[name=theme][value=dark]").click(); await wait(200);
     log("oscuro: data-theme=" + d.documentElement.dataset.theme + " guardado=" + ls("theme") + " marcado=" + checked("theme"));
     d.querySelector("input[name=theme][value=auto]").click(); await wait(200);
     const sys = w.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     log("auto: data-theme=" + d.documentElement.dataset.theme + " (sistema " + sys + ") guardado=" + ls("theme") + " marcado=" + checked("theme"));
-    d.querySelector("[data-action=toggle-theme]").click(); await wait(200);
-    log("botón del header desde auto: " + d.documentElement.dataset.theme + " guardado=" + ls("theme"));
+    log("sin botón de tema en el encabezado: " + (d.querySelector("#app-header [data-action=toggle-theme]") ? "SIGUE ✗" : "sí"));
+    w.location.hash = "#/ajustes-dispositivo"; await wait(400);
     const vib = d.querySelector("[data-change=set-vibration]");
     log("vibración: " + (vib ? "visible, checked=" + vib.checked : "oculta (sin soporte)"));
     if (vib) { vib.click(); await wait(100); log("vibración apagada guardado=" + ls("vibration")); vib.click(); await wait(100); log("vibración prendida guardado=" + ls("vibration")); }
-    d.querySelector("input[name=backupEvery][value=never]").click(); await wait(100);
-    log("backupEvery nunca guardado=" + ls("backupEvery"));
     const inst = [...d.querySelectorAll(".setting")].find((s) => /Instalar la app/.test(s.innerText));
     log("instalar: " + inst.innerText.replace(/\s+/g, " ").slice(0, 140));
 

@@ -25,7 +25,7 @@ export default {
       { href: "#/reportes", icon: "chart", title: "Reportes", sub: "Tu mes de un vistazo" },
       { href: "#/categorias", icon: "tag", title: "Categorías", sub: `${state.categories.length} categorías` },
       { href: "#/monedas", icon: "coins", title: "Monedas", sub: `Principal: ${main}` },
-      { href: "#/ajustes", icon: "settings", title: "Configuración", sub: "Tema, backup, instalar la app" },
+      { href: "#/ajustes", icon: "settings", title: "Configuración", sub: "Apariencia, tus datos, instalar la app" },
       { action: "show-onboarding", icon: "help", title: "Cómo funciona", sub: "Un repaso rápido en 4 pasos" },
       { action: "share-app", icon: "share", title: "Compartir Neko Finanzas", sub: "Pasale la app a alguien" },
     ];

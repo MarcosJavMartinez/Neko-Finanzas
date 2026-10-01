@@ -48,7 +48,7 @@ return (async () => {
         if (!labelled) noLabel.push(`${where}:${el.name || el.id || el.type}`);
       }
     };
-    for (const r of ["#/inicio", "#/transacciones", "#/metas", "#/mas", "#/facturas", "#/presupuestos", "#/reportes", "#/categorias", "#/monedas", "#/ajustes"]) {
+    for (const r of ["#/inicio", "#/transacciones", "#/metas", "#/mas", "#/facturas", "#/presupuestos", "#/reportes", "#/categorias", "#/monedas", "#/ajustes", "#/ajustes-calculo", "#/ajustes-apariencia", "#/ajustes-dispositivo", "#/ajustes-datos"]) {
       w.location.hash = r; await wait(300);
       scan(d, r);
     }

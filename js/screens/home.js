@@ -87,7 +87,7 @@ export default {
       ${negative
         ? html`<p class="hero-alert">${icon("alert", 15)} Lo que apartaste supera lo que tenés. Revisá metas o facturas.</p>`
         : isEmpty
-          ? html`<p class="hero-alert hero-alert-info">Para empezar, registrá un ingreso o cargá tu <a class="inline-link" href="#/ajustes">saldo inicial</a>.</p>`
+          ? html`<p class="hero-alert hero-alert-info">Para empezar, registrá un ingreso o cargá tu <a class="inline-link" href="#/ajustes-calculo">saldo inicial</a>.</p>`
           : html`<div class="avail">
               <div class="avail-bar">
                 ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}

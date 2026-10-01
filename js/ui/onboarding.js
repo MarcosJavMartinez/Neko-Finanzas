@@ -5,6 +5,7 @@ import { html } from "./dom.js";
 import { icon } from "./icons.js";
 import { openSheet } from "./sheet.js";
 import { toast } from "./toast.js";
+import { openSetupWizard } from "./forms/setupForm.js";
 import { markOnboardingSeen } from "../core/prefs.js";
 import * as store from "../core/store.js";
 
@@ -36,14 +37,14 @@ const STEPS = [
 
 export function openOnboarding() {
   const state = store.getState();
-  // Último paso: con los datos de ejemplo (primera vez) se ofrece empezar
-  // de cero; con la app vacía, ver un ejemplo; con datos propios, nada.
-  // Solo se ofrece reemplazar datos cuando no hay nada tuyo en juego.
+  // Último paso: la primera vez (con los datos de ejemplo de fondo) se
+  // pregunta si empezás con lo tuyo o mirás el ejemplo; con la app vacía, lo
+  // mismo pero al revés; con datos propios, nada que reemplazar.
   const extra = store.isPristineDemo(state)
-    ? { what: "fresh", label: "Empezar de cero", done: "Explorar ejemplo" }
+    ? { what: "close", label: "Ver el ejemplo", primary: "mine", done: "Empezar con lo mío", question: true }
     : store.isEmptyState(state)
-      ? { what: "demo", label: "Ver un ejemplo", done: "Empezar" }
-      : { done: "Listo" };
+      ? { what: "demo", label: "Ver un ejemplo", primary: "mine", done: "Empezar", question: true }
+      : { primary: "close", done: "Listo" };
   let index = 0;
 
   openSheet({
@@ -54,6 +55,7 @@ export function openOnboarding() {
           <div class="ob-art ${step.tone ? `ob-art-${step.tone}` : ""}">${step.art || icon(step.icon, 40)}</div>
           <h3 class="ob-title">${step.title}</h3>
           <p class="ob-text">${step.text}</p>
+          ${i === STEPS.length - 1 && extra.question ? html`<p class="ob-question">¿Empezás con lo tuyo o preferís mirar un ejemplo primero?</p>` : ""}
         </section>`
       )}
       <div class="ob-dots" aria-hidden="true">${STEPS.map((_, i) => html`<span class="ob-dot" data-ob-dot="${i}"></span>`)}</div>
@@ -77,21 +79,22 @@ export function openOnboarding() {
       panel.addEventListener("click", (event) => {
         const button = event.target.closest("[data-ob]");
         if (!button) return;
-        const what = button.dataset.ob;
+        let what = button.dataset.ob;
         if (what === "back") index = Math.max(0, index - 1);
         else if (what === "next" && index < STEPS.length - 1) index++;
         else {
-          if (what === "demo" || what === "fresh") {
+          if (what === "next") what = extra.primary;
+          if (what === "demo") {
             const backup = store.snapshot();
-            if (what === "demo") store.loadDemo();
-            else store.startFresh();
-            toast(what === "demo" ? "Datos de ejemplo cargados" : "¡Listo! Tu app está vacía y lista para usar", {
-              type: "info",
-              actionLabel: "Deshacer",
-              onAction: () => store.restore(backup),
-            });
+            store.loadDemo();
+            toast("Datos de ejemplo cargados", { type: "info", actionLabel: "Deshacer", onAction: () => store.restore(backup) });
           }
           close();
+          if (what === "mine") {
+            // Los datos de ejemplo se van y arranca el asistente de inicio.
+            if (store.isPristineDemo()) store.startFresh();
+            openSetupWizard();
+          }
           return;
         }
         show();

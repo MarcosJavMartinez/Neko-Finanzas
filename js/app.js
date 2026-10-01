@@ -19,7 +19,7 @@ import { openBillForm, openBillDetail, openPayBill } from "./ui/forms/billForms.
 import { openGoalForm, openGoalDetail } from "./ui/forms/goalForms.js";
 import { openBudgetForm } from "./ui/forms/budgetForm.js";
 import { openCategoryForm } from "./ui/forms/categoryForm.js";
-import { currentTheme, setThemePreference, watchSystemTheme, applySavedTheme } from "./ui/theme.js";
+import { watchSystemTheme, applySavedTheme } from "./ui/theme.js";
 import { showCustomImage } from "./ui/background.js";
 import { canPromptInstall, promptInstall, onInstallChange, openInstallHelp } from "./ui/install.js";
 import { downloadFile } from "./ui/download.js";
@@ -37,9 +37,9 @@ import budgets from "./screens/budgets.js";
 import reports from "./screens/reports.js";
 import categories from "./screens/categories.js";
 import currencies from "./screens/currencies.js";
-import settings from "./screens/settings.js";
+import settings, { settingsCalc, settingsLook, settingsDevice, settingsData } from "./screens/settings.js";
 
-const SCREENS = [home, transactions, goals, more, bills, budgets, reports, categories, currencies, settings];
+const SCREENS = [home, transactions, goals, more, bills, budgets, reports, categories, currencies, settings, settingsCalc, settingsLook, settingsDevice, settingsData];
 const ROUTES = Object.fromEntries(SCREENS.map((s) => [s.id, s]));
 const DEFAULT_ROUTE = "inicio";
 
@@ -120,10 +120,6 @@ const GLOBAL_ACTIONS = {
     toast("Te lo recordamos en una semana", { type: "info" });
     return true;
   },
-  "toggle-theme": () => {
-    setThemePreference(currentTheme() === "dark" ? "light" : "dark");
-    render();
-  },
   "install-app": async () => {
     if (await promptInstall()) toast("¡Listo! Neko Finanzas ya está en tu dispositivo");
   },
@@ -141,7 +137,6 @@ function routeId() {
 function renderHeader() {
   const screen = currentScreen;
   const isHome = screen.id === DEFAULT_ROUTE;
-  const dark = currentTheme() === "dark";
   const search = screen.search?.();
   setHTML(
     headerEl,
@@ -159,8 +154,7 @@ function renderHeader() {
       <div class="header-actions">
         ${canPromptInstall() ? html`<button type="button" class="header-btn" data-action="install-app" aria-label="Instalar app" title="Instalar app">${icon("download", 18)}</button>` : ""}
         ${screen.id !== "reportes" ? html`<a class="header-btn" href="#/reportes" aria-label="Reportes" title="Reportes">${icon("chart", 18)}</a>` : ""}
-        <button type="button" class="header-btn" data-action="toggle-theme" aria-label="${dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}" title="${dark ? "Modo claro" : "Modo oscuro"}">${icon(dark ? "sun" : "moon", 18)}</button>
-        ${screen.id !== "ajustes" ? html`<a class="header-btn" href="#/ajustes" aria-label="Configuración" title="Configuración">${icon("settings", 18)}</a>` : ""}
+        ${!screen.id.startsWith("ajustes") ? html`<a class="header-btn" href="#/ajustes" aria-label="Configuración" title="Configuración">${icon("settings", 18)}</a>` : ""}
       </div>
     </div>
     ${search

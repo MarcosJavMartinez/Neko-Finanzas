@@ -1,5 +1,6 @@
-// Configuración: cálculo del disponible, preferencias de este dispositivo
-// (tema, vibración, instalar), privacidad y manejo de datos.
+// Configuración: una pantalla principal con accesos a cuatro secciones
+// (cálculo, apariencia, este dispositivo y tus datos), cada una en su
+// propia pantalla para que no quede una lista interminable.
 
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
@@ -66,171 +67,8 @@ function installBlock() {
     : html`${iosWarning}<span class="field-hint">${INSTALL_MESSAGES[platform]}</span>`;
 }
 
-export default {
-  id: "ajustes",
-  tab: "mas",
-  title: "Configuración",
-  back: "#/mas",
-  render(state) {
-    const s = state.settings;
-    const palette = getPalette();
-    const bg = getBackground();
-    const bgColor = getBgColor();
-    return html`
-      <button type="button" class="btn btn-soft btn-sm settings-help reveal" data-action="show-onboarding">${icon("help", 16)} ¿Cómo funciona la app?</button>
-      <section class="card reveal">
-        <h2 class="section-title">Cómo se calcula tu disponible</h2>
-        <div class="formula">
-          <span class="formula-row"><span>Dinero total</span><span class="muted-text">saldo inicial + ingresos − gastos</span></span>
-          <span class="formula-row"><span>− A reservar</span><span class="muted-text">facturas pendientes</span></span>
-          <span class="formula-row"><span>− En metas</span><span class="muted-text">lo que apartaste</span></span>
-          <span class="formula-row formula-total"><span>= Disponible</span></span>
-        </div>
-
-        <div class="setting">
-          <span class="setting-label">Reservar facturas que vencen…</span>
-          ${segmented("horizon", [{ value: "30d", label: "Próximos 30 días" }, { value: "month", label: "Hasta fin de mes" }], s.reserveHorizon, { action: "set-horizon" })}
-        </div>
-
-        <label class="setting">
-          <span class="setting-label">Saldo inicial</span>
-          <span class="field-hint">Lo que ya tenías antes de empezar a usar la app.</span>
-          <span class="amount-input">
-            <select class="amount-currency" data-change="set-opening-currency" aria-label="Moneda del saldo inicial">${currencyOptions(s.openingCurrency)}</select>
-            <input type="text" inputmode="decimal" value="${amountToInput(s.openingBalance)}" data-change="set-opening" aria-label="Saldo inicial" />
-          </span>
-        </label>
-
-        <label class="setting">
-          <span class="setting-label">Ingreso de referencia <span class="optional">(opcional)</span></span>
-          <span class="field-hint">Se usa para los presupuestos en % mientras el mes no tenga ingresos cargados.</span>
-          <span class="amount-input">
-            <span class="amount-currency amount-currency-static">${s.mainCurrency}</span>
-            <input type="text" inputmode="decimal" value="${s.budgetReference ? amountToInput(s.budgetReference) : ""}" placeholder="0" data-change="set-reference" aria-label="Ingreso de referencia" />
-          </span>
-        </label>
-      </section>
-
-      <section class="card reveal">
-        <h2 class="section-title">Apariencia</h2>
-        <p class="section-sub">Como en Neko Lista: elegí tema, color y fondo. Los colores de ingresos, gastos, facturas y metas no cambian, así siempre significan lo mismo.</p>
-
-        <div class="setting">
-          <span class="setting-label">Tema</span>
-          ${segmented(
-            "theme",
-            [
-              { value: "auto", label: "Auto", icon: "auto" },
-              { value: "light", label: "Claro", icon: "sun" },
-              { value: "dark", label: "Oscuro", icon: "moon" },
-            ],
-            getThemePref(),
-            { action: "set-theme" }
-          )}
-          <span class="field-hint">Auto sigue el modo claro u oscuro de tu dispositivo.</span>
-        </div>
-
-        <div class="setting">
-          <span class="setting-label">Color principal</span>
-          <div class="palette-row" role="radiogroup" aria-label="Color principal">
-            ${PALETTES.map(
-              (p) => html`<label class="palette-swatch" style="--c:${p.color}" title="${p.label}">
-                <input type="radio" name="palette" value="${p.id}" ${palette === p.id ? "checked" : ""} data-change="set-palette" aria-label="${p.label}" />
-              </label>`
-            )}
-            <label class="palette-swatch palette-swatch-custom ${palette === "custom" ? "is-checked" : ""}" title="Elegí tu color" ${palette === "custom" ? html`style="--c:${getCustomColor()}"` : ""}>
-              <input type="color" value="${getCustomColor()}" data-input="preview-custom-color" data-change="set-custom-color" aria-label="Elegí tu propio color" />
-            </label>
-          </div>
-          <span class="field-hint">Cambia el color de la barra, los botones y lo seleccionado.</span>
-        </div>
-
-        <div class="setting">
-          <span class="setting-label">Fondo</span>
-          <div class="bg-options" role="radiogroup" aria-label="Fondo">
-            <label class="bg-option"><input type="radio" name="bg" value="pattern" ${bg === "pattern" ? "checked" : ""} data-change="set-background" /><span>${icon("grid", 16)} Patrón</span></label>
-            <label class="bg-option"><input type="radio" name="bg" value="none" ${bg === "none" && !bgColor ? "checked" : ""} data-change="set-background" /><span>${icon("close", 16)} Sin imagen</span></label>
-            <label class="bg-option"><input type="file" accept="image/*" data-change="set-bg-image" aria-label="Subir una imagen de fondo" /><span class="${bg === "custom" ? "is-checked" : ""}">${icon("upload", 16)} Tu imagen</span></label>
-          </div>
-          ${bg === "custom" ? html`<button type="button" class="btn btn-ghost btn-sm" data-action="remove-bg-image">${icon("trash", 16)} Quitar mi imagen</button>` : ""}
-          <div class="bg-color-row">
-            <label class="bg-color-pick">
-              <input type="color" value="${bgColor || (document.documentElement.dataset.theme === "dark" ? "#101d1a" : "#f5f3ee")}" data-change="set-bg-color" aria-label="Color de fondo" />
-              <span>Color de fondo${bgColor ? html`: <strong>${bgColor}</strong>` : ""}</span>
-            </label>
-            ${bgColor ? html`<button type="button" class="btn btn-ghost btn-sm" data-action="reset-bg-color">Restablecer</button>` : ""}
-          </div>
-          <span class="field-hint">Tu imagen queda solo en este dispositivo. Elegir un color de fondo saca la imagen, porque la taparía.</span>
-        </div>
-      </section>
-
-      <section class="card reveal">
-        <h2 class="section-title">En este dispositivo</h2>
-        <p class="section-sub">Se guardan en este celular o navegador, no en tus backups.</p>
-
-        ${canVibrate()
-          ? html`<div class="setting">
-              <label class="toggle-field">
-                <span><span class="toggle-label">Vibración</span><span class="field-hint">Una vibración cortita al guardar un movimiento o pagar una factura.</span></span>
-                <input type="checkbox" class="switch" ${vibrationEnabled() ? "checked" : ""} data-change="set-vibration" />
-              </label>
-            </div>`
-          : ""}
-
-        <div class="setting">
-          <label class="toggle-field">
-            <span><span class="toggle-label">Ocultar montos</span><span class="field-hint">Muestra $ ••••• en lugar de los números, para abrir la app en público. También con el ojito del inicio.</span></span>
-            <input type="checkbox" class="switch" ${isMasked() ? "checked" : ""} data-change="set-hide-amounts" />
-          </label>
-        </div>
-
-        <div class="setting">
-          <span class="setting-label">${icon("phone", 16)} Instalar la app</span>
-          ${installBlock()}
-        </div>
-      </section>
-
-      <section class="card card-privacy reveal">
-        <span class="privacy-icon">${icon("shield", 24)}</span>
-        <div>
-          <h2 class="section-title">Tus datos son tuyos</h2>
-          <p class="section-sub">Todo se guarda <strong>solo en este dispositivo</strong>, dentro del navegador (almacenamiento local). No hay cuentas, no hay publicidad y tu información financiera no se envía a ningún servidor.</p>
-          <p class="section-sub">Si borrás los datos del navegador o cambiás de teléfono, se pierden: exportá un backup de vez en cuando.</p>
-        </div>
-      </section>
-
-      <section class="card reveal">
-        <h2 class="section-title">Tus datos</h2>
-        <p class="backup-status">${icon("shield", 16)} ${lastBackupText()}</p>
-        <div class="setting">
-          <span class="setting-label">Recordarme hacer un backup</span>
-          ${segmented(
-            "backupEvery",
-            [
-              { value: "week", label: "Semanal" },
-              { value: "month", label: "Mensual" },
-              { value: "never", label: "Nunca" },
-            ],
-            getBackupEvery(),
-            { action: "set-backup-every" }
-          )}
-          <span class="field-hint">Te avisamos en el inicio cuando pase ese tiempo sin backup.</span>
-        </div>
-        <div class="settings-actions">
-          <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>Exportar backup</strong><span>Descarga un archivo .json con todo, para restaurar después</span></span></button>
-          <button type="button" class="settings-action" data-action="export-csv">${icon("table", 20)}<span><strong>Exportar a planilla</strong><span>Tus movimientos en .csv, para abrir en Excel o Google Sheets</span></span></button>
-          <button type="button" class="settings-action" data-action="open-snapshots">${icon("refresh", 20)}<span><strong>Copias automáticas</strong><span>Volver a como estaban tus datos un día anterior</span></span></button>
-          <label class="settings-action">${icon("upload", 20)}<span><strong>Importar backup</strong><span>Reemplaza los datos actuales</span></span>
-            <input type="file" accept="application/json,.json" data-change="import-data" hidden /></label>
-          <button type="button" class="settings-action" data-action="load-demo">${icon("sparkle", 20)}<span><strong>Cargar datos de ejemplo</strong><span>Para probar la app</span></span></button>
-          <button type="button" class="settings-action" data-action="start-fresh">${icon("refresh", 20)}<span><strong>Empezar de cero</strong><span>Borra movimientos, metas y facturas; conserva categorías y monedas</span></span></button>
-          <button type="button" class="settings-action is-danger" data-action="reset-all">${icon("trash", 20)}<span><strong>Borrar todo</strong><span>Deja la app como recién instalada</span></span></button>
-        </div>
-      </section>
-
-      <p class="app-version">Neko Finanzas v1.0 · by Neko Tools</p>
-    `;
-  },
+// Las cuatro secciones comparten los mismos handlers.
+const handlers = {
   actions: {
     async "remove-bg-image"() {
       await removeCustomImage();
@@ -360,5 +198,206 @@ export default {
       };
       reader.readAsText(file);
     },
+  }
+};
+
+const sub = (id, title, render) => ({ id, tab: "mas", title, back: "#/ajustes", render, ...handlers });
+
+export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (state) => {
+  const s = state.settings;
+  return html`
+      <section class="card reveal">
+        <h2 class="section-title">Cómo se calcula tu disponible</h2>
+        <div class="formula">
+          <span class="formula-row"><span>Dinero total</span><span class="muted-text">saldo inicial + ingresos − gastos</span></span>
+          <span class="formula-row"><span>− A reservar</span><span class="muted-text">facturas pendientes</span></span>
+          <span class="formula-row"><span>− En metas</span><span class="muted-text">lo que apartaste</span></span>
+          <span class="formula-row formula-total"><span>= Disponible</span></span>
+        </div>
+
+        <div class="setting">
+          <span class="setting-label">Reservar facturas que vencen…</span>
+          ${segmented("horizon", [{ value: "30d", label: "Próximos 30 días" }, { value: "month", label: "Hasta fin de mes" }], s.reserveHorizon, { action: "set-horizon" })}
+        </div>
+
+        <label class="setting">
+          <span class="setting-label">Saldo inicial</span>
+          <span class="field-hint">Lo que ya tenías antes de empezar a usar la app.</span>
+          <span class="amount-input">
+            <select class="amount-currency" data-change="set-opening-currency" aria-label="Moneda del saldo inicial">${currencyOptions(s.openingCurrency)}</select>
+            <input type="text" inputmode="decimal" value="${amountToInput(s.openingBalance)}" data-change="set-opening" aria-label="Saldo inicial" />
+          </span>
+        </label>
+
+        <label class="setting">
+          <span class="setting-label">Ingreso de referencia <span class="optional">(opcional)</span></span>
+          <span class="field-hint">Se usa para los presupuestos en % mientras el mes no tenga ingresos cargados.</span>
+          <span class="amount-input">
+            <span class="amount-currency amount-currency-static">${s.mainCurrency}</span>
+            <input type="text" inputmode="decimal" value="${s.budgetReference ? amountToInput(s.budgetReference) : ""}" placeholder="0" data-change="set-reference" aria-label="Ingreso de referencia" />
+          </span>
+        </label>
+      </section>
+  `;
+});
+
+export const settingsLook = sub("ajustes-apariencia", "Apariencia", () => {
+  const palette = getPalette();
+  const bg = getBackground();
+  const bgColor = getBgColor();
+  return html`
+      <section class="card reveal">
+        <h2 class="section-title">Apariencia</h2>
+        <p class="section-sub">Como en Neko Lista: elegí tema, color y fondo. Los colores de ingresos, gastos, facturas y metas no cambian, así siempre significan lo mismo.</p>
+
+        <div class="setting">
+          <span class="setting-label">Tema</span>
+          ${segmented(
+            "theme",
+            [
+              { value: "auto", label: "Auto", icon: "auto" },
+              { value: "light", label: "Claro", icon: "sun" },
+              { value: "dark", label: "Oscuro", icon: "moon" },
+            ],
+            getThemePref(),
+            { action: "set-theme" }
+          )}
+          <span class="field-hint">Auto sigue el modo claro u oscuro de tu dispositivo.</span>
+        </div>
+
+        <div class="setting">
+          <span class="setting-label">Color principal</span>
+          <div class="palette-row" role="radiogroup" aria-label="Color principal">
+            ${PALETTES.map(
+              (p) => html`<label class="palette-swatch" style="--c:${p.color}" title="${p.label}">
+                <input type="radio" name="palette" value="${p.id}" ${palette === p.id ? "checked" : ""} data-change="set-palette" aria-label="${p.label}" />
+              </label>`
+            )}
+            <label class="palette-swatch palette-swatch-custom ${palette === "custom" ? "is-checked" : ""}" title="Elegí tu color" ${palette === "custom" ? html`style="--c:${getCustomColor()}"` : ""}>
+              <input type="color" value="${getCustomColor()}" data-input="preview-custom-color" data-change="set-custom-color" aria-label="Elegí tu propio color" />
+            </label>
+          </div>
+          <span class="field-hint">Cambia el color de la barra, los botones y lo seleccionado.</span>
+        </div>
+
+        <div class="setting">
+          <span class="setting-label">Fondo</span>
+          <div class="bg-options" role="radiogroup" aria-label="Fondo">
+            <label class="bg-option"><input type="radio" name="bg" value="pattern" ${bg === "pattern" ? "checked" : ""} data-change="set-background" /><span>${icon("grid", 16)} Patrón</span></label>
+            <label class="bg-option"><input type="radio" name="bg" value="none" ${bg === "none" && !bgColor ? "checked" : ""} data-change="set-background" /><span>${icon("close", 16)} Sin imagen</span></label>
+            <label class="bg-option"><input type="file" accept="image/*" data-change="set-bg-image" aria-label="Subir una imagen de fondo" /><span class="${bg === "custom" ? "is-checked" : ""}">${icon("upload", 16)} Tu imagen</span></label>
+          </div>
+          ${bg === "custom" ? html`<button type="button" class="btn btn-ghost btn-sm" data-action="remove-bg-image">${icon("trash", 16)} Quitar mi imagen</button>` : ""}
+          <div class="bg-color-row">
+            <label class="bg-color-pick">
+              <input type="color" value="${bgColor || (document.documentElement.dataset.theme === "dark" ? "#101d1a" : "#f5f3ee")}" data-change="set-bg-color" aria-label="Color de fondo" />
+              <span>Color de fondo${bgColor ? html`: <strong>${bgColor}</strong>` : ""}</span>
+            </label>
+            ${bgColor ? html`<button type="button" class="btn btn-ghost btn-sm" data-action="reset-bg-color">Restablecer</button>` : ""}
+          </div>
+          <span class="field-hint">Tu imagen queda solo en este dispositivo. Elegir un color de fondo saca la imagen, porque la taparía.</span>
+        </div>
+      </section>
+  `;
+});
+
+export const settingsDevice = sub("ajustes-dispositivo", "En este dispositivo", () => html`
+      <section class="card reveal">
+        <h2 class="section-title">En este dispositivo</h2>
+        <p class="section-sub">Se guardan en este celular o navegador, no en tus backups.</p>
+
+        ${canVibrate()
+          ? html`<div class="setting">
+              <label class="toggle-field">
+                <span><span class="toggle-label">Vibración</span><span class="field-hint">Una vibración cortita al guardar un movimiento o pagar una factura.</span></span>
+                <input type="checkbox" class="switch" ${vibrationEnabled() ? "checked" : ""} data-change="set-vibration" />
+              </label>
+            </div>`
+          : ""}
+
+        <div class="setting">
+          <label class="toggle-field">
+            <span><span class="toggle-label">Ocultar montos</span><span class="field-hint">Muestra $ ••••• en lugar de los números, para abrir la app en público. También con el ojito del inicio.</span></span>
+            <input type="checkbox" class="switch" ${isMasked() ? "checked" : ""} data-change="set-hide-amounts" />
+          </label>
+        </div>
+
+        <div class="setting">
+          <span class="setting-label">${icon("phone", 16)} Instalar la app</span>
+          ${installBlock()}
+        </div>
+      </section>
+`);
+
+export const settingsData = sub("ajustes-datos", "Tus datos", () => html`
+      <section class="card reveal">
+        <h2 class="section-title">Tus datos</h2>
+        <p class="backup-status">${icon("shield", 16)} ${lastBackupText()}</p>
+        <div class="setting">
+          <span class="setting-label">Recordarme hacer un backup</span>
+          ${segmented(
+            "backupEvery",
+            [
+              { value: "week", label: "Semanal" },
+              { value: "month", label: "Mensual" },
+              { value: "never", label: "Nunca" },
+            ],
+            getBackupEvery(),
+            { action: "set-backup-every" }
+          )}
+          <span class="field-hint">Te avisamos en el inicio cuando pase ese tiempo sin backup.</span>
+        </div>
+        <div class="settings-actions">
+          <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>Exportar backup</strong><span>Descarga un archivo .json con todo, para restaurar después</span></span></button>
+          <button type="button" class="settings-action" data-action="export-csv">${icon("table", 20)}<span><strong>Exportar a planilla</strong><span>Tus movimientos en .csv, para abrir en Excel o Google Sheets</span></span></button>
+          <button type="button" class="settings-action" data-action="open-snapshots">${icon("refresh", 20)}<span><strong>Copias automáticas</strong><span>Volver a como estaban tus datos un día anterior</span></span></button>
+          <label class="settings-action">${icon("upload", 20)}<span><strong>Importar backup</strong><span>Reemplaza los datos actuales</span></span>
+            <input type="file" accept="application/json,.json" data-change="import-data" hidden /></label>
+          <button type="button" class="settings-action" data-action="load-demo">${icon("sparkle", 20)}<span><strong>Cargar datos de ejemplo</strong><span>Para probar la app</span></span></button>
+          <button type="button" class="settings-action" data-action="start-fresh">${icon("refresh", 20)}<span><strong>Empezar de cero</strong><span>Borra movimientos, metas y facturas; conserva categorías y monedas</span></span></button>
+          <button type="button" class="settings-action is-danger" data-action="reset-all">${icon("trash", 20)}<span><strong>Borrar todo</strong><span>Deja la app como recién instalada</span></span></button>
+        </div>
+      </section>
+`);
+
+const SECTIONS = [
+  { href: "#/ajustes-calculo", icon: "wallet", title: "Cálculo del disponible", sub: () => "Saldo inicial y reserva de facturas" },
+  { href: "#/ajustes-apariencia", icon: "sparkle", title: "Apariencia", sub: () => "Tema, color principal y fondo" },
+  { href: "#/ajustes-dispositivo", icon: "phone", title: "En este dispositivo", sub: () => "Vibración, ocultar montos, instalar" },
+  { href: "#/ajustes-datos", icon: "shield", title: "Tus datos", sub: () => lastBackupText() },
+];
+
+export default {
+  id: "ajustes",
+  tab: "mas",
+  title: "Configuración",
+  back: "#/mas",
+  render() {
+    return html`
+      <nav class="more-grid" aria-label="Secciones de configuración">
+        ${SECTIONS.map(
+          (i) => html`<a class="more-item reveal" href="${i.href}">
+            <span class="more-icon">${icon(i.icon, 22)}</span>
+            <span class="more-text"><span class="more-title">${i.title}</span><span class="more-sub">${i.sub()}</span></span>
+            ${icon("chevronRight", 18, "more-chevron")}
+          </a>`
+        )}
+        <button type="button" class="more-item reveal" data-action="show-onboarding">
+          <span class="more-icon">${icon("help", 22)}</span>
+          <span class="more-text"><span class="more-title">Cómo funciona la app</span><span class="more-sub">Un repaso rápido en 4 pasos</span></span>
+          ${icon("chevronRight", 18, "more-chevron")}
+        </button>
+      </nav>
+      <section class="card card-privacy reveal">
+        <span class="privacy-icon">${icon("shield", 24)}</span>
+        <div>
+          <h2 class="section-title">Tus datos son tuyos</h2>
+          <p class="section-sub">Todo se guarda <strong>solo en este dispositivo</strong>, dentro del navegador. No hay cuentas, no hay publicidad y tu información financiera no se envía a ningún servidor.</p>
+          <p class="section-sub">La app guarda copias automáticas, pero si borrás los datos del navegador o cambiás de teléfono se pierden: exportá un backup de vez en cuando.</p>
+        </div>
+      </section>
+      <p class="app-version">Neko Finanzas v1.1 · by Neko Tools</p>
+    `;
   },
+  ...handlers,
 };

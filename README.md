@@ -15,7 +15,9 @@ La segunda herramienta de [Neko Tools](https://nekotools.site), después de [Nek
 - **Reportes**: resumen del mes, gastos por categoría, ingresos contra gastos y evolución del dinero.
 - **Deshacer** en todas las acciones que borran o mueven plata.
 - **PWA** instalable que funciona sin conexión.
-- Datos de ejemplo para explorar y un botón para empezar de cero.
+- **Primera vez**: un tutorial corto que termina preguntando si empezás con lo tuyo (con un asistente: moneda, cuánto tenés hoy y tu sueldo) o mirás un ejemplo.
+- **Vencimientos en tu calendario**: exporta las facturas a un `.ics` (Google Calendar, iPhone, Outlook) con aviso el día antes.
+- **Copias automáticas** que se pueden restaurar, backup en JSON y exportación a CSV.
 
 ## 🧮 Cómo se calcula el disponible
 
@@ -52,11 +54,14 @@ Para correrla localmente: `node tests/serve.mjs` (o cualquier servidor estático
 ```
 node tests/run.mjs          # todo (lógica + navegador, unos minutos; necesita Chrome)
 node tests/run.mjs --fast   # solo la lógica, en segundos
+node tests/run.mjs --only=x # lógica + las pruebas de navegador que digan "x", con todo el detalle
 ```
 
 - **Lógica**: unitarias, propiedades (miles de estados al azar) y operaciones al azar sobre el store.
 - **Navegador** (Chrome headless): backup y CSV, tutorial, ocultar montos, apariencia, seguridad de los datos de ejemplo, accesibilidad, 10.000 movimientos y tres rondas de toques al azar.
-- **Tiempo real**: la app sin conexión con el service worker y la imagen de fondo en IndexedDB.
+- **Tiempo real**: todo corre en Chrome de verdad (IndexedDB no funciona con tiempo virtual), incluida la app sin conexión.
+
+Capturas para revisar el diseño: `node tests/shot.mjs facturas captura.png` (la ruta va sin `#/`).
 
 Si Chrome no está en la ruta de siempre: `CHROME=/ruta/a/chrome node tests/run.mjs`.
 

@@ -1,0 +1,80 @@
+// Calendario (.ics), Configuración en subpantallas, asistente de inicio,
+// "Ingresar dinero" en verde y modo oscuro teñido por la paleta.
+const w = f.contentWindow, d = w.document, log = (m) => w.console.log("CHECK " + m);
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const errs = []; w.addEventListener("error", (e) => errs.push(e.message)); w.addEventListener("unhandledrejection", (e) => errs.push("promesa " + (e.reason?.message || e.reason)));
+const sheet = () => [...d.querySelectorAll(".sheet-root:not(.is-closing)")].pop();
+const tok = (n) => w.getComputedStyle(d.documentElement).getPropertyValue(n).trim();
+return (async () => {
+  try {
+    const store = await w.eval('import("/js/core/store.js")');
+    const { billsToICS } = await w.eval('import("/js/core/ics.js")');
+
+    // 1) Calendario
+    store.loadDemo(); await wait(100);
+    store.addBill({ name: "Alquiler, depto; 2B", icon: "🏠", amount: 350000, currency: "ARS", dueDate: "2026-10-31", dueDay: 31, frequency: "monthly", recurring: true, categoryId: "exp-hogar" });
+    const { ics, count } = billsToICS(store.getState());
+    const lines = ics.split("\r\n");
+    const long = lines.filter((l) => new TextEncoder().encode(l).length > 75);
+    const events = (ics.match(/BEGIN:VEVENT/g) || []).length;
+    log(`ics: ${count} facturas · eventos=${events} · reglas=${(ics.match(/RRULE:/g) || []).length} · avisos=${(ics.match(/BEGIN:VALARM/g) || []).length} · líneas largas=${long.length}${long.length ? " ✗" : ""}`);
+    const unfolded = ics.replace(/\r\n /g, "");
+    log("escapado: " + (unfolded.includes("Vence Alquiler\\, depto\\; 2B") ? "ok" : "MAL ✗") + " · día 31: " + (unfolded.match(/RRULE:FREQ=MONTHLY;BYMONTHDAY=28,29,30,31;BYSETPOS=-1/) ? "último día del mes" : "MAL ✗"));
+    w.location.hash = "#/facturas"; await wait(400);
+    d.querySelector("[data-action=export-ics]").click(); await wait(300);
+    log("botón exportar: " + ([...d.querySelectorAll(".toast")].pop()?.textContent.trim() || "sin aviso ✗"));
+
+    // 2) Configuración en subpantallas
+    w.location.hash = "#/ajustes"; await wait(400);
+    const links = [...d.querySelectorAll("#view .more-item")].map((a) => a.querySelector(".more-title").textContent);
+    log("configuración: " + links.join(" · "));
+    for (const r of ["calculo", "apariencia", "dispositivo", "datos"]) {
+      w.location.hash = "#/ajustes-" + r; await wait(300);
+      const back = d.querySelector(".header-back")?.getAttribute("href");
+      log(`  ${r}: "${d.querySelector(".header-title").textContent}" · ${d.querySelectorAll("#view .setting, #view .settings-action").length} controles · volver=${back}${back === "#/ajustes" ? "" : " ✗"}`);
+    }
+    log("encabezado sin sol/luna: " + (d.querySelector("#app-header [data-action=toggle-theme]") ? "SIGUE ✗" : "sí"));
+
+    // 3) "Ingresar dinero" en verde de ingresos
+    w.location.hash = "#/inicio"; await wait(300);
+    const qa = d.querySelector(".qa-income .qa-icon");
+    const green = w.getComputedStyle(qa).color;
+    const probe = d.createElement("span"); probe.style.color = "var(--income)"; d.body.append(probe);
+    log("Ingresar dinero: " + (green === w.getComputedStyle(probe).color ? "verde de ingresos" : `otro color ✗ (${green})`));
+    probe.remove();
+
+    // 4) Modo oscuro teñido por la paleta
+    w.localStorage.setItem("nekoFinanzas.theme", "dark");
+    w.localStorage.setItem("nekoFinanzas.palette", "oceano");
+    w.NekoAppearance.apply();
+    const oceanSurface = tok("--surface");
+    w.localStorage.removeItem("nekoFinanzas.palette"); w.NekoAppearance.apply();
+    const cianSurface = tok("--surface");
+    log(`superficie oscura: océano=${oceanSurface} · cian=${cianSurface}${oceanSurface !== cianSurface && cianSurface === "#172622" ? "" : " ✗"}`);
+    w.localStorage.setItem("nekoFinanzas.theme", "light"); w.NekoAppearance.apply();
+
+    // 5) Primera vez: "Empezar con lo mío" → asistente
+    store.loadDemo(); await wait(100);
+    const ob = await w.eval('import("/js/ui/onboarding.js")');
+    ob.openOnboarding(); await wait(400);
+    let s = sheet();
+    for (let i = 0; i < 3; i++) { s.querySelector("[data-ob=next]").click(); await wait(80); }
+    log("botones finales: " + [...s.querySelectorAll("[data-ob]")].filter((b) => !b.hidden).map((b) => b.textContent.trim()).join(" / "));
+    s.querySelector("[data-ob=next]").click(); await wait(700);
+    s = sheet();
+    log(`asistente: ${s?.querySelector(".sheet-title")?.textContent || "NO ✗"} · datos de ejemplo borrados=${store.getState().transactions.length === 0 && !store.getState().settings.isDemo}`);
+    const form = s.querySelector("form");
+    form.querySelector("input[name=currency][value=USD]").click();
+    form.elements.opening.value = "1.500,50";
+    form.elements.salary.value = "abc";
+    form.requestSubmit(); await wait(200);
+    log("sueldo inválido: " + (form.querySelector('[data-error-for="salary"]').textContent || "sin error ✗"));
+    form.elements.salary.value = "900";
+    form.requestSubmit(); await wait(500);
+    const st = store.getState().settings;
+    log(`guardado: moneda=${st.mainCurrency} saldo=${st.openingBalance} (${st.openingCurrency}) referencia=${st.budgetReference} · hoja cerrada=${!sheet()}`);
+    log("errores: " + (errs.join(" | ") || "ninguno"));
+  } catch (e) {
+    log("ERROR " + e.stack);
+  }
+})();

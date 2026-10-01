@@ -8,18 +8,18 @@ return (async () => {
     const store = await w.eval('import("/js/core/store.js")');
     const prefs = await w.eval('import("/js/core/prefs.js")');
     const ob = await w.eval('import("/js/ui/onboarding.js")');
-    // 1) Demo intacto → ofrece empezar de cero; con deshacer
+    // 1) Demo intacto → "Empezar con lo mío" saca el ejemplo y abre el asistente
     store.loadDemo(); await wait(100);
     log("demo intacto: pristine=" + store.isPristineDemo() + " edited=" + store.getState().settings.demoEdited);
     ob.openOnboarding(); await wait(300);
     for (let i = 0; i < 3; i++) sheet().querySelector("[data-ob=next]").click();
     log("tutorial demo intacto: " + obButtons().join(","));
     const n0 = store.getState().transactions.length;
-    sheet().querySelector("[data-ob=fresh]").click(); await wait(400);
-    const undo = [...d.querySelectorAll(".toast-action")].pop();
-    log(`empezar de cero: movimientos ${n0} → ${store.getState().transactions.length} · botón deshacer=${!!undo}`);
-    undo?.click(); await wait(300);
-    log("tras deshacer: movimientos=" + store.getState().transactions.length);
+    sheet().querySelector("[data-ob=next]").click(); await wait(700);
+    log(`empezar con lo mío: movimientos ${n0} → ${store.getState().transactions.length} · asistente=${sheet()?.querySelector(".sheet-title")?.textContent || "NO ✗"}`);
+    sheet()?.querySelector("[data-sheet-close]")?.click(); await wait(400);
+    store.loadDemo(); await wait(100);
+    log("ejemplo cargado de nuevo: movimientos=" + store.getState().transactions.length);
 
     // 2) Demo con datos propios → ya no es "intacto"
     store.addTransaction({ type: "expense", amount: 500, currency: "ARS", date: "2026-09-30", categoryId: "exp-otros", description: "mío" });
@@ -50,10 +50,11 @@ return (async () => {
     sheet().querySelector("[data-ob=next]").click(); await wait(400);
 
     // 4) Foco tras cambiar tema con teclado
-    w.location.hash = "#/ajustes"; await wait(400);
+    w.location.hash = "#/ajustes-apariencia"; await wait(400);
     const dark = d.querySelector("input[name=theme][value=dark]");
     dark.focus(); dark.click(); await wait(200);
     log("foco tras cambiar tema: " + (d.activeElement.name + "=" + d.activeElement.value));
+    w.location.hash = "#/ajustes-dispositivo"; await wait(400);
     const hide = d.querySelector("[data-change=set-hide-amounts]");
     hide.focus(); hide.click(); await wait(200);
     log("foco tras ocultar montos: " + (d.activeElement.dataset.change || d.activeElement.tagName));

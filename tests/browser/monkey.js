@@ -16,7 +16,7 @@ w.console.error = (...a) => { addErr("console.error: " + a.map(String).join(" ")
 const SKIP_ACTIONS = new Set(["export-data", "install-app", "export-csv", "share-app", "share-summary"]);
 const TEXT_POOL = ["", " ", "0", "-5", "1.234,56", "abc", "<b>x</b>", "9999999999999", "12", "0,01", "1.350", "20.5", "😺", "a".repeat(200)];
 const DATE_POOL = ["", "2026-02-30", "2026-09-15", "2030-12-31", "1999-01-01", "2026-10-31"];
-const ROUTES = ["#/inicio", "#/transacciones", "#/metas", "#/mas", "#/facturas", "#/presupuestos", "#/reportes", "#/categorias", "#/monedas", "#/ajustes"];
+const ROUTES = ["#/inicio", "#/transacciones", "#/metas", "#/mas", "#/facturas", "#/presupuestos", "#/reportes", "#/categorias", "#/monedas", "#/ajustes", "#/ajustes-calculo", "#/ajustes-apariencia", "#/ajustes-dispositivo", "#/ajustes-datos"];
 const badText = new Map();
 
 function visible(el) {

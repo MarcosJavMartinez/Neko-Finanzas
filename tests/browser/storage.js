@@ -39,7 +39,7 @@ return (async () => {
     log(`restaurada: movimientos=${store.getState().transactions.length}${store.getState().transactions.length === 2 ? "" : " ✗"} · copias=${(await store.listSnapshots()).length}`);
 
     // 5) La hoja de copias en Configuración
-    w.location.hash = "#/ajustes"; await wait(400);
+    w.location.hash = "#/ajustes-datos"; await wait(400);
     d.querySelector("[data-action=open-snapshots]").click(); await wait(800);
     const rows = d.querySelectorAll(".sheet .snapshot-row");
     log("hoja de copias: " + rows.length + " filas · primera: " + (rows[0]?.innerText.replace(/\s+/g, " ").trim() || "—"));

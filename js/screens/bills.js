@@ -9,6 +9,9 @@ import { formatMoney } from "../core/money.js";
 import { currentMonthKey, formatDate, formatMonth, monthRange, parseISO, shiftMonthKey, todayISO } from "../core/dates.js";
 import { billCalendar, billReserve, billStatus, toMain } from "../core/finance.js";
 import { getState } from "../core/store.js";
+import { billsToICS } from "../core/ics.js";
+import { downloadFile } from "../ui/download.js";
+import { toast } from "../ui/toast.js";
 
 const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 // Prioridad del color de un día con varias facturas: lo más urgente manda.
@@ -133,6 +136,14 @@ export default {
       ${group("Pendientes", pending)}
       ${group("Pagadas este período", paid)}
       <p class="fine-print center">${icon("repeat", 14)} Tus servicios recurrentes suman ≈ ${formatMoney(monthlyTotal, main)} por mes.</p>
+      <section class="card ics-card reveal">
+        <span class="mini-icon">${icon("calendar", 20)}</span>
+        <div class="row-main">
+          <span class="row-title">Llevá los vencimientos a tu calendario</span>
+          <span class="row-meta">Google Calendar, iPhone u Outlook te avisan el día antes, sin que abras la app.</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-soft" data-action="export-ics">${icon("download", 16)} Exportar</button>
+      </section>
     `;
   },
   actions: {
@@ -146,6 +157,15 @@ export default {
     },
     "bills-day"(el) {
       openDay(el.dataset.date);
+    },
+    "export-ics"() {
+      const { ics, count } = billsToICS(getState());
+      if (!count) {
+        toast("No hay vencimientos pendientes para exportar", { type: "info" });
+        return;
+      }
+      downloadFile(ics, "neko-finanzas-vencimientos.ics", "text/calendar;charset=utf-8");
+      toast(`Calendario descargado: ${count} factura${count === 1 ? "" : "s"}. Abrilo para sumarlas a tu calendario.`, { duration: 6000 });
     },
   },
 };

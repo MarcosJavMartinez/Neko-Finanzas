@@ -400,13 +400,15 @@
   filter: brightness(1.05);
 }
 
+/* Ingresar dinero va en el verde de ingresos (no en el color de marca):
+   así no cambia con la paleta y siempre significa "entra plata". */
 .qa-income {
-  background: var(--brand-soft);
+  background: var(--income-soft);
 }
 
-.qa-income { color: var(--brand-ink); }
+.qa-income { color: var(--income-ink); }
 .qa-income .qa-icon {
-  color: var(--brand);
+  color: var(--income);
 }
 
 .qa-bill {
@@ -1741,4 +1743,45 @@ button.more-item {
 
 .ob-actions .btn:not([hidden]) {
   flex: 1;
+}
+
+/* Facturas: exportar vencimientos al calendario */
+.ics-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ics-card .mini-icon {
+  background: var(--bill-soft);
+  color: var(--bill-ink);
+}
+
+.ics-card .row-main {
+  flex: 1;
+  min-width: 180px;
+}
+
+.ics-card .mini-icon,
+.snapshot-row .mini-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.snapshot-row .mini-icon {
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+}
+
+.ob-question {
+  margin-top: 6px;
+  font-weight: 700;
+  color: var(--brand-ink);
+}
+
+.ics-card :is(.row-title, .row-meta),
+.snapshot-row .row-meta {
+  white-space: normal;
+  overflow: visible;
 }

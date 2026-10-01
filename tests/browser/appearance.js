@@ -46,7 +46,7 @@ return (async () => {
     await bg.setBackground("none");
     log("sin imagen: " + root.dataset.bg + " · before bg-image=" + w.getComputedStyle(d.body, "::before").backgroundImage);
     // UI de Configuración
-    w.location.hash = "#/ajustes"; await wait(400);
+    w.location.hash = "#/ajustes-apariencia"; await wait(400);
     log("swatches=" + d.querySelectorAll(".palette-swatch").length + " marcado=" + d.querySelector("input[name=palette]:checked")?.value + " fondos=" + d.querySelectorAll(".bg-option").length);
     d.querySelector("input[name=palette][value=uva]").click(); await wait(200);
     log("clic en uva: --brand=" + tok("--brand") + " guardado=" + w.localStorage.getItem("nekoFinanzas.palette") + " marcado=" + d.querySelector("input[name=palette]:checked")?.value);
