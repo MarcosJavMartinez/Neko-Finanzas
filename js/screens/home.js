@@ -146,7 +146,7 @@ export default {
     const accountsCard = activeAccounts.length > 1
       ? html`<section class="card reveal">
           ${sectionHeader("Tus cuentas", { href: "#/cuentas", linkText: "Ver todas" })}
-          <div class="rows rows-plain">${activeAccounts.slice(0, 4).map((e) => accountRow(state, e))}</div>
+          <div class="rows rows-plain">${activeAccounts.slice(0, 6).map((e) => accountRow(state, e))}</div>
           <button type="button" class="btn btn-soft btn-sm btn-block" data-action="add-transfer">${icon("swap", 16)} Mover plata entre cuentas</button>
         </section>`
       : "";
