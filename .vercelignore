@@ -2,3 +2,5 @@
 tests/
 tools/
 README.md
+.env*
+.vercel/
