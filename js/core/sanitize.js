@@ -143,6 +143,10 @@ export function sanitizeState(input) {
   const fallbackAccount = (accounts.find((a) => !a.archived) || accounts[0]).id;
   const accountFor = (accId) => (accIds.has(accId) ? accId : fallbackAccount);
 
+  // Préstamos (primera pasada: ids válidos, para validar sus movimientos)
+  const rawLoans = arr(data.loans).filter((l) => isObj(l) && id(l.id) && (l.direction === "lent" || l.direction === "borrowed") && positive(l.amount) && date(l.date));
+  const loanIds = new Set(rawLoans.map((l) => l.id));
+
   // Movimientos
   const txIds = new Set();
   const transactions = [];
@@ -164,6 +168,27 @@ export function sanitizeState(input) {
         toAccountId: t.toAccountId,
         toAmount,
         toCurrency: currency(t.toCurrency, main),
+        date: day,
+        time: time(t.time),
+        description: str(t.description, 80),
+        createdAt: str(t.createdAt, 40) || day,
+      });
+      continue;
+    }
+    // Plata de un préstamo (prestada, recibida o devuelta): ni ingreso ni gasto.
+    if (t.type === "loan") {
+      const amount = positive(t.amount);
+      const day = date(t.date);
+      if (!amount || !day || !loanIds.has(t.loanId) || !accIds.has(t.accountId) || (t.flow !== "in" && t.flow !== "out")) continue;
+      txIds.add(t.id);
+      transactions.push({
+        id: t.id,
+        type: "loan",
+        loanId: t.loanId,
+        flow: t.flow,
+        amount,
+        currency: currency(t.currency, main),
+        accountId: t.accountId,
         date: day,
         time: time(t.time),
         description: str(t.description, 80),
@@ -259,6 +284,35 @@ export function sanitizeState(input) {
     });
   }
 
+  // Préstamos: los pagos solo apuntan a movimientos que existen.
+  const seenLoans = new Set();
+  const loans = [];
+  for (const l of rawLoans) {
+    if (seenLoans.has(l.id)) continue;
+    seenLoans.add(l.id);
+    const loanTx = (txId) => (id(txId) && transactions.some((t) => t.id === txId && t.type === "loan" && t.loanId === l.id) ? txId : "");
+    const loan = {
+      id: l.id,
+      person: str(l.person, 40) || "Alguien",
+      direction: l.direction,
+      amount: positive(l.amount),
+      currency: currency(l.currency, main),
+      date: date(l.date),
+      dueDate: date(l.dueDate),
+      note: str(l.note, 120),
+      payments: arr(l.payments)
+        .filter((p) => isObj(p) && id(p.id) && isISODate(p.date) && positive(p.amount))
+        .map((p) => {
+          const payment = { id: p.id, date: p.date, amount: positive(p.amount) };
+          if (loanTx(p.txId)) payment.txId = p.txId;
+          return payment;
+        }),
+      createdAt: str(l.createdAt, 40) || date(l.date),
+    };
+    if (loanTx(l.txId)) loan.txId = l.txId;
+    loans.push(loan);
+  }
+
   // Presupuestos
   const budgets = [];
   const budgetIds = new Set();
@@ -297,5 +351,6 @@ export function sanitizeState(input) {
     bills,
     goals,
     budgets,
+    loans,
   };
 }

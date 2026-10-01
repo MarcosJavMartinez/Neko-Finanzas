@@ -5,10 +5,17 @@ import { icon } from "../ui/icons.js";
 import { appFooter } from "../ui/components.js";
 import { formatMoney } from "../core/money.js";
 import { toast } from "../ui/toast.js";
-import { billReserve, budgetsOverview } from "../core/finance.js";
+import { billReserve, budgetsOverview, loansSummary } from "../core/finance.js";
 import { currentMonthKey } from "../core/dates.js";
 
 const SHARE_URL = "https://nekotools.site/finanzas.html";
+
+function loanSub(state) {
+  const l = loansSummary(state);
+  const main = state.settings.mainCurrency;
+  if (!l.open) return "Lo que te deben y lo que debés";
+  return [l.lent > 0 && `Te deben ${formatMoney(l.lent, main)}`, l.borrowed > 0 && `debés ${formatMoney(l.borrowed, main)}`].filter(Boolean).join(" · ");
+}
 
 export default {
   id: "mas",
@@ -23,6 +30,7 @@ export default {
     const items = [
       { href: "#/cuentas", icon: "wallet", title: "Cuentas", sub: activeAccounts > 1 ? `${activeAccounts} cuentas · efectivo, banco, billeteras` : "Efectivo, banco, billeteras virtuales" },
       { href: "#/presupuestos", icon: "pie", title: "Presupuestos", sub: state.budgets.length ? `${state.budgets.length} activos${alerts ? ` · ${alerts} para mirar` : ""}` : "Repartí tus ingresos" },
+      { href: "#/prestamos", icon: "swap", title: "Préstamos", sub: loanSub(state) },
       { href: "#/facturas", icon: "receipt", title: "Facturas y servicios", sub: state.bills.length ? `${formatMoney(reserve.amount, main)} a reservar` : "Luz, internet, suscripciones…" },
       { href: "#/reportes", icon: "chart", title: "Reportes", sub: "Tu mes de un vistazo" },
       { href: "#/categorias", icon: "tag", title: "Categorías", sub: `${state.categories.length} categorías` },

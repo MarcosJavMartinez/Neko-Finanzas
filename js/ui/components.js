@@ -99,6 +99,7 @@ export function appFooter() {
  */
 export function txRow(state, tx, { withDate = false, hideAccount = false } = {}) {
   if (tx.type === "transfer") return transferRow(state, tx, { withDate });
+  if (tx.type === "loan") return loanRow(state, tx, { withDate, hideAccount });
   const category = findCategory(state, tx.categoryId);
   const sub = findSubcategory(category, tx.subcategoryId);
   const isIncome = tx.type === "income";
@@ -151,6 +152,28 @@ function transferRow(state, tx, { withDate }) {
       <span class="tx-bottom">
         <span class="tx-meta">${meta}</span>
         ${fx}
+      </span>
+    </span>
+  </button>`;
+}
+
+/** Plata de un préstamo: entra o sale de la cuenta, pero no es ingreso ni gasto. */
+function loanRow(state, tx, { withDate, hideAccount }) {
+  const account = state.accounts.length > 1 && !hideAccount ? state.accounts.find((a) => a.id === tx.accountId) : null;
+  const when = withDate ? [shortDay(tx.date), tx.time].filter(Boolean).join(" ") : tx.time;
+  const meta = ["Préstamo", account && `${account.icon} ${account.name}`, when].filter(Boolean).join(" · ");
+  const isNew = tx.createdAt.includes("T") && Date.now() - Date.parse(tx.createdAt) < 2500;
+  return html`<button type="button" class="tx-row tx-loan ${isNew ? "is-new" : ""}" data-action="loan-detail" data-id="${tx.loanId}">
+    <span class="cat-bubble cat-bubble-md loan-bubble" aria-hidden="true">🤝</span>
+    <span class="tx-body">
+      <span class="tx-top">
+        <span class="tx-name">${tx.description || "Préstamo"}</span>
+        <span class="tx-leader" aria-hidden="true"></span>
+        <span class="tx-amount is-transfer">${formatMoney(tx.flow === "in" ? tx.amount : -tx.amount, tx.currency, { sign: true })}</span>
+      </span>
+      <span class="tx-bottom">
+        <span class="tx-meta">${meta}</span>
+        ${approx(state, tx.amount, tx.currency)}
       </span>
     </span>
   </button>`;

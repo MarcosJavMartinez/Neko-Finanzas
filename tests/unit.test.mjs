@@ -105,6 +105,32 @@ eq("transferencias inválidas descartadas", acc.transactions.map((t) => t.id), [
 eq("saldos por cuenta", F.accountBalances(acc, "2026-09-30").map((e) => Math.round(e.balance)), [5000, 3000, 2]);
 eq("total con transferencias", Math.round(F.totalBalance(acc, "2026-09-30")), 10000);
 eq("transferencias no son gastos", F.monthlyTotals(acc, "2026-02").expense, 0);
+
+// Préstamos: mueven plata de las cuentas pero no son ingreso ni gasto
+const lo = sanitizeState({
+  rates: { USD: 1000 },
+  categories: [],
+  settings: { reserveHorizon: "30d" },
+  accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }],
+  loans: [
+    { id: "L1", person: "Caro", direction: "lent", amount: 30000, currency: "ARS", date: "2026-09-01", txId: "m1", payments: [{ id: "p1", date: "2026-09-10", amount: 10000, txId: "m2" }, { id: "p2", date: "2026-09-11", amount: 5000, txId: "fantasma" }] },
+    { id: "L2", person: "Papá", direction: "borrowed", amount: 50000, currency: "ARS", date: "2026-09-02", dueDate: "2026-10-10", payments: [] },
+    { id: "L3", person: "Mal", direction: "otra", amount: 5, date: "2026-09-02" },
+  ],
+  transactions: [
+    { id: "m1", type: "loan", loanId: "L1", flow: "out", amount: 30000, currency: "ARS", accountId: "a", date: "2026-09-01" },
+    { id: "m2", type: "loan", loanId: "L1", flow: "in", amount: 10000, currency: "ARS", accountId: "a", date: "2026-09-10" },
+    { id: "m3", type: "loan", loanId: "L3", flow: "in", amount: 5, currency: "ARS", accountId: "a", date: "2026-09-10" },
+  ],
+});
+eq("préstamos válidos", lo.loans.map((l) => l.id), ["L1", "L2"]);
+eq("pago con movimiento inexistente queda sin txId", lo.loans[0].payments.map((p) => p.txId || "-"), ["m2", "-"]);
+eq("movimiento de un préstamo inválido descartado", lo.transactions.map((t) => t.id), ["m1", "m2"]);
+eq("saldo de la cuenta con préstamos", Math.round(F.accountBalances(lo, "2026-09-30")[0].balance), 80000);
+eq("falta cobrar", F.loanOutstanding(lo.loans[0]), 15000);
+eq("te deben / debés", [F.loansSummary(lo).lent, F.loansSummary(lo).borrowed], [15000, 50000]);
+eq("deuda que vence en 30 días se reserva", Math.round(F.balanceSummary(lo, "2026-09-30").debts.amount), 50000);
+eq("préstamos no son gastos", F.monthlyTotals(lo, "2026-09").expense, 0);
 eq("color con CSS inyectado", evil.categories[0].color, "#8b958e");
 eq("ícono con HTML", evil.categories[1].icon, "🏷️");
 eq("categorías: sin duplicadas ni sin id, + respaldo de ingresos", evil.categories.map((c) => c.id), ["exp-otros", "dup", "inc-otros"]);

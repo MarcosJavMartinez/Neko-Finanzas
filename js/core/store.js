@@ -65,7 +65,7 @@ export function isPristineDemo(s = state) {
 
 /** Sin nada cargado: ni movimientos, ni facturas, ni metas, ni saldo inicial. */
 export function isEmptyState(s = state) {
-  return !s.transactions.length && !s.bills.length && !s.goals.length && !s.budgets.length && s.accounts.every((a) => !a.opening);
+  return !s.transactions.length && !s.bills.length && !s.goals.length && !s.budgets.length && !(s.loans || []).length && s.accounts.every((a) => !a.opening);
 }
 
 export function getState() {
@@ -286,6 +286,119 @@ export function deleteAccount(id) {
 export { DEFAULT_ACCOUNT_ID };
 
 // ---------------------------------------------------------------------------
+// Préstamos ("le presté a…", "me prestó…")
+// ---------------------------------------------------------------------------
+
+const loanFlow = (loan, isPayment) => ((loan.direction === "lent") === isPayment ? "in" : "out");
+const loanText = (loan, isPayment) =>
+  loan.direction === "lent" ? (isPayment ? `${loan.person} te devolvió` : `Préstamo a ${loan.person}`) : isPayment ? `Le devolviste a ${loan.person}` : `Préstamo de ${loan.person}`;
+
+function loanMovement(s, loan, { amount, accountId, date, isPayment }) {
+  return withValidAccount(s, {
+    id: uid("tx"),
+    type: "loan",
+    loanId: loan.id,
+    flow: loanFlow(loan, isPayment),
+    amount,
+    currency: loan.currency,
+    accountId,
+    date,
+    time: "",
+    description: loanText(loan, isPayment),
+    createdAt: new Date().toISOString(),
+  });
+}
+
+function loanValues(data) {
+  if (!(data.amount > 0)) throw new Error("Ingresá un monto mayor a cero");
+  return {
+    person: (data.person || "").trim().slice(0, 40) || "Alguien",
+    amount: Math.round(data.amount * 100) / 100,
+    currency: data.currency,
+    date: data.date || todayISO(),
+    dueDate: data.dueDate || "",
+    note: (data.note || "").trim().slice(0, 120),
+  };
+}
+
+/**
+ * Nuevo préstamo. Si se indica una cuenta, la plata sale de ella (le
+ * prestaste) o entra (te prestaron); si no, solo queda anotado.
+ */
+export function addLoan(data) {
+  return commit((s) => {
+    const loan = { id: uid("loan"), direction: data.direction === "borrowed" ? "borrowed" : "lent", ...loanValues(data), payments: [], createdAt: new Date().toISOString() };
+    if (data.accountId) {
+      const tx = loanMovement(s, loan, { amount: loan.amount, accountId: data.accountId, date: loan.date, isPayment: false });
+      s.transactions.push(tx);
+      loan.txId = tx.id;
+    }
+    (s.loans ||= []).push(loan);
+    return loan;
+  });
+}
+
+/** Editar: también ajusta (o crea, o quita) el movimiento de la cuenta. */
+export function updateLoan(id, data) {
+  commit((s) => {
+    const loan = find(s.loans, id);
+    if (!loan) return;
+    Object.assign(loan, loanValues(data));
+    const tx = loan.txId && find(s.transactions, loan.txId);
+    if (data.accountId) {
+      const values = loanMovement(s, loan, { amount: loan.amount, accountId: data.accountId, date: loan.date, isPayment: false });
+      if (tx) Object.assign(tx, { ...values, id: tx.id, createdAt: tx.createdAt });
+      else {
+        s.transactions.push(values);
+        loan.txId = values.id;
+      }
+    } else if (tx) {
+      s.transactions = without(s.transactions, tx.id);
+      delete loan.txId;
+    }
+    // Los pagos pasan a la moneda nueva del préstamo.
+    for (const p of loan.payments) {
+      const ptx = p.txId && find(s.transactions, p.txId);
+      if (ptx) Object.assign(ptx, { currency: loan.currency, description: loanText(loan, true) });
+    }
+  });
+}
+
+/** Borra el préstamo y la plata que movió (con "deshacer" desde la UI). */
+export function deleteLoan(id) {
+  commit((s) => {
+    s.loans = without(s.loans, id);
+    s.transactions = s.transactions.filter((t) => !(t.type === "loan" && t.loanId === id));
+  });
+}
+
+/** Registrar una devolución (parcial o total). */
+export function addLoanPayment(loanId, { amount, date = todayISO(), accountId } = {}) {
+  return commit((s) => {
+    const loan = find(s.loans, loanId);
+    if (!loan || !(amount > 0)) return null;
+    const payment = { id: uid("pay"), date, amount: Math.round(amount * 100) / 100 };
+    if (accountId) {
+      const tx = loanMovement(s, loan, { amount: payment.amount, accountId, date, isPayment: true });
+      s.transactions.push(tx);
+      payment.txId = tx.id;
+    }
+    loan.payments.push(payment);
+    return payment;
+  });
+}
+
+export function deleteLoanPayment(loanId, paymentId) {
+  commit((s) => {
+    const loan = find(s.loans, loanId);
+    const payment = loan?.payments.find((p) => p.id === paymentId);
+    if (!payment) return;
+    loan.payments = without(loan.payments, paymentId);
+    if (payment.txId) s.transactions = without(s.transactions, payment.txId);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Compras en cuotas (tarjeta de crédito)
 // ---------------------------------------------------------------------------
 
@@ -335,6 +448,12 @@ export function deleteTransaction(id) {
     s.transactions = without(s.transactions, id);
     // Si era el pago de una factura, la factura vuelve a quedar pendiente.
     if (tx.billId) revertBillPayment(s, tx.billId, id);
+    // Plata de un préstamo: el préstamo sigue, sin ese movimiento (y un pago se borra).
+    if (tx.type === "loan") {
+      const loan = find(s.loans, tx.loanId);
+      if (loan?.txId === id) delete loan.txId;
+      if (loan) loan.payments = loan.payments.filter((p) => p.txId !== id);
+    }
   });
 }
 

@@ -34,7 +34,7 @@ function applyFilter(state, txs) {
     list = list.filter((t) => {
       const category = findCategory(state, t.categoryId);
       const sub = findSubcategory(category, t.subcategoryId);
-      return normalize([t.description, category?.name, sub?.name, accountName(t.accountId), accountName(t.toAccountId), t.type === "transfer" ? "transferencia" : ""].join(" ")).includes(query);
+      return normalize([t.description, category?.name, sub?.name, accountName(t.accountId), accountName(t.toAccountId), t.type === "transfer" ? "transferencia" : t.type === "loan" ? "prestamo" : ""].join(" ")).includes(query);
     });
   }
   return list;
@@ -145,7 +145,7 @@ export default {
         ? html`<section class="card tx-card reveal">
             ${[...groups.entries()].map(([date, items]) => {
               // Las transferencias no suman ni restan: solo cambian de cuenta.
-              const net = items.reduce((s, t) => s + (t.type === "transfer" ? 0 : (t.type === "income" ? 1 : -1) * toMain(state, t.amount, t.currency)), 0);
+              const net = items.reduce((s, t) => s + (t.type === "transfer" || t.type === "loan" ? 0 : (t.type === "income" ? 1 : -1) * toMain(state, t.amount, t.currency)), 0);
               return html`<div class="day-group">
                 <h3 class="day-head"><span>${formatDayHeading(date)}</span><span class="day-net">${formatMoney(net, main, { sign: true })}</span></h3>
                 <div class="tx-list">${items.map((tx) => txRow(state, tx))}</div>

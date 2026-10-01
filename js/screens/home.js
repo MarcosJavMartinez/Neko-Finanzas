@@ -8,9 +8,11 @@ import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, t
 import { formatMoney, CURRENCIES, isMasked } from "../core/money.js";
 import { formatDate, currentMonthKey, todayISO } from "../core/dates.js";
 import { accountRow } from "./accounts.js";
+import { loanRow } from "./loans.js";
 import {
   accountBalances,
   balanceSummary,
+  loansSummary,
   monthlyTotals,
   pendingRecurringIncomes,
   upcomingBills,
@@ -21,6 +23,12 @@ import { backupReminderDue, daysSinceBackup, getLastBackup, iosNoticeSnoozed } f
 import { needsIosInstall } from "../ui/install.js";
 
 const RECENT_COUNT = 5;
+
+/** "facturas", "facturas y cuotas", "facturas, cuotas y deudas"… */
+function reserveLabel(summary) {
+  const parts = ["facturas", summary.scheduled.amount > 0 && "cuotas", summary.debts.amount > 0 && "deudas"].filter(Boolean);
+  return parts.length > 1 ? `${parts.slice(0, -1).join(", ")} y ${parts[parts.length - 1]}` : parts[0];
+}
 
 export default {
   id: "inicio",
@@ -95,7 +103,7 @@ export default {
                 ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}
                 <span class="avail-pct">${Math.round(availablePct)}%</span>
               </div>
-              <a href="#/facturas" class="avail-reserve" data-pulse="reserve" title="Facturas y cuotas que vencen en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${summary.scheduled.amount > 0 ? "facturas y cuotas" : "facturas"}</a>
+              <a href="#/facturas" class="avail-reserve" data-pulse="reserve" title="Lo que vence en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${reserveLabel(summary)}</a>
             </div>`}
       ${trio}
     </section>`;
@@ -135,6 +143,15 @@ export default {
           ${sectionHeader("Tus cuentas", { href: "#/cuentas", linkText: "Ver todas" })}
           <div class="rows rows-plain">${activeAccounts.slice(0, 4).map((e) => accountRow(state, e))}</div>
           <button type="button" class="btn btn-soft btn-sm btn-block" data-action="add-transfer">${icon("swap", 16)} Mover plata entre cuentas</button>
+        </section>`
+      : "";
+
+    // Préstamos abiertos: quién te debe y a quién le debés.
+    const openLoans = loansSummary(state).items.filter((i) => i.outstanding > 0);
+    const loansCard = openLoans.length
+      ? html`<section class="card reveal">
+          ${sectionHeader("Préstamos", { href: "#/prestamos", linkText: "Ver todos" })}
+          <div class="rows rows-plain">${openLoans.slice(0, 3).map((i) => loanRow(i, today))}</div>
         </section>`
       : "";
 
@@ -211,7 +228,7 @@ export default {
         : ""}
       <div class="home-grid">
         <div class="home-col">${hero}${savings}${actions}${pending}</div>
-        <div class="home-col">${accountsCard}${recents}${billsCard}${budgetsCard}${goalsCard}${ratesCard}</div>
+        <div class="home-col">${accountsCard}${recents}${billsCard}${loansCard}${budgetsCard}${goalsCard}${ratesCard}</div>
       </div>
       <p class="privacy-note">${icon("lock", 14)} Tus datos se guardan solo en este dispositivo.</p>
       ${appFooter()}

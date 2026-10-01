@@ -9,6 +9,7 @@ La segunda herramienta de [Neko Tools](https://nekotools.site), después de [Nek
 - **Saldo disponible real**: dinero total menos lo que hay que reservar para facturas y lo apartado en metas.
 - **Cuentas**: efectivo, banco, billeteras virtuales y ahorro, cada una con su saldo y su moneda. Mover plata entre cuentas (incluso comprar dólares) no es un gasto: el total no cambia.
 - **Tarjeta de crédito y cuotas**: lo que gastás con la tarjeta queda como deuda; las compras en cuotas se cargan una por mes (las próximas se reservan del disponible) y pagar la tarjeta es mover plata del banco a la tarjeta.
+- **Préstamos**: lo que te deben y lo que debés, con devoluciones en partes. Prestar o devolver no es gasto ni ingreso; lo que debés con fecha se reserva del disponible.
 - **Ingresos y gastos** con categorías propias (ícono y color), fecha, hora opcional y descripción. Los ingresos pueden repetirse (la app te recuerda registrarlos; nunca los suma sola).
 - **Facturas y servicios** recurrentes (semanal a anual): la app calcula cuánto reservar, y al pagarlas registra el gasto y pasa al próximo vencimiento.
 - **Presupuestos** mensuales por porcentaje de los ingresos o monto fijo, aplicados a categorías, a una meta o "al resto", con avisos suaves.

@@ -4,7 +4,7 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v19";
+const CACHE_VERSION = "neko-finanzas-v20";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -46,11 +46,13 @@ const APP_SHELL = [
   "js/ui/forms/categoryForm.js",
   "js/ui/forms/fields.js",
   "js/ui/forms/goalForms.js",
+  "js/ui/forms/loanForms.js",
   "js/ui/forms/setupForm.js",
   "js/ui/forms/transactionForm.js",
   "js/screens/bills.js",
   "js/screens/budgets.js",
   "js/screens/accounts.js",
+  "js/screens/loans.js",
   "js/screens/categories.js",
   "js/screens/currencies.js",
   "js/screens/goals.js",

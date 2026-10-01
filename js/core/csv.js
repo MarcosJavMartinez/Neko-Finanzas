@@ -33,6 +33,9 @@ export function transactionsToCSV(state) {
     .sort((a, b) => a.date.localeCompare(b.date) || (a.time || "").localeCompare(b.time || "") || a.createdAt.localeCompare(b.createdAt))
     .map((tx) => {
       const account = findAccount(state, tx.accountId);
+      if (tx.type === "loan") {
+        return [tx.date, tx.time || "", text("Préstamo"), text(account?.name || ""), "", "", text(tx.description || ""), number(tx.flow === "in" ? tx.amount : -tx.amount), tx.currency, ""].join(";");
+      }
       if (tx.type === "transfer") {
         const to = findAccount(state, tx.toAccountId);
         const fx = tx.currency !== tx.toCurrency ? ` (llegan ${formatMoney(tx.toAmount, tx.toCurrency, { reveal: true })})` : "";

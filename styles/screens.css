@@ -1884,3 +1884,74 @@ button.more-item {
 .installment-row .row-meta {
   white-space: normal;
 }
+
+/* ---------------------------------------------------------------------------
+   Préstamos
+--------------------------------------------------------------------------- */
+
+.loan-totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.loan-total {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.loan-total-lent {
+  background: var(--income-soft);
+  color: var(--income-ink);
+}
+
+.loan-total-borrowed {
+  background: var(--expense-soft);
+  color: var(--expense-ink);
+}
+
+.loan-total-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.loan-total-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.loan-bubble {
+  --c: var(--goal);
+}
+
+.loan-row .row-main .progress {
+  margin-top: 6px;
+}
+
+.loan-row.is-done {
+  opacity: 0.65;
+}
+
+.row-meta.is-overdue {
+  color: var(--expense-ink);
+  font-weight: 600;
+}
+
+.loan-detail .progress {
+  margin: 10px 0 4px;
+}
+
+.loan-payment .icon-btn {
+  flex-shrink: 0;
+}

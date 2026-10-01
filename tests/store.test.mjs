@@ -39,7 +39,7 @@ function invariants(tag) {
   clean.version = s.version;
   check(`[${tag}] estado válido (sanitize no cambia nada)`, JSON.stringify(canon(clean)) === JSON.stringify(canon(JSON.parse(JSON.stringify(s)))), firstDiff(JSON.parse(JSON.stringify(s)), clean));
   const catIds = new Set(s.categories.map((c) => c.id));
-  check(`[${tag}] sin categorías huérfanas`, s.transactions.every((t) => t.type === "transfer" || catIds.has(t.categoryId)) && s.bills.every((b) => catIds.has(b.categoryId)), tag);
+  check(`[${tag}] sin categorías huérfanas`, s.transactions.every((t) => t.type === "transfer" || t.type === "loan" || catIds.has(t.categoryId)) && s.bills.every((b) => catIds.has(b.categoryId)), tag);
   const txIds = new Set(s.transactions.map((t) => t.id));
   check(`[${tag}] pagos de facturas apuntan a gastos existentes`, s.bills.every((b) => b.payments.every((p) => txIds.has(p.txId))), tag);
   const billIds = new Set(s.bills.map((b) => b.id));
@@ -47,6 +47,9 @@ function invariants(tag) {
   const accIds = new Set(s.accounts.map((a) => a.id));
   check(`[${tag}] movimientos en cuentas que existen`, s.transactions.every((t) => accIds.has(t.accountId) && (t.type !== "transfer" || (accIds.has(t.toAccountId) && t.toAccountId !== t.accountId))), tag);
   check(`[${tag}] al menos una cuenta activa`, s.accounts.some((a) => !a.archived), tag);
+  const loanIds = new Set(s.loans.map((l) => l.id));
+  check(`[${tag}] movimientos de préstamos apuntan a préstamos`, s.transactions.every((t) => t.type !== "loan" || loanIds.has(t.loanId)), tag);
+  check(`[${tag}] pagos de préstamos apuntan a movimientos que existen`, s.loans.every((l) => (!l.txId || txIds.has(l.txId)) && l.payments.every((p) => !p.txId || txIds.has(p.txId))), tag);
   const goalIds = new Set(s.goals.map((g) => g.id));
   check(`[${tag}] presupuestos de metas apuntan a metas existentes`, s.budgets.every((b) => b.target.kind !== "goal" || goalIds.has(b.target.goalId)), tag);
   const sum = F.balanceSummary(s);
@@ -75,6 +78,25 @@ const ops = {
         /* con movimientos o la última: no se puede, y está bien */
       }
     }
+  },
+  loan() {
+    const accs = store.getState().accounts;
+    try {
+      store.addLoan({ person: "P" + int(1, 9), direction: pick(["lent", "borrowed"]), amount: int(1, 100000), currency: pick(["ARS", "USD"]), date: D.addDays(D.todayISO(), int(-60, 0)), dueDate: pick(["", D.addDays(D.todayISO(), int(1, 90))]), accountId: pick(["", ...accs.map((a) => a.id)]) });
+    } catch {
+      /* monto inválido */
+    }
+  },
+  loanPayOrDelete() {
+    const l = pick(store.getState().loans);
+    if (!l) return;
+    const r = rnd();
+    if (r < 0.5) store.addLoanPayment(l.id, { amount: int(1, 50000), accountId: pick(["", store.defaultAccountId()]) });
+    else if (r < 0.7 && l.payments.length) store.deleteLoanPayment(l.id, pick(l.payments).id);
+    else if (r < 0.85) {
+      const t = store.getState().transactions.find((x) => x.type === "loan" && x.loanId === l.id);
+      if (t) store.deleteTransaction(t.id);
+    } else store.deleteLoan(l.id);
   },
   transfer() {
     const accs = store.getState().accounts;

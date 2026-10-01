@@ -110,6 +110,21 @@ export function buildDemoState(today = todayISO()) {
     if (spent) transfer(spent, `${key}-05`, BANK, CARD, "Pago de la tarjeta");
   });
 
+  // --- Préstamos: le prestaste a Caro (ya devolvió una parte) y tu papá te
+  // prestó plata que hay que devolver en unos días -----------------------------
+  const loanMove = (loan, flow, amount, accountId, date, description) => {
+    const t = { id: uid("tx"), type: "loan", loanId: loan.id, flow, amount, currency: "ARS", accountId, date, time: "", description, createdAt: date };
+    state.transactions.push(t);
+    return t.id;
+  };
+  const caro = { id: uid("loan"), person: "Caro", direction: "lent", amount: 60000, currency: "ARS", date: `${months[3]}-12`, dueDate: "", note: "Para el arreglo de la moto", payments: [], createdAt: `${months[3]}-12` };
+  caro.txId = loanMove(caro, "out", 60000, CASH, caro.date, "Préstamo a Caro");
+  caro.payments.push({ id: uid("pay"), date: `${months[3]}-26`, amount: 20000, txId: loanMove(caro, "in", 20000, WALLET, `${months[3]}-26`, "Caro te devolvió") });
+  const papa = { id: uid("loan"), person: "Papá", direction: "borrowed", amount: 150000, currency: "ARS", date: `${months[2]}-20`, dueDate: addDays(today, 20), note: "", payments: [], createdAt: `${months[2]}-20` };
+  papa.txId = loanMove(papa, "in", 150000, BANK, papa.date, "Préstamo de Papá");
+  papa.payments.push({ id: uid("pay"), date: `${months[3]}-20`, amount: 50000, txId: loanMove(papa, "out", 50000, BANK, `${months[3]}-20`, "Le devolviste a Papá") });
+  state.loans = [caro, papa];
+
   // --- Facturas y servicios ------------------------------------------------
   // offset = días desde hoy hasta el próximo vencimiento pendiente.
   const bills = [

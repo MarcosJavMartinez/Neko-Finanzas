@@ -27,7 +27,12 @@
  *                      de reserva (por defecto, los próximos 30 días; se
  *                      cambia en Configuración) + las vencidas sin pagar
  *                      + gastos programados (con fecha futura, como las
- *                      próximas cuotas de una compra) dentro del horizonte.
+ *                      próximas cuotas de una compra) dentro del horizonte
+ *                      + lo que debés de un préstamo que vence en ese plazo.
+ *
+ *  Préstamos: prestar plata la saca de tu cuenta (no es un gasto) y lo que
+ *  te deben no cuenta como plata tuya hasta que te la devuelven; si te
+ *  prestan, la plata entra (no es un ingreso) y devolverla la saca.
  *                      Una factura semanal cuenta una vez por cada
  *                      vencimiento dentro del horizonte. Cuando se paga,
  *                      se registra como gasto y sale de la reserva.
@@ -101,6 +106,8 @@ export function accountBalances(state, today = todayISO()) {
     if (tx.type === "transfer") {
       add(tx.accountId, -tx.amount, tx.currency);
       add(tx.toAccountId, tx.toAmount, tx.toCurrency);
+    } else if (tx.type === "loan") {
+      add(tx.accountId, tx.flow === "in" ? tx.amount : -tx.amount, tx.currency);
     } else {
       add(tx.accountId, tx.type === "income" ? tx.amount : -tx.amount, tx.currency);
     }
@@ -236,14 +243,42 @@ export function scheduledReserve(state, today = todayISO()) {
   return { amount: sumMain(state, items), items, until };
 }
 
+// ---------------------------------------------------------------------------
+// Préstamos
+// ---------------------------------------------------------------------------
+
+/** Lo que falta devolver de un préstamo (nunca negativo). */
+export function loanOutstanding(loan) {
+  const paid = loan.payments.reduce((s, p) => s + p.amount, 0);
+  return Math.max(0, Math.round((loan.amount - paid) * 100) / 100);
+}
+
+/** Te deben / debés, en la moneda principal, con cada préstamo abierto. */
+export function loansSummary(state) {
+  const items = (state.loans || []).map((loan) => {
+    const outstanding = loanOutstanding(loan);
+    return { loan, outstanding, outstandingMain: toMain(state, outstanding, loan.currency) };
+  });
+  const sum = (dir) => items.filter((i) => i.loan.direction === dir).reduce((s, i) => s + i.outstandingMain, 0);
+  return { items, lent: sum("lent"), borrowed: sum("borrowed"), open: items.filter((i) => i.outstanding > 0).length };
+}
+
+/** Lo que debés de préstamos con vencimiento dentro del horizonte (o ya vencidos). */
+export function loansReserve(state, today = todayISO()) {
+  const until = reserveHorizonEnd(state, today);
+  const items = loansSummary(state).items.filter((i) => i.loan.direction === "borrowed" && i.outstanding > 0 && i.loan.dueDate && i.loan.dueDate <= until);
+  return { amount: items.reduce((s, i) => s + i.outstandingMain, 0), items, until };
+}
+
 export function balanceSummary(state, today = todayISO()) {
   const total = totalBalance(state, today);
   const inGoals = totalInGoals(state);
   const reserve = billReserve(state, today);
   const scheduled = scheduledReserve(state, today);
-  const reserved = reserve.amount + scheduled.amount;
+  const debts = loansReserve(state, today);
+  const reserved = reserve.amount + scheduled.amount + debts.amount;
   const available = total - inGoals - reserved;
-  return { total, inGoals, reserved, reserve, scheduled, available };
+  return { total, inGoals, reserved, reserve, scheduled, debts, available };
 }
 
 // ---------------------------------------------------------------------------

@@ -132,6 +132,7 @@ export function createEmptyState() {
     bills: [],
     goals: [],
     budgets: [],
+    loans: [],
   };
 }
 

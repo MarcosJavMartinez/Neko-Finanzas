@@ -20,6 +20,7 @@ import { openGoalForm, openGoalDetail } from "./ui/forms/goalForms.js";
 import { openBudgetForm } from "./ui/forms/budgetForm.js";
 import { openCategoryForm } from "./ui/forms/categoryForm.js";
 import { openAccountForm, openTransferForm, openAccountDetail } from "./ui/forms/accountForms.js";
+import { openLoanForm, openLoanDetail } from "./ui/forms/loanForms.js";
 import { watchSystemTheme, applySavedTheme } from "./ui/theme.js";
 import { showCustomImage } from "./ui/background.js";
 import { canPromptInstall, promptInstall, onInstallChange, openInstallHelp } from "./ui/install.js";
@@ -34,6 +35,7 @@ import transactions from "./screens/transactions.js";
 import goals from "./screens/goals.js";
 import more from "./screens/more.js";
 import accounts from "./screens/accounts.js";
+import loans from "./screens/loans.js";
 import bills from "./screens/bills.js";
 import budgets from "./screens/budgets.js";
 import reports from "./screens/reports.js";
@@ -41,7 +43,7 @@ import categories from "./screens/categories.js";
 import currencies from "./screens/currencies.js";
 import settings, { settingsCalc, settingsLook, settingsDevice, settingsData } from "./screens/settings.js";
 
-const SCREENS = [home, transactions, goals, more, accounts, bills, budgets, reports, categories, currencies, settings, settingsCalc, settingsLook, settingsDevice, settingsData];
+const SCREENS = [home, transactions, goals, more, accounts, loans, bills, budgets, reports, categories, currencies, settings, settingsCalc, settingsLook, settingsDevice, settingsData];
 const ROUTES = Object.fromEntries(SCREENS.map((s) => [s.id, s]));
 const DEFAULT_ROUTE = "inicio";
 
@@ -67,6 +69,8 @@ const GLOBAL_ACTIONS = {
   "add-transfer": (el) => openTransferForm({ fromId: el.dataset.from }),
   "add-account": () => openAccountForm(),
   "account-detail": (el) => openAccountDetail(el.dataset.id),
+  "add-loan": (el) => openLoanForm({ direction: el.dataset.direction || "lent" }),
+  "loan-detail": (el) => openLoanDetail(el.dataset.id),
   "edit-budget": (el) => openBudgetForm({ budget: byId(store.getState().budgets, el.dataset.id) }),
   "edit-category": (el) => openCategoryForm({ category: byId(store.getState().categories, el.dataset.id) }),
   "pay-bill": (el) => openPayBill(el.dataset.id),
