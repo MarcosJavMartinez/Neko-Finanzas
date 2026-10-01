@@ -10,6 +10,7 @@ const KEYS = {
   backupSnooze: "nekoFinanzas.backupSnooze",
   hideAmounts: "nekoFinanzas.hideAmounts",
   onboardingSeen: "nekoFinanzas.onboardingSeen",
+  iosNoticeSnooze: "nekoFinanzas.iosNoticeSnooze",
 };
 
 const DAY = 86400000;
@@ -65,6 +66,13 @@ export const amountsHidden = () => read(KEYS.hideAmounts) === "1";
 export const setAmountsHidden = (on) => write(KEYS.hideAmounts, on ? "1" : null);
 
 export const onboardingSeen = () => read(KEYS.onboardingSeen) === "1";
+
+/** Aviso de iPhone ("instalala para que no se borren tus datos") pospuesto. */
+export function iosNoticeSnoozed(now = Date.now()) {
+  const until = readTime(KEYS.iosNoticeSnooze);
+  return !!until && until > now;
+}
+export const snoozeIosNotice = (days = 7) => write(KEYS.iosNoticeSnooze, new Date(Date.now() + days * DAY).toISOString());
 export const markOnboardingSeen = () => write(KEYS.onboardingSeen, "1");
 
 // ---------------------------------------------------------------------------

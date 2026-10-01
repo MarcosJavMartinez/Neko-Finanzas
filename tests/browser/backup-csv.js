@@ -1,7 +1,7 @@
 const w = f.contentWindow, d = w.document, log = (m) => w.console.log("CHECK " + m);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const ls = (k) => w.localStorage.getItem("nekoFinanzas." + k);
-(async () => {
+return (async () => {
   try {
     const store = await w.eval('import("/js/core/store.js")');
     const { transactionsToCSV } = await w.eval('import("/js/core/csv.js")');

@@ -2,7 +2,7 @@ const w = f.contentWindow, d = w.document, log = (m) => w.console.log("CHECK " +
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const errs = []; w.addEventListener("error", (e) => errs.push(e.message)); w.addEventListener("unhandledrejection", (e) => errs.push("promesa " + (e.reason?.message || e.reason)));
 const sheet = () => [...d.querySelectorAll(".sheet-root:not(.is-closing)")].pop();
-(async () => {
+return (async () => {
   try {
     await wait(800);
     let s = sheet();
@@ -16,7 +16,7 @@ const sheet = () => [...d.querySelectorAll(".sheet-root:not(.is-closing)")].pop(
     }
     log("pasos: " + steps.join(" → "));
     s.querySelector("[data-ob=next]").click(); await wait(400);
-    log("tras 'Explorar': abierto=" + !!sheet() + " visto=" + w.localStorage.getItem("nekoFinanzas.onboardingSeen") + " demo=" + JSON.parse(w.localStorage.getItem("nekoFinanzas.data.v1")).settings.isDemo);
+    log("tras 'Explorar': abierto=" + !!sheet() + " visto=" + w.localStorage.getItem("nekoFinanzas.onboardingSeen") + " demo=" + (await w.eval('import("/js/core/store.js")')).getState().settings.isDemo);
 
     // Ojito
     const heroTxt = () => d.querySelector(".hero-amount").textContent;

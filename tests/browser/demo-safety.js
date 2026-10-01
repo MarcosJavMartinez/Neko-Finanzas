@@ -3,7 +3,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const errs = []; w.addEventListener("error", (e) => errs.push(e.message)); w.addEventListener("unhandledrejection", (e) => errs.push("promesa " + (e.reason?.message || e.reason)));
 const sheet = () => [...d.querySelectorAll(".sheet-root:not(.is-closing)")].pop();
 const obButtons = () => [...sheet().querySelectorAll("[data-ob]")].map((b) => b.dataset.ob + (b.hidden ? "·" : ""));
-(async () => {
+return (async () => {
   try {
     const store = await w.eval('import("/js/core/store.js")');
     const prefs = await w.eval('import("/js/core/prefs.js")');
@@ -27,7 +27,9 @@ const obButtons = () => [...sheet().querySelectorAll("[data-ob]")].map((b) => b.
     const s = store.getState();
     log("demo con dato propio: pristine=" + store.isPristineDemo() + " edited=" + s.settings.demoEdited);
     // guardado y recargado conserva el flag
-    const saved = JSON.parse(w.localStorage.getItem("nekoFinanzas.data.v1"));
+    const storage = await w.eval('import("/js/core/storage.js")'); await storage.flush();
+    const saved = await storage.loadData();
+    log("guardado en: " + storage.storageMode());
     log("flag guardado=" + saved.settings.demoEdited);
     // recordatorio: con createdAt viejo debe aparecer aunque isDemo
     s.settings.createdAt = "2026-01-01T00:00:00Z";

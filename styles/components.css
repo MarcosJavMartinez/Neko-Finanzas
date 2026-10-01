@@ -2300,3 +2300,16 @@ details[open] > :not(summary) {
     display: none;
   }
 }
+
+/* Copias automáticas */
+.snapshot-list {
+  margin-top: 4px;
+}
+
+.snapshot-row {
+  gap: 12px;
+}
+
+.snapshot-row .btn {
+  flex-shrink: 0;
+}

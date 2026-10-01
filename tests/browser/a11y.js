@@ -1,7 +1,7 @@
 // Rendimiento con 10.000 movimientos + accesibilidad básica
 const w = f.contentWindow, d = w.document, log = (m) => w.console.log("CHECK " + m);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-(async () => {
+return (async () => {
   try {
     const store = await w.eval('import("/js/core/store.js")');
     const data = JSON.parse(store.exportJSON()).data;
@@ -20,7 +20,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     let t = performance.now();
     store.importJSON(JSON.stringify({ data }));
     const importMs = performance.now() - t;
-    const bytes = w.localStorage.getItem("nekoFinanzas.data.v1").length * 2;
+    const bytes = JSON.stringify(store.getState()).length * 2;
     const times = [];
     for (const r of ["#/inicio", "#/transacciones", "#/reportes", "#/presupuestos", "#/facturas", "#/metas", "#/categorias"]) {
       w.location.hash = r; await wait(50);

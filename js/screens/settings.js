@@ -9,6 +9,7 @@ import { segmented, currencyOptions } from "../ui/components.js";
 import { amountToInput, parseAmount } from "../core/money.js";
 import { MAX_AMOUNT } from "../core/sanitize.js";
 import * as store from "../core/store.js";
+import { openSnapshots } from "../ui/snapshots.js";
 import {
   getThemePref,
   canVibrate,
@@ -56,10 +57,13 @@ function installBlock() {
   }
   const platform = installPlatform();
   const steps = INSTALL_STEPS[platform];
+  const iosWarning = platform.startsWith("ios")
+    ? html`<p class="notice notice-warn">${icon("alert", 16)} En iPhone, si no abrís la app en 7 días, Safari puede borrar tus datos. Instalada, eso no pasa.</p>`
+    : "";
   return steps
-    ? html`<span class="field-hint">Queda en tu pantalla de inicio como una app más y funciona sin conexión:</span>
+    ? html`${iosWarning}<span class="field-hint">Queda en tu pantalla de inicio como una app más y funciona sin conexión:</span>
         <ol class="install-steps">${steps.map((step) => html`<li>${step}</li>`)}</ol>`
-    : html`<span class="field-hint">${INSTALL_MESSAGES[platform]}</span>`;
+    : html`${iosWarning}<span class="field-hint">${INSTALL_MESSAGES[platform]}</span>`;
 }
 
 export default {
@@ -215,6 +219,7 @@ export default {
         <div class="settings-actions">
           <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>Exportar backup</strong><span>Descarga un archivo .json con todo, para restaurar después</span></span></button>
           <button type="button" class="settings-action" data-action="export-csv">${icon("table", 20)}<span><strong>Exportar a planilla</strong><span>Tus movimientos en .csv, para abrir en Excel o Google Sheets</span></span></button>
+          <button type="button" class="settings-action" data-action="open-snapshots">${icon("refresh", 20)}<span><strong>Copias automáticas</strong><span>Volver a como estaban tus datos un día anterior</span></span></button>
           <label class="settings-action">${icon("upload", 20)}<span><strong>Importar backup</strong><span>Reemplaza los datos actuales</span></span>
             <input type="file" accept="application/json,.json" data-change="import-data" hidden /></label>
           <button type="button" class="settings-action" data-action="load-demo">${icon("sparkle", 20)}<span><strong>Cargar datos de ejemplo</strong><span>Para probar la app</span></span></button>
@@ -237,16 +242,19 @@ export default {
       return true;
     },
     async "load-demo"() {
-      const ok = await confirmDialog({ title: "¿Cargar datos de ejemplo?", text: "Reemplaza lo que tengas ahora por datos ficticios. Si tenés datos propios, exportá un backup antes.", confirmLabel: "Cargar ejemplo" });
+      const ok = await confirmDialog({ title: "¿Cargar datos de ejemplo?", text: "Reemplaza lo que tengas ahora por datos ficticios. Antes se guarda una copia automática de lo tuyo.", confirmLabel: "Cargar ejemplo" });
       if (!ok) return;
       store.loadDemo();
       toast("Datos de ejemplo cargados");
       whenHistorySettled(() => (location.hash = "#/inicio"));
     },
+    "open-snapshots"() {
+      openSnapshots();
+    },
     async "reset-all"() {
-      const ok = await confirmDialog({ title: "¿Borrar todo?", text: "Se eliminan todos tus datos de este dispositivo. No se puede deshacer.", confirmLabel: "Borrar todo", danger: true });
+      const ok = await confirmDialog({ title: "¿Borrar todo?", text: "Se eliminan todos tus datos y las copias automáticas de este dispositivo. No se puede deshacer.", confirmLabel: "Borrar todo", danger: true });
       if (!ok) return;
-      store.resetEverything();
+      await store.resetEverything();
       toast("Listo, la app quedó vacía", { type: "info" });
       whenHistorySettled(() => (location.hash = "#/inicio"));
     },

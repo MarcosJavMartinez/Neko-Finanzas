@@ -6,7 +6,7 @@
 // registra un gasto visible; depositar en una meta queda en su historial;
 // un ingreso recurrente solo se registra cuando el usuario lo confirma.
 
-import { loadData, saveData, clearData } from "./storage.js";
+import { initStorage, loadData, saveData, clearData, onWriteError, saveSnapshot, listSnapshots, loadSnapshot } from "./storage.js";
 import { createEmptyState, DEFAULT_CATEGORIES, defaultSubcategories, FALLBACK_CATEGORY, PALETTE, PALETTE_V1, SCHEMA_VERSION, uid } from "../data/defaults.js";
 import { buildDemoState } from "../data/demo.js";
 import { sanitizeState } from "./sanitize.js";
@@ -16,11 +16,46 @@ let state = null;
 const listeners = new Set();
 const saveErrorListeners = new Set();
 
-export function initStore() {
-  const saved = loadData();
+export async function initStore() {
+  const saved = await initStorage();
   state = migrate(saved || buildDemoState());
   if (!saved) saveData(state);
+  maybeDailySnapshot();
   return state;
+}
+
+onWriteError(() => saveErrorListeners.forEach((fn) => fn()));
+
+// ---------------------------------------------------------------------------
+// Copias automáticas: una por día y otra antes de cada acción que reemplaza
+// todo (importar, cargar el ejemplo, empezar de cero, restaurar una copia).
+// Los datos de ejemplo sin tocar o una app vacía no se copian: no hay nada
+// tuyo que recuperar.
+// ---------------------------------------------------------------------------
+
+function worthSaving(s = state) {
+  return s && !isPristineDemo(s) && !isEmptyState(s);
+}
+
+function snapshotBefore(reason) {
+  if (worthSaving()) saveSnapshot(state, reason);
+}
+
+/** Copia diaria (si la última tiene más de 20 horas). */
+export async function maybeDailySnapshot() {
+  if (!worthSaving()) return;
+  const [last] = await listSnapshots();
+  if (!last || Date.now() - Date.parse(last.at) > 20 * 3600 * 1000) await saveSnapshot(state, "Copia diaria");
+}
+
+export { listSnapshots };
+
+/** Vuelve a una copia automática (antes guarda una copia de lo actual). */
+export async function restoreSnapshot(id) {
+  const data = await loadSnapshot(id);
+  if (!data) throw new Error("No se encontró esa copia");
+  snapshotBefore("Antes de restaurar una copia");
+  restore(data);
 }
 
 /** Datos de ejemplo sin tocar (se pueden reemplazar sin perder nada tuyo). */
@@ -64,8 +99,8 @@ function commit(mutator) {
  * Otra pestaña guardó cambios: se recargan para no pisarlos después.
  * Devuelve false si no había nada para recargar.
  */
-export function reloadFromStorage() {
-  const saved = loadData();
+export async function reloadFromStorage() {
+  const saved = await loadData();
   if (!saved) return false;
   state = migrate(saved);
   listeners.forEach((fn) => fn(state));
@@ -428,6 +463,7 @@ export function updateSettings(data) {
 // ---------------------------------------------------------------------------
 
 export function loadDemo() {
+  snapshotBefore("Antes de cargar el ejemplo");
   commit(() => {
     state = migrate(buildDemoState());
   });
@@ -435,6 +471,7 @@ export function loadDemo() {
 
 /** Deja la app vacía pero conserva monedas y categorías personalizadas. */
 export function startFresh({ keepSetup = true } = {}) {
+  snapshotBefore("Antes de empezar de cero");
   commit((s) => {
     const fresh = createEmptyState();
     if (keepSetup) {
@@ -446,8 +483,9 @@ export function startFresh({ keepSetup = true } = {}) {
   });
 }
 
-export function resetEverything() {
-  clearData();
+/** Borra todo, copias automáticas incluidas (por ejemplo, antes de regalar el celular). */
+export async function resetEverything() {
+  await clearData();
   commit(() => {
     state = createEmptyState();
   });
@@ -470,6 +508,7 @@ export function importJSON(text) {
   }
   // Se valida antes de reemplazar nada: si algo falla, los datos actuales quedan intactos.
   const clean = migrate(data);
+  snapshotBefore("Antes de importar un backup");
   const skipped = data.transactions.length - clean.transactions.length;
   restore(clean);
   return { transactions: clean.transactions.length, skipped };

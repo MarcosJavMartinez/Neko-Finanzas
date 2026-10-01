@@ -2,6 +2,7 @@
 //
 //   node tests/run.mjs            → todo
 //   node tests/run.mjs --fast     → solo lógica (sin navegador, segundos)
+//   node tests/run.mjs --only=x   → lógica + solo las pruebas de navegador que digan "x"
 //
 // 1) Lógica (node): unitarias, propiedades y operaciones al azar sobre el store.
 // 2) Navegador (Chrome headless, tiempo virtual): flujos reales sobre la app.
@@ -22,6 +23,9 @@ const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const PORT = 5199;
 const BASE = `http://localhost:${PORT}`;
 const FAST = process.argv.includes("--fast");
+// --only=texto: corre solo las pruebas de navegador cuyo nombre o archivo lo contengan.
+const ONLY = (process.argv.find((a) => a.startsWith("--only=")) || "").slice(7).toLowerCase();
+const wanted = (...names) => !ONLY || names.some((n) => n.toLowerCase().includes(ONLY));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const results = [];
@@ -74,47 +78,44 @@ if (!CHROME) {
 const server = await startServer(PORT);
 
 /**
- * Carga la app con la prueba inyectada. `onboarding: true` deja que aparezca
- * el tutorial de la primera vez (las demás pruebas lo dan por visto).
+ * Carga la app con la prueba inyectada, en Chrome de verdad (tiempo real:
+ * IndexedDB y el service worker no andan con tiempo virtual).
+ * `onboarding: true` deja que aparezca el tutorial de la primera vez (las
+ * demás pruebas lo dan por visto). `pre` corre antes que la app.
  */
-async function runBrowserTest(file, { query = "", onboarding = false } = {}) {
-  const pre = `<script>try{sessionStorage.setItem("nekoFinanzas.splash","1");localStorage.setItem("nekoFinanzas.theme","light");${onboarding ? "" : 'localStorage.setItem("nekoFinanzas.onboardingSeen","1");'}}catch(e){}</script>`;
+async function runBrowserTest(file, { query = "", onboarding = false, pre = "" } = {}) {
+  const head = `<script>try{sessionStorage.setItem("nekoFinanzas.splash","1");localStorage.setItem("nekoFinanzas.theme","light");${onboarding ? "" : 'localStorage.setItem("nekoFinanzas.onboardingSeen","1");'}${pre}}catch(e){}</script>`;
   const html = readFileSync(join(ROOT, "index.html"), "utf8")
-    .replace("<head>", `<head>${pre}`)
+    .replace("<head>", `<head>${head}`)
     .replace(
       "</body>",
       `<script type="module">
 const src = await (await fetch("/__t.js")).text();
-setTimeout(() => { const f = { contentWindow: window }; new Function("f", src)(f); }, 1500);
+// La app carga los datos de forma asíncrona (IndexedDB): se espera a que dibuje.
+for (let i = 0; i < 100 && !document.querySelector("#view")?.dataset.screen; i++) await new Promise((r) => setTimeout(r, 100));
+await new Promise((r) => setTimeout(r, 800));
+try { await new Function("f", src)({ contentWindow: window }); } catch (e) { console.log("CHECK ERROR " + ((e && e.stack) || e)); }
+console.log("CHECK __FIN__");
 </script></body>`
     );
   virtualFiles.set("/__test.html", html);
   virtualFiles.set("/__t.js", readFileSync(join(HERE, "browser", file), "utf8"));
-  const profile = mkdtempSync(join(tmpdir(), "nf-test-"));
-  // spawn (no spawnSync): el servidor corre en este mismo proceso y tiene
-  // que poder responderle a Chrome mientras tanto.
-  const stderr = await new Promise((resolve) => {
-    let err = "";
-    const child = spawn(
-      CHROME,
-      ["--headless=new", "--disable-gpu", "--window-size=500,900", "--virtual-time-budget=90000", "--enable-logging=stderr", "--v=0",
-        `--user-data-dir=${profile}`, "--dump-dom", `${BASE}/__test.html${query}#/inicio`],
-      { stdio: ["ignore", "ignore", "pipe"] }
-    );
-    const timer = setTimeout(() => child.kill(), 240000);
-    child.stderr.on("data", (d) => (err += d));
-    child.on("close", () => {
-      clearTimeout(timer);
-      resolve(err);
+  return withDevTools(async ({ send, on }) => {
+    const lines = [];
+    let done;
+    const finished = new Promise((resolve) => (done = resolve));
+    on("Runtime.consoleAPICalled", (p) => {
+      const text = p.args.map((a) => a.value ?? a.description ?? "").join(" ");
+      if (!text.startsWith("CHECK ")) return;
+      if (text === "CHECK __FIN__") done();
+      else lines.push(text.slice(6));
     });
+    on("Runtime.exceptionThrown", (p) => lines.push("Uncaught " + (p.exceptionDetails.exception?.description || p.exceptionDetails.text)));
+    await send("Runtime.enable");
+    await send("Page.navigate", { url: `${BASE}/__test.html${query}#/inicio` });
+    await Promise.race([finished, sleep(240000)]);
+    return lines.join("\n");
   });
-  await sleep(300);
-  try { rmSync(profile, { recursive: true, force: true }); } catch {}
-  return stderr
-    .split("\n")
-    .filter((l) => /CHECK|Uncaught/.test(l))
-    .map((l) => (l.match(/"(CHECK [\s\S]*|Uncaught[\s\S]*)", source/) || [, l])[1].replace(/^CHECK /, ""))
-    .join("\n");
 }
 
 for (const [name, file, opts] of [
@@ -123,15 +124,22 @@ for (const [name, file, opts] of [
   ["Datos de ejemplo, deshacer, foco, pestañas", "demo-safety.js"],
   ["Apariencia: paletas, fondo, animaciones", "appearance.js"],
   ["Accesibilidad y 10.000 movimientos", "a11y.js"],
+  [
+    "Datos: IndexedDB, copias automáticas, iPhone, pestañas",
+    "storage.js",
+    { pre: 'localStorage.setItem("nekoFinanzas.data.v1",JSON.stringify({transactions:[{id:"t-legado",type:"expense",amount:777,currency:"ARS",date:"2026-09-01",categoryId:"exp-otros",description:"Dato viejo",createdAt:"2026-09-01"}],categories:[],settings:{createdAt:"2026-08-01T00:00:00Z"}}));' },
+  ],
   ["Toques al azar (semilla 1)", "monkey.js", { query: "?seed=1" }],
   ["Toques al azar (semilla 2)", "monkey.js", { query: "?seed=2" }],
   ["Toques al azar (semilla 3)", "monkey.js", { query: "?seed=3" }],
 ]) {
+  if (!wanted(name, file)) continue;
   let out = await runBrowserTest(file, opts);
   // Chrome headless a veces no arranca a tiempo: un reintento antes de fallar.
   if (!out) out = await runBrowserTest(file, opts);
   const bad = !out || looksBad(out);
-  record(name, !bad, bad ? out || "(sin resultados: Chrome no respondió)" : out.split("\n").slice(-1)[0]);
+  // Con --only se muestra todo el detalle; si no, solo la última línea.
+  record(name, !bad, bad ? out || "(sin resultados: Chrome no respondió)" : ONLY ? out : out.split("\n").slice(-1)[0]);
 }
 
 // ---------------------------------------------------------------------------
@@ -141,10 +149,12 @@ for (const [name, file, opts] of [
 async function withDevTools(fn) {
   const port = 9300 + Math.floor(Math.random() * 500);
   const profile = mkdtempSync(join(tmpdir(), "nf-cdp-"));
-  const chrome = spawn(CHROME, ["--headless=new", "--disable-gpu", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "about:blank"], { stdio: "ignore" });
+  const chrome = spawn(CHROME, ["--headless=new", "--disable-gpu", "--window-size=500,900", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "about:blank"], { stdio: "ignore" });
   let ws;
   let nextId = 1;
   const pending = new Map();
+  const handlers = new Map();
+  const on = (method, fn) => handlers.set(method, [...(handlers.get(method) || []), fn]);
   try {
     for (let i = 0; i < 40 && !ws; i++) {
       try {
@@ -155,6 +165,7 @@ async function withDevTools(fn) {
           ws.onmessage = (e) => {
             const msg = JSON.parse(e.data);
             if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg); pending.delete(msg.id); }
+            if (msg.method) (handlers.get(msg.method) || []).forEach((fn) => fn(msg.params));
           };
         }
       } catch { ws = null; }
@@ -169,7 +180,7 @@ async function withDevTools(fn) {
     };
     await send("Page.enable");
     await send("Network.enable");
-    return await fn({ send, evaluate });
+    return await fn({ send, evaluate, on });
   } finally {
     try { ws?.close(); } catch {}
     chrome.kill();
@@ -178,7 +189,7 @@ async function withDevTools(fn) {
   }
 }
 
-try {
+if (wanted("Sin conexión", "offline")) try {
   const out = await withDevTools(async ({ send, evaluate }) => {
     await send("Page.navigate", { url: `${BASE}/#/inicio` });
     await sleep(8000); // que el service worker se instale y guarde todo
@@ -197,7 +208,9 @@ try {
       const store = await import("/js/core/store.js");
       const before = store.getState().transactions.length;
       store.addTransaction({ type: "expense", amount: 123, currency: "ARS", date: new Date().toISOString().slice(0, 10), categoryId: "exp-otros" });
-      const saved = JSON.parse(localStorage.getItem("nekoFinanzas.data.v1")).transactions.length;
+      const storage = await import("/js/core/storage.js");
+      await storage.flush();
+      const saved = (await storage.loadData()).transactions.length;
       return { online: navigator.onLine, hero, screen: document.querySelector("#view").dataset.screen, saved: saved - before };
     })()`);
     return { sw, flow };
@@ -208,7 +221,7 @@ try {
   record("Sin conexión (service worker real)", false, error.message);
 }
 
-try {
+if (wanted("Imagen de fondo", "background")) try {
   const out = await withDevTools(async ({ send, evaluate }) => {
     await send("Page.navigate", { url: `${BASE}/#/ajustes` });
     await sleep(4000);

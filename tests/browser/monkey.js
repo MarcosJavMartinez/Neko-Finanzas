@@ -55,7 +55,7 @@ function scanText(step) {
   if (!d.querySelector("#view").children.length) addErr("vista vacía en " + w.location.hash);
 }
 
-(async () => {
+return (async () => {
   const STEPS = 250;
   const kinds = {};
   for (let step = 0; step < STEPS; step++) {
@@ -91,7 +91,8 @@ function scanText(step) {
     scanText(step);
     if (step % 50 === 49) log(`progreso ${step + 1}/${STEPS} en ${w.location.hash}`);
   }
-  const state = JSON.parse(w.localStorage.getItem("nekoFinanzas.data.v1"));
+  const storage = await w.eval('import("/js/core/storage.js")'); await storage.flush();
+  const state = await storage.loadData();
   log(`seed ${SEED}: ${STEPS} pasos (${Object.entries(kinds).map(([k, v]) => k + "=" + v).join(", ")}) · movimientos=${state.transactions.length} facturas=${state.bills.length} metas=${state.goals.length}`);
   log("errores: " + (errors.size ? [...errors.entries()].map(([m, c]) => `${m} (×${c})`).join(" | ") : "ninguno"));
   log("textos raros: " + (badText.size ? [...badText.entries()].slice(0, 8).map(([m, s]) => `[paso ${s}] ${m}`).join(" | ") : "ninguno"));

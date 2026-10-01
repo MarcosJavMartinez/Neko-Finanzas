@@ -15,7 +15,8 @@ import {
   budgetsOverview,
   percent,
 } from "../core/finance.js";
-import { backupReminderDue, daysSinceBackup, getLastBackup } from "../core/prefs.js";
+import { backupReminderDue, daysSinceBackup, getLastBackup, iosNoticeSnoozed } from "../core/prefs.js";
+import { needsIosInstall } from "../ui/install.js";
 
 const RECENT_COUNT = 5;
 
@@ -173,6 +174,16 @@ export default {
             <span class="demo-banner-icon">${icon("sparkle", 16)}</span>
             <span class="demo-banner-text"><strong>Datos de ejemplo.</strong> Explorá tranquilo; cuando quieras, empezá con los tuyos.</span>
             <button type="button" class="btn btn-sm btn-soft" data-action="start-fresh">Empezar de cero</button>
+          </div>`
+        : ""}
+      ${needsIosInstall() && !iosNoticeSnoozed()
+        ? html`<div class="demo-banner backup-banner ios-banner reveal" role="status">
+            <span class="demo-banner-icon">${icon("phone", 16)}</span>
+            <span class="demo-banner-text"><strong>Instalá la app en tu iPhone.</strong> Si no la abrís en 7 días, Safari puede borrar tus datos. Instalada en la pantalla de inicio, no pasa.</span>
+            <span class="backup-banner-actions">
+              <button type="button" class="btn btn-sm btn-ghost" data-action="snooze-ios-notice">Ahora no</button>
+              <button type="button" class="btn btn-sm btn-primary" data-action="install-help">Cómo instalar</button>
+            </span>
           </div>`
         : ""}
       ${backupReminderDue(state)

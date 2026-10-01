@@ -7,7 +7,7 @@
 // acciones globales de abajo. Si un handler devuelve true, se redibuja.
 
 import * as store from "./core/store.js";
-import { requestPersistence, STORAGE_KEY } from "./core/storage.js";
+import { requestPersistence, STORAGE_KEY, onRemoteChange } from "./core/storage.js";
 import { html, setHTML, $, prefersReducedMotion } from "./ui/dom.js";
 import { icon } from "./ui/icons.js";
 import { toast } from "./ui/toast.js";
@@ -21,9 +21,9 @@ import { openBudgetForm } from "./ui/forms/budgetForm.js";
 import { openCategoryForm } from "./ui/forms/categoryForm.js";
 import { currentTheme, setThemePreference, watchSystemTheme, applySavedTheme } from "./ui/theme.js";
 import { showCustomImage } from "./ui/background.js";
-import { canPromptInstall, promptInstall, onInstallChange } from "./ui/install.js";
+import { canPromptInstall, promptInstall, onInstallChange, openInstallHelp } from "./ui/install.js";
 import { downloadFile } from "./ui/download.js";
-import { markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen } from "./core/prefs.js";
+import { snoozeIosNotice, markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen } from "./core/prefs.js";
 import { openOnboarding } from "./ui/onboarding.js";
 import { transactionsToCSV } from "./core/csv.js";
 import { todayISO } from "./core/dates.js";
@@ -104,6 +104,12 @@ const GLOBAL_ACTIONS = {
     toast(`Planilla descargada: ${state.transactions.length} movimiento${state.transactions.length === 1 ? "" : "s"}`);
   },
   "show-onboarding": () => openOnboarding(),
+  "install-help": () => openInstallHelp(),
+  "snooze-ios-notice": () => {
+    snoozeIosNotice(7);
+    toast("Te lo recordamos en una semana", { type: "info" });
+    return true;
+  },
   "toggle-amounts": () => {
     setAmountsHidden(!isMasked());
     setMasked(!isMasked());
@@ -184,6 +190,7 @@ function renderTabs() {
 
 function render({ animate = false } = {}) {
   const state = store.getState();
+  if (!state) return; // todavía cargando los datos guardados
   currentScreen = ROUTES[routeId()];
   document.title = currentScreen.id === DEFAULT_ROUTE ? "Neko Finanzas — by Neko Tools" : `${currentScreen.title} · Neko Finanzas`;
   document.body.classList.toggle("is-wide", Boolean(currentScreen.wide));
@@ -334,8 +341,7 @@ store.onSaveError(() => {
   });
 });
 
-// Otra pestaña con la app abierta guardó cambios: se recargan acá para que
-// ninguna de las dos pise los datos de la otra.
+// Cambios hechos en otra pestaña (preferencias en localStorage).
 window.addEventListener("storage", (event) => {
   // Preferencias cambiadas en otra pestaña: tema y montos ocultos se siguen.
   if (["nekoFinanzas.theme", "nekoFinanzas.palette", "nekoFinanzas.customColor", "nekoFinanzas.bgColor", "nekoFinanzas.bgImage"].includes(event.key)) {
@@ -349,9 +355,17 @@ window.addEventListener("storage", (event) => {
     if (currentScreen) render();
     return;
   }
-  if (event.key !== STORAGE_KEY || event.newValue === null) return;
-  if (store.reloadFromStorage()) toast("Se actualizaron los datos desde otra pestaña", { type: "info" });
+  // Navegadores sin BroadcastChannel (Safari < 15.4) con datos en localStorage.
+  if (event.key !== STORAGE_KEY || event.newValue === null || "BroadcastChannel" in window) return;
+  reloadFromOtherTab();
 });
+
+// Otra pestaña con la app abierta guardó cambios: se recargan acá para que
+// ninguna de las dos pise los datos de la otra.
+async function reloadFromOtherTab() {
+  if (await store.reloadFromStorage()) toast("Se actualizaron los datos desde otra pestaña", { type: "info" });
+}
+onRemoteChange(reloadFromOtherTab);
 
 // Al volver a la app otro día (PWA en segundo plano), se recalcula todo con
 // la fecha nueva: vencimientos, "Hoy", saldo disponible.
@@ -362,6 +376,7 @@ document.addEventListener("visibilitychange", () => {
   if (day !== lastRenderDay) {
     lastRenderDay = day;
     render();
+    store.maybeDailySnapshot();
   }
 });
 
@@ -403,10 +418,10 @@ function hideSplash() {
   return 1700;
 }
 
-function start() {
+async function start() {
   setMasked(amountsHidden());
   showCustomImage();
-  store.initStore();
+  await store.initStore();
   initChartTooltips();
   render({ animate: true });
   animateHero();

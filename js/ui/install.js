@@ -3,6 +3,9 @@
 // Mac no existe ese aviso y hay que mostrar los pasos a mano, distintos según
 // el navegador (mismo criterio que Neko Lista).
 
+import { html } from "./dom.js";
+import { openSheet } from "./sheet.js";
+
 let deferredPrompt = null;
 const listeners = new Set();
 const notify = () => listeners.forEach((fn) => fn());
@@ -64,3 +67,27 @@ export const INSTALL_MESSAGES = {
   android: "Tocá el menú ⋮ del navegador y elegí «Instalar app» o «Agregar a la pantalla principal».",
   desktop: "Este navegador no permite instalar apps. Abrí este link con Chrome o Edge.",
 };
+
+/**
+ * iPhone/iPad sin instalar: Safari borra los datos de una web que no se abre
+ * en 7 días (instalada en la pantalla de inicio, no). Hay que avisarlo.
+ */
+export function needsIosInstall() {
+  return installPlatform().startsWith("ios") && !isInstalled();
+}
+
+/** Hoja con los pasos para instalar en este dispositivo. */
+export function openInstallHelp() {
+  const platform = installPlatform();
+  const steps = INSTALL_STEPS[platform];
+  openSheet({
+    title: "Instalar Neko Finanzas",
+    body: html`${platform.startsWith("ios")
+        ? html`<p class="sheet-text"><strong>Importante en iPhone:</strong> si no abrís la app en 7 días, Safari puede borrar tus datos. Instalada en la pantalla de inicio, eso no pasa.</p>`
+        : ""}
+      ${steps
+        ? html`<ol class="install-steps">${steps.map((step) => html`<li>${step}</li>`)}</ol>`
+        : html`<p class="sheet-text">${INSTALL_MESSAGES[platform]}</p>`}
+      <div class="form-actions"><button type="button" class="btn btn-primary btn-grow" data-sheet-close>Entendido</button></div>`,
+  });
+}

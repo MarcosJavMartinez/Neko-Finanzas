@@ -5,6 +5,7 @@
 // comparte con tus datos financieros. Así una foto nunca les quita lugar.
 
 import { applyAppearance } from "./theme.js";
+import { withStore } from "../core/db.js";
 
 const KEYS = {
   palette: "nekoFinanzas.palette",
@@ -13,7 +14,6 @@ const KEYS = {
   bgImage: "nekoFinanzas.bgImage",
 };
 const HEX = /^#[0-9a-f]{6}$/i;
-const DB_NAME = "nekoFinanzas";
 const STORE = "assets";
 const IMAGE_ID = "background";
 const MAX_SIDE = 1600;
@@ -106,29 +106,9 @@ export async function setBackground(choice) {
 // Imagen propia (IndexedDB)
 // ---------------------------------------------------------------------------
 
-function openDB() {
-  return new Promise((resolve, reject) => {
-    if (!("indexedDB" in window)) return reject(new Error("sin IndexedDB"));
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(STORE);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function withStore(mode, fn) {
-  const db = await openDB();
-  try {
-    return await new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, mode);
-      const result = fn(tx.objectStore(STORE));
-      tx.oncomplete = () => resolve(result?.result);
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error);
-    });
-  } finally {
-    db.close();
-  }
+/** Atajo al almacén de imágenes de la base compartida (js/core/db.js). */
+function withAssets(mode, fn) {
+  return withStore(STORE, mode, fn);
 }
 
 let currentUrl = null;
@@ -143,7 +123,7 @@ export async function showCustomImage() {
   root.style.removeProperty("--custom-bg");
   if (getBackground() !== "custom") return;
   try {
-    const blob = await withStore("readonly", (store) => store.get(IMAGE_ID));
+    const blob = await withAssets("readonly", (store) => store.get(IMAGE_ID));
     if (!(blob instanceof Blob) || !blob.type.startsWith("image/")) throw new Error("sin imagen");
     currentUrl = URL.createObjectURL(blob);
     // blob: generado acá mismo; nada que venga de afuera entra al url().
@@ -189,7 +169,7 @@ export async function setCustomImage(file) {
   if (file.size > MAX_FILE_BYTES) throw new Error("La imagen es demasiado pesada (máximo 25 MB).");
   const blob = await normalizeImage(file);
   try {
-    await withStore("readwrite", (store) => store.put(blob, IMAGE_ID));
+    await withAssets("readwrite", (store) => store.put(blob, IMAGE_ID));
   } catch (error) {
     throw new Error("No se pudo guardar la imagen en este dispositivo.");
   }
@@ -199,7 +179,7 @@ export async function setCustomImage(file) {
 /** Borra la imagen propia (al elegir otro fondo no se borra, por si volvés). */
 export async function removeCustomImage() {
   try {
-    await withStore("readwrite", (store) => store.delete(IMAGE_ID));
+    await withAssets("readwrite", (store) => store.delete(IMAGE_ID));
   } catch (error) {
     /* no había nada */
   }
@@ -208,7 +188,7 @@ export async function removeCustomImage() {
 
 export async function hasCustomImage() {
   try {
-    return (await withStore("readonly", (store) => store.count(IMAGE_ID))) > 0;
+    return (await withAssets("readonly", (store) => store.count(IMAGE_ID))) > 0;
   } catch (error) {
     return false;
   }
