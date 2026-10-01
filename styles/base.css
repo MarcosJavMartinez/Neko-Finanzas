@@ -1,0 +1,528 @@
+/* Base, layout general, header, barra inferior y splash. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 90px;
+}
+
+body {
+  isolation: isolate;
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 40px);
+  overflow-x: hidden;
+}
+
+/* Patrón financiero de fondo, en una capa fija aparte (igual que el patrón
+   de comida de Neko Lista). La imagen cambia con el tema. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--bg);
+  background-image: var(--pattern);
+  background-size: 760px auto;
+  background-repeat: repeat;
+  background-position: center top;
+  opacity: var(--pattern-opacity);
+  pointer-events: none;
+}
+
+body.has-sheet {
+  overflow: hidden;
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+img,
+svg {
+  display: block;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: calc(12px + var(--safe-top));
+}
+
+.noscript {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Header: gran superficie cian con el ícono, "Neko Finanzas / by Neko
+   Tools" y botones circulares (misma estructura que Neko Lista)
+--------------------------------------------------------------------------- */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--header-gradient);
+  color: #fff;
+  border-radius: 0 0 28px 28px;
+  box-shadow: 0 4px 18px var(--brand-shadow);
+}
+
+.app-header-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: calc(14px + var(--safe-top)) var(--gutter) 14px;
+}
+
+body.is-wide .app-header-inner {
+  max-width: var(--max-width-wide);
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.header-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #fff;
+  padding: 3px;
+  box-shadow: 0 3px 10px rgba(0, 40, 60, 0.18);
+  flex-shrink: 0;
+}
+
+.header-back {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--on-brand-soft);
+  flex-shrink: 0;
+  transition: background var(--dur-fast);
+}
+
+.header-back:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.header-title {
+  font-family: var(--font-brand);
+  font-weight: 900;
+  font-size: 1.32rem;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 2px rgba(0, 60, 80, 0.22);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-by {
+  font-family: var(--font-brand);
+  font-weight: 700;
+  font-size: 0.74rem;
+  opacity: 0.88;
+}
+
+.header-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.header-btn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--on-brand-soft);
+  color: #fff;
+  transition: background var(--dur-fast), transform var(--dur-fast);
+}
+
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.header-btn:active {
+  transform: scale(0.94);
+}
+
+/* Buscador + Filtros debajo del título (como en Neko Lista) */
+.header-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.header-search {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-search .icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+}
+
+.header-search input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px 0 40px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 0.98rem;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.header-search input::placeholder {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.header-search input:focus {
+  outline: none;
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.header-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.header-filter-btn.is-on {
+  background: #fff;
+  color: var(--brand-ink);
+  border-color: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   Contenido
+--------------------------------------------------------------------------- */
+
+.view {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 18px var(--gutter) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  outline: none;
+}
+
+/* Transición entre pantallas y aparición escalonada de tarjetas */
+.view-enter .reveal {
+  animation: reveal 420ms var(--ease) both;
+}
+
+.view-enter .reveal:nth-child(2) { animation-delay: 40ms; }
+.view-enter .reveal:nth-child(3) { animation-delay: 80ms; }
+.view-enter .reveal:nth-child(4) { animation-delay: 120ms; }
+.view-enter .reveal:nth-child(5) { animation-delay: 160ms; }
+.view-enter .reveal:nth-child(n + 6) { animation-delay: 200ms; }
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Barra de navegación inferior: grande, redondeada y cian (como la barra de
+   resumen de Neko Lista). El elemento activo va sobre una cápsula blanca.
+--------------------------------------------------------------------------- */
+
+.tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + var(--safe-bottom));
+  z-index: 30;
+  width: min(calc(100% - 24px), 600px);
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 8px;
+  background: var(--header-gradient);
+  border-radius: 28px;
+  box-shadow: 0 10px 28px var(--brand-shadow);
+}
+
+.tab {
+  position: relative;
+  width: 100%;
+  max-width: 180px;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 56px;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  transition: background var(--dur) var(--ease), color var(--dur-fast), box-shadow var(--dur);
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tab.is-active {
+  background: #fff;
+  color: var(--tab-active-ink);
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 50, 70, 0.2);
+  animation: tab-pill var(--dur) var(--ease);
+}
+
+@keyframes tab-pill {
+  from {
+    transform: scale(0.9);
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Splash (app → by Neko Tools), como en Neko Lista
+--------------------------------------------------------------------------- */
+
+#app-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  transition: opacity 400ms ease;
+}
+
+#app-splash.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.splash-slide {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  transition: opacity 300ms ease, transform 400ms var(--ease);
+}
+
+.splash-slide img {
+  width: 104px;
+  height: 104px;
+  animation: splash-in 520ms var(--ease) both;
+}
+
+.splash-name {
+  font-family: var(--font-brand);
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: var(--text);
+}
+
+.splash-name span {
+  color: var(--brand);
+}
+
+.splash-name small {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.splash-brand {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+#app-splash.show-brand .splash-app {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+#app-splash.show-brand .splash-brand {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes splash-in {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Pantallas anchas
+--------------------------------------------------------------------------- */
+
+@media (min-width: 720px) {
+  .view {
+    padding-top: 24px;
+    gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Fondo elegido en Configuración (boot.js pone data-bg en <html>)
+--------------------------------------------------------------------------- */
+
+:root[data-bg="none"] body::before {
+  background-image: none;
+}
+
+/* Imagen propia: cubre la pantalla, con un velo del color de fondo para
+   que lo que va directo sobre el fondo se siga leyendo. */
+:root[data-bg="custom"] body::before {
+  background-image: linear-gradient(var(--bg-veil), var(--bg-veil)), var(--custom-bg, none);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 1;
+}
+
+:root {
+  --bg-veil: rgba(245, 243, 238, 0.35);
+}
+
+:root[data-theme="dark"] {
+  --bg-veil: rgba(16, 29, 26, 0.5);
+}
+
+/* Con imagen o color propio, los textos sueltos sobre el fondo van sobre
+   una pastilla, para leerse con cualquier color o foto. */
+:root[data-bg="custom"] :is(.privacy-note, .app-footer-line, .app-footer-links, .app-version),
+:root[data-bg-color] :is(.privacy-note, .app-footer-line, .app-footer-links, .app-version) {
+  width: fit-content;
+  margin-inline: auto;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}

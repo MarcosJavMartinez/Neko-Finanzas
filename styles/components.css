@@ -1,0 +1,2302 @@
+/* Componentes reutilizables: tarjetas, botones, filas, formularios, hojas,
+   avisos y gráficos. */
+
+/* ---------------------------------------------------------------------------
+   Tarjetas y secciones
+--------------------------------------------------------------------------- */
+
+/* Tarjetas principales: blancas, muy redondeadas, sombra suave, sin borde */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+
+/* Tarjetas secundarias: fondo pastel, sin sombra */
+.card-soft {
+  background: var(--brand-tint);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+.card-flush {
+  padding: 4px 0;
+  overflow: hidden;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.06rem;
+  font-weight: 800;
+  letter-spacing: -0.005em;
+}
+
+.section-title-spaced {
+  margin: 8px 4px -4px;
+}
+
+.section-sub {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin: 2px 0 12px;
+}
+
+.section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--brand-ink);
+  padding: 6px 10px 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-soft);
+  transition: filter var(--dur-fast);
+}
+
+.section-link:hover {
+  filter: brightness(0.97);
+}
+
+.fine-print {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.fine-print .icon {
+  margin-top: 2px;
+}
+
+.fine-print.center {
+  justify-content: center;
+  text-align: left;
+  margin: 4px 8px;
+}
+
+.muted-text {
+  color: var(--muted);
+}
+
+.optional {
+  color: var(--faint);
+  font-weight: 500;
+}
+
+.text-warn {
+  color: var(--warn-ink);
+}
+
+/* ---------------------------------------------------------------------------
+   Botones
+--------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  transition: transform var(--dur-fast) var(--ease), background var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn-sm {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.86rem;
+  border-radius: 12px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-grow {
+  flex: 1;
+}
+
+/* Acción principal: el naranja cálido guía la vista hacia lo que hay que tocar. */
+.btn-primary {
+  color: #fff;
+  background: var(--action-gradient);
+  box-shadow: 0 4px 14px var(--action-glow);
+  text-shadow: 0 1px 1px rgba(90, 25, 0, 0.18);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.04);
+  box-shadow: 0 6px 18px rgba(207, 69, 13, 0.38);
+}
+
+.btn-soft {
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+}
+
+.btn-ghost {
+  color: var(--text);
+  background: var(--surface);
+  border: 1.5px solid var(--input-border);
+}
+
+.btn-ghost:hover {
+  background: var(--track);
+}
+
+.btn-danger {
+  color: #fff;
+  background: var(--expense);
+}
+
+.btn-danger-text {
+  color: var(--expense-ink);
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--text-2);
+  transition: background var(--dur-fast);
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--track);
+}
+
+.icon-btn-soft {
+  width: 48px;
+  height: 48px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.icon-btn-xs {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--faint);
+}
+
+/* ---------------------------------------------------------------------------
+   Chips y etiquetas
+--------------------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--track);
+  color: var(--text-2);
+}
+
+.chip-ok,
+.chip-paid {
+  background: var(--income-soft);
+  color: var(--income-ink);
+}
+
+.chip-near,
+.chip-pending {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
+
+.chip-over,
+.chip-overdue {
+  background: var(--expense-soft);
+  color: var(--expense-ink);
+}
+
+.chip-done {
+  background: var(--goal-soft);
+  color: var(--goal-ink);
+}
+
+.chip-filter {
+  padding: 8px 16px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  min-height: 40px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  box-shadow: var(--shadow-xs);
+  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+
+.chip-filter.is-active {
+  background: var(--action);
+  border-color: var(--action);
+  color: #fff;
+  box-shadow: 0 3px 10px var(--action-glow);
+}
+
+.chip-action {
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  min-height: 36px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--track);
+  vertical-align: 2px;
+}
+
+.tag-bill {
+  color: var(--bill-ink);
+  background: var(--bill-soft);
+}
+
+/* ---------------------------------------------------------------------------
+   Burbujas de categoría
+--------------------------------------------------------------------------- */
+
+/* Burbujas en tinte de marca: el emoji ya identifica la categoría, así las
+   listas no se vuelven un arcoíris (el color de cada categoría queda para
+   los gráficos). */
+/* Íconos de categoría: cuadrado redondeado con el pastel del color de la
+   categoría (o de la meta), así cada fila tiene identidad propia. */
+.cat-bubble {
+  --c: var(--brand);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 30%;
+  background: color-mix(in srgb, var(--c) 15%, var(--surface));
+  color: var(--c);
+  line-height: 1;
+}
+
+.cat-bubble-md {
+  width: 42px;
+  height: 42px;
+  font-size: 1.25rem;
+}
+
+.cat-bubble-lg {
+  width: 54px;
+  height: 54px;
+  font-size: 1.6rem;
+  border-radius: 30%;
+}
+
+.cat-bubble-xl {
+  width: 72px;
+  height: 72px;
+  font-size: 2.2rem;
+  border-radius: 30%;
+}
+
+/* ---------------------------------------------------------------------------
+   Filas (transacciones, facturas, categorías)
+--------------------------------------------------------------------------- */
+
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 16px;
+  text-align: left;
+  transition: background var(--dur-fast);
+}
+
+.card:not(.card-flush) .row {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.row + .row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 70px;
+  right: 16px;
+  height: 1px;
+  background: var(--border);
+}
+
+.card:not(.card-flush) .row + .row::before {
+  left: 54px;
+  right: 0;
+}
+
+button.row:hover,
+.row-bill:hover {
+  background: var(--surface-2);
+}
+
+.row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.row-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-preview {
+  font-size: 0.76rem;
+  color: var(--faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.row-amount {
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.row-amount.is-income {
+  color: var(--income-ink);
+}
+
+.row-amount.is-expense {
+  color: var(--text);
+}
+
+.row-chevron {
+  color: var(--faint);
+}
+
+.approx {
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Fila de factura: toda la fila abre el detalle; el check paga rápido */
+.row-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.row-bill > :not(.row-hit) {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.row-bill > .row-quick {
+  pointer-events: auto;
+}
+
+/* "Pagar": acción clara en cada factura pendiente */
+.row-quick {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 0 12px 0 9px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--action);
+  color: var(--action-ink);
+  background: var(--surface);
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.row-quick:hover {
+  background: var(--action);
+  color: #fff;
+}
+
+.due {
+  font-weight: 600;
+}
+
+/* En facturas el vencimiento es lo importante: puede ocupar dos líneas */
+.row-bill .row-meta {
+  white-space: normal;
+}
+
+/* Factura vencida: marca cálida a la izquierda para que no pase desapercibida */
+.row-bill.status-overdue {
+  background: linear-gradient(90deg, var(--expense-soft), transparent 70%);
+}
+
+.row-bill.status-overdue::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--expense-ink);
+}
+
+.due-overdue {
+  color: var(--expense-ink);
+}
+
+.due-pending {
+  color: var(--warn-ink);
+}
+
+.due-paid {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------------------------
+   Barras de progreso
+--------------------------------------------------------------------------- */
+
+.progress {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--track);
+  overflow: hidden;
+}
+
+.progress-fill {
+  --c: var(--brand);
+  height: 100%;
+  width: var(--w);
+  border-radius: inherit;
+  background: var(--c);
+  transform-origin: left;
+  animation: grow 700ms var(--ease) both;
+}
+
+.progress-near .progress-fill {
+  background: var(--warn);
+}
+
+.progress-over .progress-fill {
+  background: var(--expense);
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Estados vacíos
+--------------------------------------------------------------------------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 18px 12px 8px;
+}
+
+.empty .neko-art {
+  margin-bottom: 6px;
+  animation: float 3.6s ease-in-out infinite;
+}
+
+.empty-compact {
+  padding: 8px 8px 4px;
+}
+
+.empty-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.empty-text {
+  color: var(--muted);
+  font-size: 0.88rem;
+  max-width: 300px;
+  margin-bottom: 8px;
+}
+
+@keyframes float {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Control segmentado
+--------------------------------------------------------------------------- */
+
+.segmented {
+  display: flex;
+  padding: 4px;
+  gap: 4px;
+  border-radius: var(--radius-md);
+  background: var(--track);
+}
+
+.segmented-option {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+/* En pantallas muy angostas los íconos no entran junto al texto */
+@media (max-width: 359px) {
+  .segmented-option span .icon {
+    display: none;
+  }
+}
+
+.segmented-option input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.segmented-option span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-2);
+  text-align: center;
+  transition: background var(--dur-fast), color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.segmented-option input:checked + span {
+  background: var(--surface);
+  color: var(--action-ink);
+  font-weight: 700;
+  box-shadow: var(--shadow-xs), inset 0 0 0 2px var(--action);
+}
+
+.segmented-option input:focus-visible + span {
+  outline: 3px solid var(--focus);
+}
+
+.segmented-lg .segmented-option span {
+  min-height: 46px;
+  font-size: 0.95rem;
+}
+
+.form[data-type="income"] .segmented-lg input:checked + span {
+  color: var(--on-strong);
+  background: var(--income-ink);
+  box-shadow: 0 3px 10px rgba(47, 158, 90, 0.3);
+}
+
+.form[data-type="expense"] .segmented-lg input:checked + span {
+  color: var(--on-strong);
+  background: var(--expense-ink);
+  box-shadow: 0 3px 10px rgba(179, 72, 58, 0.3);
+}
+
+/* ---------------------------------------------------------------------------
+   Formularios
+--------------------------------------------------------------------------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.field-hint {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.field-error {
+  font-size: 0.82rem;
+  color: var(--expense-ink);
+  font-weight: 600;
+}
+
+.field-error:empty {
+  display: none;
+}
+
+.form input[type="text"],
+.form input[type="date"],
+.form input[type="time"],
+.form select,
+.setting input[type="text"],
+.rates-form input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--input-border);
+  background: var(--surface);
+  font-size: 1rem;
+  transition: border-color var(--dur-fast), background var(--dur-fast), box-shadow var(--dur-fast);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form select,
+.amount-currency {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235d6a6d' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 34px;
+}
+
+.form input:focus,
+.form select:focus,
+.setting input:focus,
+.rates-form input:focus {
+  outline: none;
+  border-color: var(--action);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--action-soft);
+}
+
+.has-error input,
+.has-error .amount-input {
+  border-color: var(--expense) !important;
+}
+
+/* Campo de monto: grande y claro, con la moneda al lado */
+.amount-input {
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--input-border);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.amount-input:focus-within {
+  border-color: var(--action);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--action-soft);
+}
+
+.amount-input input,
+.form .amount-input input {
+  flex: 1;
+  min-width: 0;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  min-height: 56px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+  padding: 0 14px;
+}
+
+.amount-currency,
+.form .amount-currency {
+  flex-shrink: 0;
+  width: auto;
+  min-height: 0;
+  border: 0;
+  border-right: 1.5px solid var(--border);
+  border-radius: 0;
+  background-color: var(--track);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0 30px 0 14px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.amount-currency-static {
+  display: grid;
+  place-items: center;
+  padding: 0 14px;
+  background-image: none;
+  color: var(--text-2);
+}
+
+.amount-suffix {
+  display: grid;
+  place-items: center;
+  padding: 0 14px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.amount-input-sm input,
+.setting .amount-input input {
+  min-height: 46px;
+  font-size: 1.15rem;
+}
+
+.tone-income .amount-input input { color: var(--income-ink); }
+.tone-expense .amount-input input { color: var(--expense-ink); }
+.tone-bill .amount-input input { color: var(--bill-ink); }
+.tone-goal .amount-input input { color: var(--goal-ink); }
+
+/* Selector de categoría */
+.cat-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+}
+
+.cat-option {
+  --c: var(--brand);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px 8px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--dur-fast), background var(--dur-fast), transform var(--dur-fast);
+}
+
+.cat-option:active {
+  transform: scale(0.96);
+}
+
+.cat-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cat-option-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  font-size: 1.15rem;
+  background: var(--brand-soft);
+}
+
+.cat-option-name {
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-2);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.cat-option:has(input:checked) {
+  border-color: var(--action);
+  background: var(--action-soft);
+  box-shadow: inset 0 0 0 1px var(--action);
+}
+
+.cat-option:has(input:checked) .cat-option-name {
+  color: var(--action-ink);
+  font-weight: 700;
+}
+
+.cat-option:has(input:checked)::after {
+  content: "✓";
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--action);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  box-shadow: 0 0 0 2px var(--surface);
+  animation: pop 200ms var(--ease);
+}
+
+.cat-option:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.cat-option-new {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.cat-option-new .cat-option-icon {
+  background: var(--track);
+}
+
+/* Selector de subcategoría (chips) */
+.sub-picker {
+  --c: var(--brand);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  animation: reveal 260ms var(--ease);
+}
+
+.sub-chip {
+  position: relative;
+  cursor: pointer;
+}
+
+.sub-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sub-chip > span,
+.sub-chip-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-2);
+  transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast);
+}
+
+.sub-chip input:checked + span {
+  border-color: var(--action);
+  background: var(--action);
+  color: #fff;
+  box-shadow: 0 3px 10px var(--action-glow);
+}
+
+.sub-chip input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.sub-chip-new {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+/* Lista editable de subcategorías (formulario de categoría) */
+.sub-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sub-item {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 0.84rem;
+  font-weight: 600;
+  animation: pop 220ms var(--ease);
+}
+
+.sub-item-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 0 4px 0 12px;
+  color: var(--text-2);
+}
+
+.sub-item-remove {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 34px;
+  color: var(--faint);
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+}
+
+.sub-item-remove:hover {
+  color: var(--expense-ink);
+}
+
+.sub-empty {
+  font-size: 0.84rem;
+}
+
+.sub-add {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sub-add input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px !important;
+}
+
+.sub-add .btn {
+  flex-shrink: 0;
+}
+
+/* Selector de emoji y color */
+.emoji-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 6px;
+  max-height: 156px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.emoji-option,
+.color-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.emoji-option input,
+.color-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.emoji-option span {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 1.3rem;
+  border: 1.5px solid transparent;
+  background: var(--surface-2);
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+
+.emoji-option input:checked + span {
+  border-color: var(--action);
+  background: var(--action-soft);
+  box-shadow: inset 0 0 0 1px var(--action);
+}
+
+.emoji-option input:focus-visible + span,
+.color-option input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.color-option span {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--c);
+  color: transparent;
+  transition: transform var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.color-option input:checked + span {
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--c);
+}
+
+/* Interruptor */
+.toggle-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+}
+
+.toggle-label {
+  display: block;
+  font-weight: 600;
+}
+
+.switch {
+  -webkit-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
+  position: relative;
+  width: 48px;
+  height: 28px;
+  margin: 0;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+  cursor: pointer;
+  transition: background var(--dur-fast);
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--dur) var(--ease);
+}
+
+.switch:checked {
+  background: var(--brand);
+}
+
+.switch:checked::after {
+  transform: translateX(20px);
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  position: sticky;
+  bottom: 0;
+  padding: 12px 0 4px;
+  background: linear-gradient(to top, var(--surface) 75%, transparent);
+}
+
+.quick-amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: -6px;
+}
+
+/* ---------------------------------------------------------------------------
+   Avisos
+--------------------------------------------------------------------------- */
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.86rem;
+}
+
+.notice .icon {
+  margin-top: 1px;
+}
+
+.notice-info {
+  background: var(--bill-soft);
+  color: var(--bill-ink);
+}
+
+.notice-warn {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
+
+/* ---------------------------------------------------------------------------
+   Hoja inferior (bottom sheet)
+--------------------------------------------------------------------------- */
+
+.sheet-root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 40, 34, 0.32);
+  opacity: 0;
+  transition: opacity var(--dur) ease;
+}
+
+.sheet {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 92vh;
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(100%);
+  transition: transform 320ms var(--ease);
+}
+
+.sheet-root.is-open .sheet-backdrop {
+  opacity: 1;
+}
+
+.sheet-root.is-open .sheet {
+  transform: none;
+}
+
+.sheet-root.is-closing .sheet {
+  transition-duration: 200ms;
+}
+
+.sheet-grip {
+  width: 40px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--border-strong);
+  margin: 8px auto 0;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px 4px 20px;
+}
+
+.sheet-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  outline: none;
+}
+
+.sheet-body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 20px calc(16px + var(--safe-bottom));
+}
+
+.sheet-text {
+  color: var(--text-2);
+  font-size: 0.92rem;
+  margin-bottom: 4px;
+}
+
+@media (min-width: 720px) {
+  .sheet-root {
+    align-items: center;
+    padding: 24px;
+  }
+
+  .sheet {
+    border-radius: var(--radius-xl);
+    transform: translateY(24px) scale(0.98);
+    opacity: 0;
+    transition: transform 280ms var(--ease), opacity 200ms ease;
+    max-height: 88vh;
+  }
+
+  .sheet-root.is-open .sheet {
+    opacity: 1;
+  }
+
+  .sheet-grip {
+    display: none;
+  }
+
+  .sheet-head {
+    padding-top: 16px;
+  }
+}
+
+/* Detalle (factura / meta) */
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.detail-hero > div {
+  flex: 1;
+}
+
+.detail-amount {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-list {
+  margin: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.detail-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  font-size: 0.9rem;
+}
+
+.detail-list > div + div {
+  border-top: 1px solid var(--border);
+}
+
+.detail-list dt {
+  color: var(--muted);
+}
+
+.detail-list dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail-subtitle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.98rem;
+  margin-bottom: -6px;
+}
+
+.mini-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mini-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.mini-list li:last-child {
+  border-bottom: 0;
+}
+
+.mini-list-end {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.is-goal {
+  color: var(--goal-ink);
+}
+
+.is-income {
+  color: var(--income-ink);
+}
+
+/* ---------------------------------------------------------------------------
+   Toast
+--------------------------------------------------------------------------- */
+
+.toast-host {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 26px);
+  z-index: 150;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--gutter);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 480px;
+  width: 100%;
+  padding: 12px 12px 12px 14px;
+  border-radius: var(--radius-md);
+  background: #26302a;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  transition: opacity var(--dur) ease, transform var(--dur) var(--ease);
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.toast-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--brand);
+}
+
+.toast-error .toast-icon {
+  background: var(--expense);
+}
+
+.toast-info .toast-icon {
+  background: var(--bill);
+}
+
+.toast-text {
+  flex: 1;
+}
+
+.toast-action {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  color: #7fe0ec;
+  white-space: nowrap;
+}
+
+.toast-action:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------------------------------------------------------------------------
+   Gráficos
+--------------------------------------------------------------------------- */
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grid-line {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.axis-label {
+  font-size: 10px;
+  fill: var(--muted);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+
+.axis-label.is-current {
+  fill: var(--text);
+  font-weight: 700;
+}
+
+.hit {
+  fill: transparent;
+}
+
+.bar-group:hover .hit,
+.bar-group:focus-visible .hit {
+  fill: var(--track);
+  opacity: 0.6;
+}
+
+.bar-group:focus-visible,
+.line-point:focus-visible,
+.donut-seg:focus-visible {
+  outline: none;
+}
+
+.bar-income {
+  fill: var(--income);
+}
+
+.bar-expense {
+  fill: var(--expense);
+}
+
+.bar {
+  transform-origin: bottom;
+  transform-box: fill-box;
+  animation: bar-grow 600ms var(--ease) both;
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.line-path {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.line-point .dot {
+  opacity: 0;
+  stroke: var(--surface);
+  stroke-width: 2;
+  transition: opacity var(--dur-fast);
+}
+
+.crosshair {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0;
+}
+
+.line-point:hover .dot,
+.line-point:focus-visible .dot,
+.line-point:hover .crosshair,
+.line-point:focus-visible .crosshair {
+  opacity: 1;
+}
+
+.dot-last {
+  stroke: var(--surface);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--text-2);
+}
+
+.legend-wrap {
+  margin-top: 12px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-swatch {
+  --c: var(--brand);
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--c);
+  flex-shrink: 0;
+}
+
+.swatch-income {
+  background: var(--income);
+}
+
+.swatch-expense {
+  background: var(--expense);
+}
+
+.donut {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.donut svg {
+  animation: donut-in 700ms var(--ease) both;
+}
+
+.donut-seg {
+  cursor: pointer;
+  transition: stroke-width var(--dur-fast);
+}
+
+.donut-seg:hover,
+.donut-seg:focus-visible {
+  stroke-width: 26;
+}
+
+@keyframes donut-in {
+  from {
+    transform: rotate(-30deg) scale(0.92);
+    opacity: 0;
+  }
+}
+
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.donut-center-label {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.donut-center-value {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stack-bar {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--track);
+}
+
+.stack-seg {
+  width: var(--w);
+  background: var(--c);
+  transform-origin: left;
+  animation: grow 700ms var(--ease) both;
+}
+
+.chart-tip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: #26302a;
+  color: #fff;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  white-space: nowrap;
+}
+
+.chart-tip.is-visible {
+  opacity: 1;
+}
+
+.chart-tip span {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table th,
+.data-table td {
+  padding: 8px 6px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  text-align: left;
+}
+
+/* ---------------------------------------------------------------------------
+   Filas de movimientos estilo Neko Lista: nombre ······ monto
+--------------------------------------------------------------------------- */
+
+.tx-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.tx-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-fast);
+}
+
+.tx-row + .tx-row {
+  border-top: 1px solid var(--border);
+}
+
+.tx-row:hover {
+  background: var(--surface-2);
+}
+
+.tx-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tx-top,
+.tx-bottom {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tx-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.tx-top .tag {
+  margin-left: 0;
+  flex-shrink: 0;
+}
+
+/* La línea punteada entre el nombre y el monto, guiño a Neko Lista */
+.tx-leader {
+  flex: 1;
+  min-width: 14px;
+  align-self: center;
+  height: 0;
+  border-bottom: 2px dotted var(--dots);
+  transform: translateY(3px);
+}
+
+.tx-amount {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.tx-amount.is-income {
+  color: var(--income-ink);
+}
+
+.tx-amount.is-expense {
+  color: var(--expense-ink);
+}
+
+.tx-bottom {
+  justify-content: space-between;
+}
+
+.tx-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Monto grande con moneda en cápsulas (ARS | USD | EUR)
+--------------------------------------------------------------------------- */
+
+.amount-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.currency-seg {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--track);
+}
+
+.currency-seg-option {
+  position: relative;
+}
+
+.currency-seg-option input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.currency-seg-option span {
+  display: block;
+  min-width: 48px;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-align: center;
+  color: var(--muted);
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.currency-seg-option input:checked + span {
+  background: var(--action);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--action-glow);
+}
+
+.currency-seg-option input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.amount-input-xl input,
+.form .amount-input-xl input {
+  min-height: 72px;
+  font-size: 2.3rem;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------------------
+   Categorías frecuentes + "Ver todas las categorías"
+--------------------------------------------------------------------------- */
+
+.cat-picker.is-collapsed .is-extra {
+  display: none;
+}
+
+.see-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 6px 2px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--brand-ink);
+}
+
+.see-all[aria-expanded="true"] .icon {
+  transform: rotate(-90deg);
+}
+
+.see-all .icon {
+  transition: transform var(--dur) var(--ease);
+}
+
+/* ---------------------------------------------------------------------------
+   Hojita de calendario con la fecha de vencimiento de cada factura
+--------------------------------------------------------------------------- */
+
+.due-tile {
+  --tile: var(--brand);
+  --tile-soft: var(--brand-soft);
+  --tile-ink: var(--brand-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 50px;
+  border-radius: 13px;
+  background: var(--tile-soft);
+  box-shadow: inset 0 3px 0 var(--tile);
+  color: var(--tile-ink);
+  line-height: 1;
+}
+
+.due-tile-month {
+  margin-top: 3px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.due-tile-day {
+  margin-top: 2px;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.due-tile-overdue { --tile: var(--expense); --tile-soft: var(--expense-soft); --tile-ink: var(--expense-ink); }
+.due-tile-soon { --tile: var(--bill); --tile-soft: var(--bill-soft); --tile-ink: var(--bill-ink); }
+.due-tile-paid { --tile: var(--income); --tile-soft: var(--income-soft); --tile-ink: var(--income-ink); }
+
+.bill-emoji {
+  margin-right: 6px;
+  font-size: 0.95em;
+}
+
+.repeat-hint span {
+  flex: 1;
+}
+
+.link-btn {
+  font: inherit;
+  font-weight: 700;
+  color: var(--brand-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tag-future {
+  color: var(--bill-ink);
+  background: var(--bill-soft);
+}
+
+/* ---------------------------------------------------------------------------
+   Apariencia: paletas y fondo (como en Neko Lista)
+--------------------------------------------------------------------------- */
+
+.palette-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.palette-swatch {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--c);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1.5px var(--border-strong);
+  cursor: pointer;
+  transition: box-shadow var(--dur-fast), transform var(--dur-fast) var(--ease-spring);
+}
+
+.palette-swatch:hover {
+  transform: scale(1.08);
+}
+
+.palette-swatch:active {
+  transform: scale(0.92);
+}
+
+.palette-swatch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.palette-swatch:has(input[type="radio"]:checked),
+.palette-swatch.is-checked {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4.5px var(--text);
+  animation: swatch-pop 280ms var(--ease-spring);
+}
+
+.palette-swatch:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.palette-swatch-custom:not(.is-checked) {
+  background: conic-gradient(from 0deg, #e03131, #f0b429, #2f9e44, #1c7ed6, #7048c2, #e64980, #e03131);
+}
+
+@keyframes swatch-pop {
+  0% { transform: scale(0.8); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.bg-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bg-option {
+  position: relative;
+  flex: 1;
+  min-width: 96px;
+  cursor: pointer;
+}
+
+.bg-option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bg-option span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-2);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.86rem;
+  transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast) var(--ease-spring);
+}
+
+.bg-option:active span {
+  transform: scale(0.96);
+}
+
+.bg-option input:checked + span,
+.bg-option span.is-checked {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+}
+
+.bg-option input:focus-visible + span {
+  outline: 3px solid var(--focus);
+}
+
+.setting > .btn-sm {
+  align-self: flex-start;
+}
+
+.bg-color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bg-color-pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--text-2);
+}
+
+.bg-color-pick input {
+  width: 44px;
+  height: 40px;
+  padding: 3px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------------
+   Animaciones tomadas de Neko Lista (con los colores de Neko Finanzas)
+--------------------------------------------------------------------------- */
+
+/* Latido de un monto que cambió (el "total-pulse" de Neko Lista) */
+.pulse {
+  animation: amount-pulse 420ms var(--ease);
+  transform-origin: left center;
+}
+
+.mini-value.pulse,
+.stat-value.pulse {
+  display: block;
+}
+
+@keyframes amount-pulse {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.07); color: var(--brand-ink); }
+  100% { transform: scale(1); }
+}
+
+/* Movimiento recién cargado: entra deslizando y con un brillo de marca
+   (el "product-enter" de Neko Lista) */
+.tx-row.is-new {
+  animation: row-enter 260ms var(--ease), row-glow 1.6s ease;
+}
+
+@keyframes row-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes row-glow {
+  0%, 30% { background: var(--brand-soft); }
+  100% { background: transparent; }
+}
+
+/* Paneles que se despliegan (detalle por subcategoría, "ver como tabla") */
+details[open] > :not(summary) {
+  animation: fade-slide-in 180ms var(--ease);
+}
+
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* Rebote corto al elegir (los checks de Neko Lista) */
+.switch::after {
+  transition: transform var(--dur) var(--ease-spring);
+}
+
+.segmented-option input:checked + span {
+  animation: choice-pop 260ms var(--ease-spring);
+}
+
+@keyframes choice-pop {
+  0% { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+
+.hero-eye:active,
+.icon-btn:active {
+  transform: scale(0.88);
+}
+
+.hero-eye .icon {
+  animation: choice-pop 260ms var(--ease-spring);
+}
+
+/* Toque: todo lo que se puede apretar se "hunde" un poco */
+.more-item,
+.settings-action,
+.tx-row,
+.rate-pill,
+.tab {
+  transition-property: background, color, box-shadow, transform;
+  transition-duration: var(--dur-fast);
+}
+
+.more-item:active,
+.settings-action:active,
+.rate-pill:active {
+  transform: scale(0.98);
+}
+
+.tx-row:active {
+  transform: scale(0.99);
+}
+
+.tab:active {
+  transform: scale(0.94);
+}
+
+/* Botón ocupado (generando la imagen del resumen): ruedita como la de
+   instalación de Neko Lista */
+.btn.is-busy {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.btn.is-busy .icon {
+  display: none;
+}
+
+.btn.is-busy::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: busy-spin 0.8s linear infinite;
+}
+
+@keyframes busy-spin {
+  to { transform: rotate(360deg); }
+}
+
+.bg-option {
+  min-width: 0;
+}
+
+.bg-option span {
+  white-space: nowrap;
+  gap: 5px;
+  padding: 8px 6px;
+}
+
+@media (max-width: 380px) {
+  .bg-option span .icon {
+    display: none;
+  }
+}

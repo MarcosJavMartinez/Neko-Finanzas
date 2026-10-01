@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Neko Finanzas — by Neko Tools</title>
+<meta name="description" content="Tus finanzas personales, simples y privadas: cuánto tenés, cuánto reservar, cuánto podés gastar y cuánto estás ahorrando. Sin cuenta, sin anuncios, gratis." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Neko Finanzas — by Neko Tools" />
+<meta property="og:description" content="Cuánto tenés, cuánto reservar, cuánto podés gastar y cuánto estás ahorrando. Sin cuenta, sin anuncios, gratis." />
+<meta property="og:image" content="img/icon-512.png" />
+<meta name="theme-color" content="#0898ba" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png" />
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+<link rel="manifest" href="manifest.json" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Neko Finanzas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Nunito:wght@700;800;900&display=swap" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<link rel="stylesheet" href="styles/base.css" />
+<link rel="stylesheet" href="styles/components.css" />
+<link rel="stylesheet" href="styles/screens.css" />
+<script src="boot.js"></script>
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+
+<div id="app-splash" aria-hidden="true">
+  <div class="splash-slide splash-app">
+    <img src="img/icon-512.png" alt="" width="104" height="104" />
+    <p class="splash-name">Neko <span>Finanzas</span></p>
+  </div>
+  <div class="splash-slide splash-brand">
+    <img src="img/neko-tools-mark.png" alt="" width="104" height="104" />
+    <p class="splash-name"><small>by</small> Neko <span>Tools</span></p>
+  </div>
+</div>
+
+<a class="skip-link" href="#view">Saltar al contenido</a>
+
+<header class="app-header">
+  <div id="app-header" class="app-header-inner"></div>
+</header>
+
+<main id="view" class="view" tabindex="-1">
+  <noscript><p class="noscript">Neko Finanzas necesita JavaScript para funcionar.</p></noscript>
+</main>
+
+<nav class="tabbar" aria-label="Navegación principal">
+  <a class="tab" href="#/inicio" data-tab="inicio">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>
+    <span>Inicio</span>
+  </a>
+  <a class="tab" href="#/transacciones" data-tab="transacciones">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4 3 8l4 4M3 8h13M17 20l4-4-4-4M21 16H8"/></svg>
+    <span>Transacciones</span>
+  </a>
+  <a class="tab" href="#/metas" data-tab="metas">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>
+    <span>Metas</span>
+  </a>
+  <a class="tab" href="#/mas" data-tab="mas">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+    <span>Más</span>
+  </a>
+</nav>
+
+<div id="toast-host" class="toast-host" aria-live="polite"></div>
+
+</body>
+</html>

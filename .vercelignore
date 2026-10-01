@@ -1,0 +1,4 @@
+# Solo se publica la app: pruebas y herramientas quedan en el repo
+tests/
+tools/
+README.md

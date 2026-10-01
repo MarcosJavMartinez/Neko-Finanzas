@@ -1,0 +1,182 @@
+/*
+ * Tokens de diseño de Neko Finanzas.
+ *
+ * Lenguaje visual de Neko Lista (fondo crema con patrón lineal, tarjetas
+ * blancas muy redondeadas, header y barra inferior de color) con el cian
+ * del ícono oficial como color de marca en lugar del verde de Neko Lista.
+ *
+ * Colores con significado constante en toda la app:
+ *   cian     → marca, saldo disponible, acción principal, selección
+ *   verde    → ingresos
+ *   coral    → gastos
+ *   amarillo → facturas y advertencias
+ *   violeta  → metas y ahorro
+ * Cada uno tiene: el tono fuerte (íconos, barras, indicadores), -ink (una
+ * versión más oscura del mismo tono para números y texto, ≥ 4,5:1 sobre
+ * blanco) y -soft (pastel para fondos de tarjetas secundarias).
+ *
+ * Modo oscuro: [data-theme="dark"], o el tema del sistema si el usuario no
+ * eligió uno. Es la misma interfaz transformada, no otra app.
+ */
+:root {
+  color-scheme: light;
+
+  /* Fondo y superficies */
+  --bg: #f5f3ee;
+  --background: var(--bg);
+  --pattern: url("../img/bg-pattern-light.jpg");
+  --pattern-opacity: 0.55; /* decorativo: nunca compite con el contenido */
+  --surface: #ffffff;
+  --surface-2: #faf8f4;
+  --track: #eeebe4;
+  --track-strong: #e1dcd1;
+  --border: #ebe7dd;
+  --border-strong: #ddd7ca;
+  --input-border: #cfc8b8;
+  --dots: #d9d3c5; /* líneas punteadas estilo Neko Lista */
+
+  /* Texto (nunca negro puro) */
+  --text: #182326;
+  --text-2: #3f4d51;
+  --muted: #6f7c80;
+  --text-muted: var(--muted);
+  --faint: #9aa5a8;
+
+  /* Marca: el cian del ícono */
+  --brand: #08a7c8;
+  --brand-2: #16c1da;
+  --brand-dark: #067f9c;
+  --brand-ink: #067f9c;
+  --brand-soft: #e3f6fa;
+  --brand-tint: #f0fafc;
+  --brand-glow: rgba(8, 167, 200, 0.3);
+  --brand-gradient: linear-gradient(135deg, #16c1da 0%, #08a7c8 50%, #0791b0 100%);
+  --header-gradient: linear-gradient(135deg, #0aaccb 0%, #0898ba 55%, #0786aa 100%);
+  --on-brand-soft: rgba(255, 255, 255, 0.2); /* botones circulares del header */
+  --on-strong: #ffffff; /* texto/íconos sobre un color semántico fuerte */
+  --tab-active-ink: #067f9c; /* texto de la pestaña activa (cápsula blanca) */
+  --brand-shadow: rgba(4, 110, 140, 0.28); /* sombra del header y la barra inferior */
+
+  /* Acción principal y selección: cian profundo (texto blanco legible) */
+  --action: #0788a8;
+  --action-gradient: linear-gradient(135deg, #0a9fc0 0%, #0788a8 55%, #067f9c 100%);
+  --action-soft: var(--brand-soft);
+  --action-ink: var(--brand-ink);
+  --action-glow: rgba(8, 150, 185, 0.32);
+  --focus: #08a7c8;
+
+  /* Semánticos */
+  --income: #2ba66a;
+  --income-ink: #1d7a4d;
+  --income-soft: #e8f6ee;
+
+  --expense: #ef5361;
+  --expense-ink: #c93242;
+  --expense-soft: #fdeced;
+
+  --bill: #f2a000;
+  --bill-ink: #936000;
+  --bill-soft: #fff4d9;
+
+  --goal: #7651e8;
+  --goal-ink: #6743d6;
+  --goal-soft: #f0ebfd;
+
+  --warn: var(--bill);
+  --warn-ink: var(--bill-ink);
+  --warn-soft: var(--bill-soft);
+
+  /* Forma */
+  --radius-xl: 28px; /* tarjetas principales */
+  --radius-lg: 22px; /* tarjetas secundarias */
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
+
+  /* Sombras muy suaves */
+  --shadow-xs: 0 1px 2px rgba(24, 35, 38, 0.05);
+  --shadow-sm: 0 1px 2px rgba(24, 35, 38, 0.04), 0 6px 18px rgba(24, 35, 38, 0.06);
+  --shadow-soft: var(--shadow-sm);
+  --shadow-md: 0 2px 4px rgba(24, 35, 38, 0.04), 0 14px 32px rgba(24, 35, 38, 0.09);
+  --shadow-lg: 0 8px 12px rgba(24, 35, 38, 0.08), 0 24px 48px rgba(24, 35, 38, 0.16);
+
+  /* Tipografía: Outfit (números y títulos), Nunito (marca), Inter (resto) */
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "Outfit", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-brand: "Nunito", "Outfit", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Layout */
+  --gutter: 16px;
+  --max-width: 640px;
+  --max-width-wide: 1080px;
+  --tabbar-h: 72px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+
+  /* Movimiento */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* rebote corto, como los checks de Neko Lista */
+  --dur-fast: 160ms;
+  --dur: 260ms;
+}
+
+/* ---------------------------------------------------------------------------
+   Modo oscuro (mismos roles, valores adaptados)
+--------------------------------------------------------------------------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #101d1a;
+  --pattern: url("../img/bg-pattern-dark.jpg");
+  --pattern-opacity: 0.6;
+  --surface: #172622;
+  --surface-2: #1d2d29;
+  --track: #24362f;
+  --track-strong: #2d4239;
+  --border: #243631;
+  --border-strong: #2f443d;
+  --input-border: #3b5249;
+  --dots: #34483f;
+
+  --text: #f6f7f4;
+  --text-2: #d3dbd7;
+  --muted: #a9b5b0;
+  --faint: #7b8a84;
+
+  --brand: #2cc0dc;
+  --brand-2: #4fd3e8;
+  --brand-dark: #2cc0dc;
+  --brand-ink: #5fd2e8;
+  --brand-soft: #173a3f;
+  --brand-tint: #16302f;
+  --brand-glow: rgba(44, 192, 220, 0.25);
+  --header-gradient: linear-gradient(135deg, #0a93ae 0%, #087f9a 55%, #066c85 100%);
+  --on-strong: #0f1a17;
+  --tab-active-ink: #066c85;
+
+  --action: #0a93ae;
+  --action-gradient: linear-gradient(135deg, #12a9c6 0%, #0a93ae 55%, #087f9a 100%);
+  --action-glow: rgba(18, 169, 198, 0.3);
+  --focus: #4fd3e8;
+
+  --income: #3cc481;
+  --income-ink: #5fd49a;
+  --income-soft: #183a2b;
+
+  --expense: #ff6b78;
+  --expense-ink: #ff8a94;
+  --expense-soft: #3d2227;
+
+  --bill: #ffb52e;
+  --bill-ink: #ffc458;
+  --bill-soft: #3a2f16;
+
+  --goal: #9b82f5;
+  --goal-ink: #b3a0f8;
+  --goal-soft: #2a2545;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 6px 18px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3), 0 14px 32px rgba(0, 0, 0, 0.38);
+  --shadow-lg: 0 8px 12px rgba(0, 0, 0, 0.35), 0 24px 48px rgba(0, 0, 0, 0.5);
+}
