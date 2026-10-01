@@ -95,13 +95,20 @@ export function buildDemoState(today = todayISO()) {
     [9, 23].forEach((d) => tx("expense", between(8000, 16000), day(d), "exp-transporte", "", { subcategoryId: "exp-transporte.sube" }));
   });
 
-  // --- Tarjeta: una heladera en 6 cuotas y el pago mensual del resumen -------
-  const fridgeDay = `${months[2]}-10`;
-  const fridgeGroup = uid("cuotas");
-  for (let k = 0; k < 6; k++) {
-    const date = addMonths(fridgeDay, k, 10);
-    state.transactions.push({ id: uid("tx"), type: "expense", amount: 120000, currency: "ARS", date, time: "", categoryId: "exp-hogar", subcategoryId: "", description: "Heladera", accountId: CARD, installment: { group: fridgeGroup, n: k + 1, of: 6 }, createdAt: fridgeDay });
-  }
+  // --- Tarjeta: compras en cuotas y el pago mensual del resumen ---------------
+  // Cada compra genera una cuota por mes: las pasadas ya bajaron el total y
+  // las que vienen quedan programadas (y se reservan cuando se acercan).
+  const cuotas = (description, perCuota, count, start, categoryId, subcategoryId = "") => {
+    const group = uid("cuotas");
+    const day = Number(start.slice(8));
+    for (let k = 0; k < count; k++) {
+      state.transactions.push({ id: uid("tx"), type: "expense", amount: perCuota, currency: "ARS", date: addMonths(start, k, day), time: "", categoryId, subcategoryId, description, accountId: CARD, installment: { group, n: k + 1, of: count }, createdAt: start });
+    }
+  };
+  cuotas("Pasajes a Bariloche", 95000, 6, `${months[1]}-15`, "exp-entretenimiento");
+  cuotas("Heladera", 120000, 6, `${months[2]}-10`, "exp-hogar");
+  cuotas("Notebook", 75000, 12, `${months[3]}-03`, "exp-compras", "exp-compras.tecnologia");
+  cuotas("Zapatillas", 30000, 3, `${months[3]}-22`, "exp-ropa", "exp-ropa.calzado");
   // Cada mes se paga lo que se gastó con la tarjeta el mes anterior.
   months.forEach((key, index) => {
     if (!index) return;
@@ -110,8 +117,11 @@ export function buildDemoState(today = todayISO()) {
     if (spent) transfer(spent, `${key}-05`, BANK, CARD, "Pago de la tarjeta");
   });
 
-  // --- Préstamos: le prestaste a Caro (ya devolvió una parte) y tu papá te
-  // prestó plata que hay que devolver en unos días -----------------------------
+  // --- Préstamos -------------------------------------------------------------
+  // Caro: le prestaste y ya devolvió una parte. Papá: te prestó y hay que
+  // devolverle en unos días (se reserva). Tu hermana: le prestaste, sin
+  // devolver todavía. Juan: te prestó y ya le devolviste todo (saldado).
+  // Lu: solo anotado, sin mover plata de tus cuentas.
   const loanMove = (loan, flow, amount, accountId, date, description) => {
     const t = { id: uid("tx"), type: "loan", loanId: loan.id, flow, amount, currency: "ARS", accountId, date, time: "", description, createdAt: date };
     state.transactions.push(t);
@@ -123,7 +133,14 @@ export function buildDemoState(today = todayISO()) {
   const papa = { id: uid("loan"), person: "Papá", direction: "borrowed", amount: 150000, currency: "ARS", date: `${months[2]}-20`, dueDate: addDays(today, 20), note: "", payments: [], createdAt: `${months[2]}-20` };
   papa.txId = loanMove(papa, "in", 150000, BANK, papa.date, "Préstamo de Papá");
   papa.payments.push({ id: uid("pay"), date: `${months[3]}-20`, amount: 50000, txId: loanMove(papa, "out", 50000, BANK, `${months[3]}-20`, "Le devolviste a Papá") });
-  state.loans = [caro, papa];
+  const hermana = { id: uid("loan"), person: "Mi hermana", direction: "lent", amount: 120000, currency: "ARS", date: `${months[3]}-27`, dueDate: addDays(today, 12), note: "Para la seña del alquiler", payments: [], createdAt: `${months[3]}-27` };
+  hermana.txId = loanMove(hermana, "out", 120000, BANK, hermana.date, "Préstamo a Mi hermana");
+  const juan = { id: uid("loan"), person: "Juan", direction: "borrowed", amount: 40000, currency: "ARS", date: `${months[1]}-08`, dueDate: `${months[2]}-30`, note: "Cuando me quedé sin efectivo en el viaje", payments: [], createdAt: `${months[1]}-08` };
+  juan.txId = loanMove(juan, "in", 40000, CASH, juan.date, "Préstamo de Juan");
+  juan.payments.push({ id: uid("pay"), date: `${months[1]}-25`, amount: 20000, txId: loanMove(juan, "out", 20000, CASH, `${months[1]}-25`, "Le devolviste a Juan") });
+  juan.payments.push({ id: uid("pay"), date: `${months[2]}-25`, amount: 20000, txId: loanMove(juan, "out", 20000, WALLET, `${months[2]}-25`, "Le devolviste a Juan") });
+  const lu = { id: uid("loan"), person: "Lu", direction: "lent", amount: 15000, currency: "ARS", date: `${months[3]}-05`, dueDate: "", note: "La entrada del recital (solo anotado)", payments: [], createdAt: `${months[3]}-05` };
+  state.loans = [caro, papa, hermana, juan, lu];
 
   // --- Facturas y servicios ------------------------------------------------
   // offset = días desde hoy hasta el próximo vencimiento pendiente.

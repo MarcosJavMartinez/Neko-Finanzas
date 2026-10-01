@@ -1988,3 +1988,7 @@ button.more-item {
     font-size: 1.45rem;
   }
 }
+
+.loan-row .row-meta {
+  white-space: normal;
+}
