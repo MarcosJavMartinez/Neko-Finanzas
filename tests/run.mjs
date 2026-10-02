@@ -129,6 +129,7 @@ for (const [name, file, opts] of [
   ["Cuentas y transferencias", "accounts.js"],
   ["Tarjeta de crédito y cuotas", "credit-card.js"],
   ["Préstamos", "loans.js"],
+  ["Avisos de vencimientos", "reminders.js"],
   [
     "Datos: IndexedDB, copias automáticas, iPhone, pestañas",
     "storage.js",
@@ -188,6 +189,8 @@ async function withDevTools(fn) {
     // Lo que la app "descarga" durante una prueba (backups, planillas, imágenes)
     // va a la carpeta temporal del perfil, no a la carpeta Descargas de la persona.
     await send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: profile });
+    // Permiso de notificaciones (los avisos igual vienen apagados hasta que se prenden).
+    await send("Browser.grantPermissions", { permissions: ["notifications"], origin: BASE });
     return await fn({ send, evaluate, on });
   } finally {
     try { ws?.close(); } catch {}
@@ -233,6 +236,50 @@ if (wanted("Sin conexión", "offline")) try {
   record("Sin conexión (service worker real)", ok, `${out.sw.cache}: ${out.sw.count} archivos · sin red: inicio ${out.flow.hero}, navega y guarda · fuentes sin red=${out.flow.fonts} · pedidos externos: ${out.external.join(", ") || "ninguno"}`);
 } catch (error) {
   record("Sin conexión (service worker real)", false, error.message);
+}
+
+// El navegador despierta al service worker en segundo plano (como en Android
+// con la app instalada): tiene que mostrar los avisos pendientes él solo.
+if (wanted("Avisos en segundo plano", "reminders")) try {
+  const out = await withDevTools(async ({ send, evaluate, on }) => {
+    let registrationId = "";
+    on("ServiceWorker.workerRegistrationUpdated", (p) => {
+      const reg = p.registrations.find((r) => r.scopeURL.startsWith(BASE));
+      if (reg) registrationId = reg.registrationId;
+    });
+    await send("ServiceWorker.enable");
+    await send("Page.navigate", { url: `${BASE}/#/inicio` });
+    await sleep(6000);
+    const setup = await evaluate(`(async () => {
+      localStorage.setItem("nekoFinanzas.onboardingSeen", "1");
+      const store = await import("/js/core/store.js");
+      const R = await import("/js/ui/reminders.js");
+      const db = await import("/js/core/db.js");
+      await navigator.serviceWorker.ready;
+      const result = await R.enableReminders(store.getState());
+      // Chrome sin ventana no lista las notificaciones: se mira el registro de
+      // avisos ya mostrados que lleva la app.
+      const record = await db.withStore("assets", "readonly", (s) => s.get("reminders"));
+      const first = Object.keys(record.shown || {}).length;
+      // Como si todavía no se hubiera avisado nada (la app estuvo cerrada).
+      await db.withStore("assets", "readwrite", (s) => s.put({ ...record, shown: {} }, "reminders"));
+      return { result, first, pending: 0 };
+    })()`);
+    await send("ServiceWorker.dispatchPeriodicSyncEvent", { origin: BASE, registrationId, tag: "neko-vencimientos" });
+    await sleep(2500);
+    const shownTags = `(async () => { const db = await import("/js/core/db.js"); const r = await db.withStore("assets", "readonly", (s) => s.get("reminders")); return Object.keys(r?.shown || {}); })()`;
+    const woke = await evaluate(shownTags);
+    // Con los avisos apagados, despertar no muestra nada.
+    await evaluate(`(async () => { const store = await import("/js/core/store.js"); const R = await import("/js/ui/reminders.js"); await R.disableReminders(store.getState()); })()`);
+    await send("ServiceWorker.dispatchPeriodicSyncEvent", { origin: BASE, registrationId, tag: "neko-vencimientos" });
+    await sleep(1500);
+    const off = (await evaluate(shownTags)).length;
+    return { setup, woke, off, registrationId: !!registrationId };
+  });
+  const ok = out.setup.result === "granted" && out.setup.first > 0 && out.setup.pending === 0 && out.woke.length === out.setup.first && out.off === 0;
+  record("Avisos en segundo plano (service worker)", ok, `al despertar el service worker avisa ${out.woke.length} de ${out.setup.first} pendientes · con los avisos apagados: ${out.off}`);
+} catch (error) {
+  record("Avisos en segundo plano (service worker)", false, error.message);
 }
 
 if (wanted("Imagen de fondo", "background")) try {

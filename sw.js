@@ -4,7 +4,7 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v24";
+const CACHE_VERSION = "neko-finanzas-v25";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -47,6 +47,7 @@ const APP_SHELL = [
   "js/ui/summaryImage.js",
   "js/ui/background.js",
   "js/ui/backupFile.js",
+  "js/ui/reminders.js",
   "js/ui/snapshots.js",
   "js/ui/forms/accountForms.js",
   "js/ui/forms/billForms.js",
@@ -130,5 +131,79 @@ self.addEventListener("fetch", (event) => {
       .catch(() =>
         caches.match(request, { ignoreSearch: true }).then((cached) => cached || (request.mode === "navigate" ? caches.match("index.html") : undefined))
       )
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Avisos de vencimientos
+//
+// La app deja en IndexedDB un plan con los avisos de los próximos días (ver
+// js/ui/reminders.js). Cuando el navegador despierta al service worker en
+// segundo plano (Android con la app instalada), se muestran los de hoy que
+// todavía no se mostraron. Si los avisos están apagados, el plan está vacío.
+// ---------------------------------------------------------------------------
+
+const REMINDERS_KEY = "reminders";
+
+function remindersStore(mode) {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open("nekoFinanzas");
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const db = open.result;
+      if (!db.objectStoreNames.contains("assets")) {
+        db.close();
+        return reject(new Error("sin datos"));
+      }
+      const tx = db.transaction("assets", mode);
+      tx.oncomplete = () => db.close();
+      resolve(tx.objectStore("assets"));
+    };
+  });
+}
+
+const request = (req) => new Promise((resolve, reject) => {
+  req.onsuccess = () => resolve(req.result);
+  req.onerror = () => reject(req.error);
+});
+
+function localToday() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+async function showDueReminders() {
+  if (self.Notification && Notification.permission !== "granted") return;
+  const record = await request((await remindersStore("readonly")).get(REMINDERS_KEY));
+  if (!record || !record.enabled) return;
+  const today = localToday();
+  const shown = record.shown || {};
+  let changed = false;
+  for (const item of record.items || []) {
+    if (shown[item.tag] || item.from > today || item.until < today || !item.titles || !item.titles[today]) continue;
+    await self.registration.showNotification(item.titles[today], { body: item.body, tag: item.tag, icon: "img/icon-192.png", badge: "img/icon-192.png", data: { url: "#/facturas" } });
+    shown[item.tag] = today;
+    changed = true;
+  }
+  if (changed) await request((await remindersStore("readwrite")).put({ ...record, shown }, REMINDERS_KEY));
+}
+
+self.addEventListener("periodicsync", (event) => {
+  if (event.tag === "neko-vencimientos") event.waitUntil(showDueReminders().catch(() => {}));
+});
+
+// Tocar un aviso abre la app (o la trae al frente) en Facturas.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const hash = (event.notification.data && event.notification.data.url) || "#/inicio";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((w) => "focus" in w);
+      if (open) {
+        open.navigate && open.navigate(new URL(hash, self.registration.scope).href).catch(() => {});
+        return open.focus();
+      }
+      return self.clients.openWindow(new URL(hash, self.registration.scope).href);
+    })
   );
 });

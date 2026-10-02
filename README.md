@@ -19,6 +19,7 @@ La segunda herramienta de [Neko Tools](https://nekotools.site), después de [Nek
 - **Deshacer** en todas las acciones que borran o mueven plata.
 - **PWA** instalable que funciona sin conexión.
 - **Primera vez**: un tutorial corto que termina preguntando si empezás con lo tuyo (con un asistente: moneda, cuánto tenés hoy y tu sueldo) o mirás un ejemplo.
+- **Avisos de vencimientos** (se pueden apagar): una notificación cuando se acerca una factura, el resumen de la tarjeta o un préstamo, el mismo día o 1 o 3 días antes. Sin servidor: salen al abrir la app y, en Android con la app instalada, también en segundo plano cuando Chrome despierta al service worker.
 - **Vencimientos en tu calendario**: exporta las facturas a un `.ics` (Google Calendar, iPhone, Outlook) con aviso el día antes.
 - **Copias automáticas** que se pueden restaurar, backup en JSON y exportación a CSV.
 

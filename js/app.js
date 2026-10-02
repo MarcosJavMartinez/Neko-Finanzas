@@ -26,6 +26,7 @@ import { showCustomImage } from "./ui/background.js";
 import { canPromptInstall, promptInstall, onInstallChange, openInstallHelp } from "./ui/install.js";
 import { downloadFile } from "./ui/download.js";
 import { saveBackup, initBackupFile } from "./ui/backupFile.js";
+import { syncPlan, fireDue } from "./ui/reminders.js";
 import { snoozeIosNotice, markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen } from "./core/prefs.js";
 import { openOnboarding } from "./ui/onboarding.js";
 import { transactionsToCSV } from "./core/csv.js";
@@ -394,9 +395,18 @@ document.addEventListener("visibilitychange", () => {
     render();
     store.maybeDailySnapshot();
   }
+  fireDue(); // avisos de vencimientos que tocan hoy (si están prendidos)
 });
 
+// Avisos de vencimientos: el plan se rearma cuando cambian los datos.
+let remindersTimer = 0;
+function refreshReminders() {
+  clearTimeout(remindersTimer);
+  remindersTimer = setTimeout(() => syncPlan(store.getState()).then(() => fireDue()), 800);
+}
+
 store.subscribe(() => {
+  refreshReminders();
   const y = window.scrollY;
   render();
   window.scrollTo({ top: y });
@@ -442,6 +452,7 @@ async function start() {
   initChartTooltips();
   render({ animate: true });
   animateHero();
+  refreshReminders();
   const splashDelay = hideSplash();
   requestPersistence();
   // Tutorial la primera vez (app nueva o con los datos de ejemplo del

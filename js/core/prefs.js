@@ -12,6 +12,8 @@ const KEYS = {
   onboardingSeen: "nekoFinanzas.onboardingSeen",
   iosNoticeSnooze: "nekoFinanzas.iosNoticeSnooze",
   lastAccount: "nekoFinanzas.lastAccount",
+  reminders: "nekoFinanzas.reminders",
+  reminderDays: "nekoFinanzas.reminderDays",
 };
 
 const DAY = 86400000;
@@ -67,6 +69,17 @@ export const amountsHidden = () => read(KEYS.hideAmounts) === "1";
 export const setAmountsHidden = (on) => write(KEYS.hideAmounts, on ? "1" : null);
 
 export const onboardingSeen = () => read(KEYS.onboardingSeen) === "1";
+
+// Avisos de vencimientos (apagados hasta que la persona los prende).
+export const REMINDER_DAYS = [0, 1, 3];
+export const remindersEnabled = () => read(KEYS.reminders) === "on";
+export const setRemindersEnabled = (on) => write(KEYS.reminders, on ? "on" : null);
+/** Cuántos días antes avisar (además del mismo día): 0, 1 o 3. */
+export function getReminderDays() {
+  const n = Number(read(KEYS.reminderDays));
+  return REMINDER_DAYS.includes(n) && read(KEYS.reminderDays) !== null ? n : 1;
+}
+export const setReminderDays = (n) => write(KEYS.reminderDays, REMINDER_DAYS.includes(Number(n)) ? String(Number(n)) : null);
 
 /** Última cuenta usada al cargar un movimiento (se propone la próxima vez). */
 export const getLastAccount = () => read(KEYS.lastAccount) || "";

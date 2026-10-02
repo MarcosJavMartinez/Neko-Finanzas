@@ -12,6 +12,42 @@ import { MAX_AMOUNT } from "../core/sanitize.js";
 import * as store from "../core/store.js";
 import { openSnapshots } from "../ui/snapshots.js";
 import { canPickFile, backupFileKnown } from "../ui/backupFile.js";
+import { remindersSupported, reminderPermission, enableReminders, disableReminders, syncPlan, fireDue, testReminder } from "../ui/reminders.js";
+import { remindersEnabled, getReminderDays, setReminderDays } from "../core/prefs.js";
+
+/** Avisos de vencimientos: interruptor, cuántos días antes y un aviso de prueba. */
+function remindersBlock() {
+  if (!remindersSupported()) {
+    return html`<div class="setting">
+      <span class="setting-label">${icon("calendar", 16)} Avisos de vencimientos</span>
+      <span class="field-hint">${installPlatform().startsWith("ios") ? "En iPhone, instalá la app en la pantalla de inicio para poder activar los avisos." : "Este navegador no permite mostrar avisos."} Mientras tanto, podés llevar los vencimientos a tu calendario desde Facturas.</span>
+    </div>`;
+  }
+  const blocked = reminderPermission() === "denied";
+  const on = remindersEnabled() && reminderPermission() === "granted";
+  return html`<div class="setting">
+    <label class="toggle-field">
+      <span><span class="toggle-label">Avisos de vencimientos</span><span class="field-hint">Una notificación cuando se acerca el vencimiento de una factura, de la tarjeta o de un préstamo.</span></span>
+      <input type="checkbox" class="switch" ${on ? "checked" : ""} data-change="set-reminders" />
+    </label>
+    ${blocked ? html`<p class="notice notice-warn">${icon("alert", 16)} Los avisos están bloqueados para esta app en el navegador. Habilitalos desde el candado de la barra de direcciones (o en los ajustes del sitio) y volvé a prenderlos.</p>` : ""}
+    ${on
+      ? html`<span class="setting-label">Avisarme</span>
+          ${segmented(
+            "reminderDays",
+            [
+              { value: "0", label: "Ese día" },
+              { value: "1", label: "1 día antes" },
+              { value: "3", label: "3 días antes" },
+            ],
+            String(getReminderDays()),
+            { action: "set-reminder-days" }
+          )}
+          <span class="field-hint">Los avisos salen cuando abrís la app. En Android con la app instalada también pueden llegar con la app cerrada (lo decide el navegador). Si tenés los montos ocultos, el aviso no muestra el monto.</span>
+          <button type="button" class="btn btn-soft btn-sm" data-action="test-reminder">${icon("check", 16)} Probar un aviso</button>`
+      : ""}
+  </div>`;
+}
 import {
   getThemePref,
   canVibrate,
@@ -87,6 +123,9 @@ const handlers = {
       toast("Datos de ejemplo cargados");
       whenHistorySettled(() => (location.hash = "#/inicio"));
     },
+    async "test-reminder"() {
+      toast((await testReminder()) ? "Aviso enviado: fijate en las notificaciones" : "No se pudo mostrar el aviso", { type: "info" });
+    },
     "open-snapshots"() {
       openSnapshots();
     },
@@ -141,6 +180,23 @@ const handlers = {
       setAmountsHidden(el.checked);
       setMasked(el.checked);
       return true;
+    },
+    async "set-reminders"(el) {
+      if (el.checked) {
+        const result = await enableReminders(store.getState());
+        if (result === "granted") toast("Avisos de vencimientos activados");
+        else toast(result === "denied" ? "El navegador no dio permiso para mostrar avisos" : "Este navegador no permite avisos", { type: "error" });
+      } else {
+        await disableReminders(store.getState());
+        toast("Avisos de vencimientos apagados", { type: "info" });
+      }
+      window.dispatchEvent(new Event("neko:rerender"));
+    },
+    async "set-reminder-days"(el) {
+      setReminderDays(el.value);
+      await syncPlan(store.getState());
+      await fireDue();
+      toast("Avisos actualizados", { type: "info" });
     },
     "set-vibration"(el) {
       setVibration(el.checked);
@@ -304,6 +360,8 @@ export const settingsDevice = sub("ajustes-dispositivo", "En este dispositivo", 
             </div>`
           : ""}
 
+        ${remindersBlock()}
+
         <div class="setting">
           <label class="toggle-field">
             <span><span class="toggle-label">Ocultar montos</span><span class="field-hint">Muestra $ ••••• en lugar de los números, para abrir la app en público. También con el ojito del inicio.</span></span>
@@ -353,7 +411,7 @@ export const settingsData = sub("ajustes-datos", "Tus datos", () => html`
 const SECTIONS = [
   { href: "#/ajustes-calculo", icon: "pie", title: "Cálculo del disponible", sub: () => "Reserva de facturas e ingreso de referencia" },
   { href: "#/ajustes-apariencia", icon: "sparkle", title: "Apariencia", sub: () => "Tema, color principal y fondo" },
-  { href: "#/ajustes-dispositivo", icon: "phone", title: "En este dispositivo", sub: () => "Vibración, ocultar montos, instalar" },
+  { href: "#/ajustes-dispositivo", icon: "phone", title: "En este dispositivo", sub: () => "Avisos, ocultar montos, instalar" },
   { href: "#/ajustes-datos", icon: "shield", title: "Tus datos", sub: () => lastBackupText() },
 ];
 
