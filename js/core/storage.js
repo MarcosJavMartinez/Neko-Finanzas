@@ -169,19 +169,49 @@ export async function clearData() {
 // Copias automáticas (solo con IndexedDB)
 // ---------------------------------------------------------------------------
 
+// Las copias ocupan lo mínimo: se guardan comprimidas (gzip deja el texto en
+// más o menos una décima parte) y no se guarda una copia igual a la anterior.
+
+/** Huella corta del contenido, para saber si dos copias son iguales. */
+function fingerprint(text) {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
+  return `${text.length}:${h >>> 0}`;
+}
+
+async function gzip(text) {
+  if (typeof CompressionStream === "undefined") return null;
+  const stream = new Blob([text]).stream().pipeThrough(new CompressionStream("gzip"));
+  return new Response(stream).blob();
+}
+
+async function gunzip(blob) {
+  const stream = blob.stream().pipeThrough(new DecompressionStream("gzip"));
+  return new Response(stream).text();
+}
+
 /** Guarda una copia del estado. `reason`: "diaria", "antes de importar", … */
 export async function saveSnapshot(data, reason) {
   if (mode !== "idb") return false;
   const at = new Date().toISOString();
+  // El texto se arma ya (antes de cualquier espera): es la foto de este momento.
+  const text = JSON.stringify(data);
   const snap = {
     id: `${at}-${Math.random().toString(36).slice(2, 6)}`,
     at,
     reason,
     counts: { transactions: data.transactions?.length || 0, bills: data.bills?.length || 0, goals: data.goals?.length || 0 },
-    data: JSON.stringify(data),
+    hash: fingerprint(text),
   };
   try {
     await queue;
+    const all = await withStore("snapshots", "readonly", (s) => s.getAll());
+    const latest = all.sort((a, b) => String(b.at).localeCompare(String(a.at)))[0];
+    // Nada cambió desde la última copia: no hace falta otra igual.
+    if (latest?.hash === snap.hash) return false;
+    const gz = await gzip(text).catch(() => null);
+    if (gz) snap.gz = gz;
+    else snap.data = text;
     await withStore("snapshots", "readwrite", (s) => s.put(snap, snap.id));
     const ids = (await withStore("snapshots", "readonly", (s) => s.getAllKeys())).sort();
     const extra = ids.slice(0, Math.max(0, ids.length - MAX_SNAPSHOTS));
@@ -209,7 +239,19 @@ export async function listSnapshots() {
 
 export async function loadSnapshot(id) {
   const snap = await withStore("snapshots", "readonly", (s) => s.get(id));
-  return snap?.data ? JSON.parse(snap.data) : null;
+  if (snap?.gz) return JSON.parse(await gunzip(snap.gz));
+  return snap?.data ? JSON.parse(snap.data) : null; // copias anteriores, sin comprimir
+}
+
+/** Cuánto ocupan las copias guardadas (bytes), para mostrarlo en Configuración. */
+export async function snapshotsSize() {
+  if (mode !== "idb") return 0;
+  try {
+    const all = await withStore("snapshots", "readonly", (s) => s.getAll());
+    return all.reduce((sum, x) => sum + (x?.gz?.size ?? (x?.data?.length || 0)), 0);
+  } catch (error) {
+    return 0;
+  }
 }
 
 export async function clearSnapshots() {

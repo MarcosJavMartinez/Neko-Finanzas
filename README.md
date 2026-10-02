@@ -35,7 +35,7 @@ La lógica completa está documentada en [`js/core/finance.js`](js/core/finance.
 
 ## 🛠️ Stack
 
-HTML, CSS y JavaScript puro (módulos ES), sin frameworks ni build. PWA con service worker. Los datos se guardan en IndexedDB ([`js/core/storage.js`](js/core/storage.js), con la base en [`js/core/db.js`](js/core/db.js)); si el navegador no lo permite, en `localStorage`. La app guarda sola copias automáticas (una por día y antes de importar, cargar el ejemplo o empezar de cero; las últimas 7) que se pueden restaurar desde Configuración. En iPhone avisa que conviene instalarla: Safari borra los datos de las webs que no se abren en 7 días, salvo las instaladas.
+HTML, CSS y JavaScript puro (módulos ES), sin frameworks ni build. PWA con service worker. Los datos se guardan en IndexedDB ([`js/core/storage.js`](js/core/storage.js), con la base en [`js/core/db.js`](js/core/db.js)); si el navegador no lo permite, en `localStorage`. La app guarda sola copias automáticas (una por día y antes de importar, cargar el ejemplo o empezar de cero; las últimas 7) que se pueden restaurar desde Configuración. Todo ocupa lo mínimo: las copias van comprimidas (gzip, ~10% del tamaño) y no se repiten si nada cambió; el backup es un JSON compacto que reemplaza siempre el mismo archivo (en Chrome/Edge de escritorio se elige una vez dónde guardarlo; en el celular se abre el menú de compartir). En iPhone avisa que conviene instalarla: Safari borra los datos de las webs que no se abren en 7 días, salvo las instaladas.
 
 ```
 index.html            estructura, header, barra inferior, splash

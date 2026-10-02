@@ -47,6 +47,26 @@ return (async () => {
     log("csv: bom=" + (csv.charCodeAt(0) === 0xfeff) + " filas=" + (lines.length - 1) + " de " + store.getState().transactions.length + " · encabezado: " + lines[0].slice(1));
     log("csv última con inyección: " + lines.find((l) => l.includes("HYPERLINK")));
     log("csv 2 filas: " + lines.slice(1, 3).join(" | "));
+    // Backup que reemplaza siempre el mismo archivo (selector de archivos simulado)
+    const backupFile = await w.eval('import("/js/ui/backupFile.js")');
+    const fake = { name: "mi-backup.json", content: "", writes: 0, queryPermission: async () => "granted", createWritable: async () => ({ write: async (t) => (fake.content = t), close: async () => fake.writes++ }) };
+    let picks = 0;
+    w.showSaveFilePicker = async () => { picks++; return fake; };
+    const r1 = await backupFile.saveBackup(store.exportJSON());
+    const r2 = await backupFile.saveBackup(store.exportJSON());
+    log(`backup en archivo: 1º=${r1.how}${r1.first ? " (eligió archivo)" : ""} · 2º=${r2.how} · veces que preguntó dónde=${picks}${picks === 1 ? "" : " ✗"} · escrituras=${fake.writes} · nombre=${backupFile.backupFileKnown()}`);
+    const parsed = JSON.parse(fake.content);
+    log(`contenido: compacto=${!fake.content.includes("\n") ? "sí" : "NO ✗"} · movimientos=${parsed.data.transactions.length} · ${Math.round(fake.content.length / 1024)} KB (con sangría serían ${Math.round(JSON.stringify(parsed, null, 2).length / 1024)} KB)`);
+    const r3 = await backupFile.saveBackup("otro", { choose: true });
+    log("guardar en otro archivo: " + r3.how + " · preguntó de nuevo=" + (picks === 2));
+    w.showSaveFilePicker = async () => { throw new w.DOMException("cancelado", "AbortError"); };
+    await backupFile.forgetBackupFile();
+    log("si cancela: " + (await backupFile.saveBackup("x")).how);
+    w.showSaveFilePicker = async () => fake;
+    w.location.hash = "#/ajustes-datos"; await wait(300);
+    d.querySelector("[data-action=export-data]").click(); await wait(600);
+    log("botón: " + [...d.querySelectorAll(".toast")].pop()?.textContent.trim().split("\n")[0] + " · ahora dice: " + d.querySelector("[data-action=export-data] strong").textContent);
+    w.showSaveFilePicker = undefined;
     const bad = [...d.body.innerText.matchAll(/NaN|undefined|\[object/g)].length;
     log("textos raros: " + bad);
   } catch (e) { log("ERROR " + e.stack); }

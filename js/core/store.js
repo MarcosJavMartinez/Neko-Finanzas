@@ -765,7 +765,8 @@ export async function resetEverything() {
 }
 
 export function exportJSON() {
-  return JSON.stringify({ app: "neko-finanzas", exportedAt: new Date().toISOString(), data: state }, null, 2);
+  // Sin espacios ni sangría: el archivo pesa bastante menos y se lee igual al importarlo.
+  return JSON.stringify({ app: "neko-finanzas", exportedAt: new Date().toISOString(), data: state });
 }
 
 export function importJSON(text) {

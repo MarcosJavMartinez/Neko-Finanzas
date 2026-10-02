@@ -4,7 +4,7 @@ import { html, setHTML } from "./dom.js";
 import { icon } from "./icons.js";
 import { openSheet, confirmDialog } from "./sheet.js";
 import { toast } from "./toast.js";
-import { storageMode } from "../core/storage.js";
+import { storageMode, snapshotsSize } from "../core/storage.js";
 import * as store from "../core/store.js";
 
 function when(iso) {
@@ -29,6 +29,8 @@ export function openSnapshots() {
         return;
       }
       const list = await store.listSnapshots();
+      const bytes = await snapshotsSize();
+      const size = bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
       if (!list.length) {
         setHTML(box, html`<p class="muted-text">Todavía no hay copias. La primera se hace sola cuando tengas datos propios cargados.</p>`);
         return;
@@ -46,7 +48,8 @@ export function openSnapshots() {
               <button type="button" class="btn btn-sm btn-soft" data-restore="${s.id}">Restaurar</button>
             </div>`
           )}
-        </div>`
+        </div>
+        <p class="fine-print">${icon("info", 14)} Se guardan comprimidas: las ${list.length} juntas ocupan ${size}. Si no cambió nada, no se guarda una copia repetida.</p>`
       );
       box.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-restore]");

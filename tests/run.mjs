@@ -84,7 +84,8 @@ const server = await startServer(PORT);
  * demás pruebas lo dan por visto). `pre` corre antes que la app.
  */
 async function runBrowserTest(file, { query = "", onboarding = false, pre = "" } = {}) {
-  const head = `<script>try{sessionStorage.setItem("nekoFinanzas.splash","1");localStorage.setItem("nekoFinanzas.theme","light");${onboarding ? "" : 'localStorage.setItem("nekoFinanzas.onboardingSeen","1");'}${pre}}catch(e){}</script>`;
+  // showSaveFilePicker se apaga: abriría un diálogo del sistema que nadie puede contestar.
+  const head = `<script>window.showSaveFilePicker=undefined;try{sessionStorage.setItem("nekoFinanzas.splash","1");localStorage.setItem("nekoFinanzas.theme","light");${onboarding ? "" : 'localStorage.setItem("nekoFinanzas.onboardingSeen","1");'}${pre}}catch(e){}</script>`;
   const html = readFileSync(join(ROOT, "index.html"), "utf8")
     .replace("<head>", `<head>${head}`)
     .replace(

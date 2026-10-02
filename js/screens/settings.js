@@ -11,6 +11,7 @@ import { amountToInput, parseAmount } from "../core/money.js";
 import { MAX_AMOUNT } from "../core/sanitize.js";
 import * as store from "../core/store.js";
 import { openSnapshots } from "../ui/snapshots.js";
+import { canPickFile, backupFileKnown } from "../ui/backupFile.js";
 import {
   getThemePref,
   canVibrate,
@@ -336,7 +337,8 @@ export const settingsData = sub("ajustes-datos", "Tus datos", () => html`
           <span class="field-hint">Te avisamos en el inicio cuando pase ese tiempo sin backup.</span>
         </div>
         <div class="settings-actions">
-          <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>Exportar backup</strong><span>Descarga un archivo .json con todo, para restaurar después</span></span></button>
+          <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>${backupFileKnown() ? "Actualizar backup" : "Exportar backup"}</strong><span>${backupFileKnown() ? `Reemplaza “${backupFileKnown()}” con tus datos de ahora` : canPickFile() ? "Elegís dónde guardarlo una vez; los próximos reemplazan ese mismo archivo" : "Un archivo .json con todo. Guardalo siempre con el mismo nombre para reemplazar el anterior"}</span></span></button>
+          ${backupFileKnown() ? html`<button type="button" class="settings-action" data-action="export-data" data-choose="1">${icon("edit", 20)}<span><strong>Guardar el backup en otro archivo</strong><span>Elegí otro lugar o nombre; pasa a ser el que se reemplaza</span></span></button>` : ""}
           <button type="button" class="settings-action" data-action="export-csv">${icon("table", 20)}<span><strong>Exportar a planilla</strong><span>Tus movimientos en .csv, para abrir en Excel o Google Sheets</span></span></button>
           <button type="button" class="settings-action" data-action="open-snapshots">${icon("refresh", 20)}<span><strong>Copias automáticas</strong><span>Volver a como estaban tus datos un día anterior</span></span></button>
           <label class="settings-action">${icon("upload", 20)}<span><strong>Importar backup</strong><span>Reemplaza los datos actuales</span></span>

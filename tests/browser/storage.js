@@ -23,6 +23,12 @@ return (async () => {
     let list = await store.listSnapshots();
     log("copias al abrir: " + list.map((x) => x.reason).join(", ") + (list.length === 1 ? "" : " ✗"));
 
+    // 2b) Las copias se guardan comprimidas y sin repetir
+    const repeated = await storage.saveSnapshot(store.getState(), "Repetida");
+    const raw = JSON.stringify(store.getState()).length;
+    const size = await storage.snapshotsSize();
+    log(`copia repetida: ${repeated ? "se guardó ✗" : "no se guarda"} · comprimida: ${size} bytes de ${raw} (${Math.round((size / raw) * 100)}%)${size < raw * 0.7 ? "" : " ✗"}`);
+
     // 3) Guardar un cambio y que persista
     store.addTransaction({ type: "income", amount: 1000, currency: "ARS", date: "2026-09-10", categoryId: "inc-otros", description: "Nuevo" });
     await storage.flush();

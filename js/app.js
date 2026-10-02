@@ -25,6 +25,7 @@ import { watchSystemTheme, applySavedTheme } from "./ui/theme.js";
 import { showCustomImage } from "./ui/background.js";
 import { canPromptInstall, promptInstall, onInstallChange, openInstallHelp } from "./ui/install.js";
 import { downloadFile } from "./ui/download.js";
+import { saveBackup, initBackupFile } from "./ui/backupFile.js";
 import { snoozeIosNotice, markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen } from "./core/prefs.js";
 import { openOnboarding } from "./ui/onboarding.js";
 import { transactionsToCSV } from "./core/csv.js";
@@ -98,11 +99,22 @@ const GLOBAL_ACTIONS = {
     whenHistorySettled(() => (location.hash = "#/inicio"));
   },
   // Backup completo (.json). Queda anotada la fecha para el recordatorio.
-  "export-data": () => {
-    downloadFile(store.exportJSON(), `neko-finanzas-backup-${todayISO()}.json`, "application/json");
+  // Backup completo (.json): siempre el mismo archivo, que se reemplaza.
+  // Queda anotada la fecha para el recordatorio.
+  "export-data": async (el) => {
+    const result = await saveBackup(store.exportJSON(), { choose: el?.dataset.choose === "1" });
+    if (result.how === "cancelled") return;
     markBackup();
-    toast("Backup descargado");
-    return true;
+    toast(
+      result.how === "replaced"
+        ? result.first
+          ? `Backup guardado en “${result.name}”. Los próximos van a reemplazar ese mismo archivo.`
+          : `Backup actualizado en “${result.name}”`
+        : result.how === "shared"
+          ? "Backup listo. Guardalo con el mismo nombre para reemplazar el anterior."
+          : "Backup descargado"
+    );
+    render();
   },
   "export-csv": () => {
     const state = store.getState();
@@ -425,6 +437,7 @@ function hideSplash() {
 async function start() {
   setMasked(amountsHidden());
   showCustomImage();
+  initBackupFile().then(() => currentScreen?.id === "ajustes-datos" && render());
   await store.initStore();
   initChartTooltips();
   render({ animate: true });
