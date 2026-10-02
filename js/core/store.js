@@ -11,6 +11,7 @@ import { ACCOUNT_KINDS, DEFAULT_ACCOUNT_ID, createEmptyState, DEFAULT_CATEGORIES
 import { buildDemoState } from "../data/demo.js";
 import { sanitizeState } from "./sanitize.js";
 import { addMonths, nextDate, todayISO } from "./dates.js";
+import { convert, CURRENCY_CODES } from "./money.js";
 
 let state = null;
 const listeners = new Set();
@@ -412,6 +413,8 @@ export function addInstallmentPurchase(data, count) {
   const n = Math.max(2, Math.min(60, Math.trunc(count)));
   const total = Math.round(data.amount * 100) / 100;
   const base = Math.floor((total / n) * 100) / 100;
+  // Menos de un centavo por cuota no se puede repartir: va en un solo pago.
+  if (!(base > 0)) return [addTransaction(data)];
   const group = uid("cuotas");
   const day = Number(data.date.slice(8));
   return commit((s) => {
@@ -718,6 +721,20 @@ export function setRate(code, value) {
   commit((s) => {
     s.rates[code] = value;
     s.ratesUpdatedAt = new Date().toISOString();
+  });
+}
+
+/**
+ * Cambia la moneda principal. El "ingreso de referencia" está guardado en la
+ * moneda principal, así que se convierte: $ 800.000 no pasan a ser US$ 800.000.
+ */
+export function setMainCurrency(code) {
+  if (!CURRENCY_CODES.includes(code)) return;
+  commit((s) => {
+    const previous = s.settings.mainCurrency;
+    if (previous === code) return;
+    s.settings.budgetReference = Math.round(convert(s.settings.budgetReference || 0, previous, code, s.rates) * 100) / 100;
+    s.settings.mainCurrency = code;
   });
 }
 

@@ -100,9 +100,9 @@ export default {
         <img class="hero-art" src="img/hero-wallet.png" alt="" width="132" height="120" />
       </div>
       ${negative
-        ? html`<p class="hero-alert">${icon("alert", 15)} Lo que apartaste supera lo que tenés. Revisá metas o facturas.</p>`
+        ? html`<p class="hero-alert">${icon("alert", 15)} Lo apartado y reservado supera lo que tenés. Revisá metas, facturas, cuotas o deudas.</p>`
         : isEmpty
-          ? html`<p class="hero-alert hero-alert-info">Para empezar, registrá un ingreso o cargá tu <a class="inline-link" href="#/cuentas">cuánto tenés en tus cuentas</a>.</p>`
+          ? html`<p class="hero-alert hero-alert-info">Para empezar, registrá un ingreso o cargá <a class="inline-link" href="#/cuentas">cuánto tenés en tus cuentas</a>.</p>`
           : html`<div class="avail">
               <div class="avail-bar">
                 ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}

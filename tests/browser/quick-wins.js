@@ -74,6 +74,23 @@ return (async () => {
     const st = store.getState().settings;
     const acc0 = store.getState().accounts[0];
     log(`guardado: moneda=${st.mainCurrency} saldo=${acc0.opening} (${acc0.currency}) referencia=${st.budgetReference} · hoja cerrada=${!sheet()}`);
+    // 6) Presupuesto para "una meta" sin tener metas: avisa en vez de no hacer nada
+    const { openBudgetForm } = await w.eval('import("/js/ui/forms/budgetForm.js")');
+    openBudgetForm(); await wait(500);
+    const bf = sheet().querySelector("form");
+    bf.elements.name.value = "Ahorro";
+    bf.elements.value.value = "10";
+    bf.querySelector("input[name=kind][value=goal]").click(); await wait(100);
+    bf.requestSubmit(); await wait(400);
+    log("presupuesto a meta sin metas: " + ([...d.querySelectorAll(".toast")].pop()?.textContent.trim() || "sin aviso ✗") + " · creados=" + store.getState().budgets.length);
+    sheet()?.querySelector("[data-sheet-close]")?.click(); await wait(400);
+
+    // 7) Cambiar la moneda principal convierte el ingreso de referencia
+    const refBefore = store.getState().settings.budgetReference;
+    w.location.hash = "#/monedas"; await wait(400);
+    d.querySelector("input[name='main-currency'][value=ARS]").click(); await wait(300);
+    const stAfter = store.getState();
+    log(`moneda principal USD→ARS: referencia ${refBefore} → ${stAfter.settings.budgetReference} (1 USD = ${stAfter.rates.USD})${stAfter.settings.budgetReference === refBefore * stAfter.rates.USD ? "" : " ✗"}`);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {
     log("ERROR " + e.stack);

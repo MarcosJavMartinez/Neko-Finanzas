@@ -135,8 +135,8 @@ export async function enableReminders(state) {
   await fireDue();
   // Android con la app instalada: avisos aunque la app esté cerrada (si Chrome lo permite).
   try {
-    const registration = await navigator.serviceWorker.ready;
-    await registration.periodicSync?.register(SYNC_TAG, { minInterval: 12 * 60 * 60 * 1000 });
+    const registration = await Promise.race([navigator.serviceWorker.ready, new Promise((resolve) => setTimeout(resolve, 3000))]);
+    await registration?.periodicSync?.register(SYNC_TAG, { minInterval: 12 * 60 * 60 * 1000 });
   } catch (error) {
     /* sin permiso para segundo plano: los avisos salen al abrir la app */
   }

@@ -276,8 +276,8 @@ export function openAccountDetail(accountId) {
     body: html`<div class="account-detail">
       <p class="account-detail-label">${ACCOUNT_KINDS[account.kind]?.label || "Cuenta"}${account.archived ? " · archivada" : ""}</p>
       ${card
-        ? html`<p class="account-detail-balance ${card.debt > 0 ? "is-negative" : ""}">${card.debt > 0 ? formatMoney(card.debt, account.currency) : "Sin deuda"}</p>
-            <p class="fine-print">${card.debt > 0 ? "Deuda de hoy · " : ""}Cierra el ${formatDate(card.closing)} · vence el ${formatDate(card.due)}</p>`
+        ? html`<p class="account-detail-balance ${card.debt > 0 ? "is-negative" : ""}">${card.debt > 0 ? formatMoney(card.debt, account.currency) : card.credit > 0 ? formatMoney(card.credit, account.currency) : "Sin deuda"}</p>
+            <p class="fine-print">${card.debt > 0 ? "Deuda de hoy · " : card.credit > 0 ? "Saldo a favor · " : ""}Cierra el ${formatDate(card.closing)} · vence el ${formatDate(card.due)}</p>`
         : html`<p class="account-detail-balance ${entry.balance < 0 ? "is-negative" : ""}">${formatMoney(entry.balance, account.currency)}</p>`}
       ${account.currency !== state.settings.mainCurrency ? html`<p class="fine-print">≈ ${formatMoney(entry.balanceMain, state.settings.mainCurrency)}</p>` : ""}
       <div class="account-detail-actions">
@@ -299,7 +299,7 @@ export function openAccountDetail(accountId) {
                 </div>`
               )}
             </div>
-            <p class="fine-print">${icon("info", 14)} Cada cuota baja tu total cuando llega su fecha, y las del próximo mes ya se reservan de tu disponible.</p>`
+            <p class="fine-print">${icon("info", 14)} Cada cuota baja tu total cuando llega su fecha. Las que caen dentro de tu plazo de reserva ya están descontadas del disponible.</p>`
         : ""}
       <h3 class="section-title section-title-spaced">Últimos movimientos</h3>
       ${recent.length

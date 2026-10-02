@@ -104,7 +104,8 @@ export function openBudgetForm({ budget } = {}) {
         if (data.mode === "percent" && value > 100) return fieldError(form, "value", "El porcentaje no puede superar 100%.");
         let target;
         if (data.kind === "goal") {
-          if (!data.goalId) return fieldError(form, "goalId", "Elegí una meta.");
+          // Sin metas no hay a qué asignarlo: se avisa (el campo ni siquiera existe).
+          if (!data.goalId) return store.getState().goals.length ? fieldError(form, "goalId", "Elegí una meta.") : toast("Primero creá una meta para asignarle un presupuesto", { type: "error" });
           target = { kind: "goal", goalId: data.goalId };
         } else if (data.kind === "rest") {
           target = { kind: "rest" };

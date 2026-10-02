@@ -60,7 +60,7 @@ export default {
   },
   changes: {
     "set-main"(el) {
-      store.updateSettings({ mainCurrency: el.value });
+      store.setMainCurrency(el.value);
       toast(`Moneda principal: ${el.value}`);
     },
     "save-rate"(el) {

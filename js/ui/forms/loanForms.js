@@ -56,6 +56,8 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
     </form>`,
     onMount(panel, close) {
       const form = panel.querySelector("form");
+      // Con devoluciones registradas la moneda queda fija: cambiarla les cambiaría el valor.
+      if (isEdit && loan.payments.length) form.querySelectorAll("input[name=currency]").forEach((el) => (el.disabled = el.value !== loan.currency));
       form.addEventListener("change", (event) => {
         if (event.target.name !== "direction") return;
         const lent = event.target.value === "lent";

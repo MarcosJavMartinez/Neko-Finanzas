@@ -316,6 +316,8 @@ export function cardStatus(state, account, today = todayISO()) {
   }
   return {
     debt,
+    // Saldo a favor: se pagó más de lo que se debía.
+    credit: Math.max(0, entry?.balance || 0),
     balance: entry?.balance || 0,
     closing: nextDayOfMonth(account.closingDay || 25, today),
     due: nextDayOfMonth(account.dueDay || 5, today),

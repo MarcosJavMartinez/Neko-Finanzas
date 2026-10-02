@@ -50,6 +50,12 @@ return (async () => {
     form.requestSubmit(); await wait(500);
     log("toast: " + [...d.querySelectorAll(".toast")].pop()?.textContent.trim());
 
+    // 3b) Con devoluciones, la moneda del préstamo queda fija
+    openLoanForm({ loan: store.getState().loans.find((l) => l.id === juli.id) }); await wait(500);
+    const radios = [...sheet().querySelectorAll("input[name=currency]")];
+    log("moneda bloqueada con devoluciones: " + radios.filter((r) => r.disabled).length + " de " + radios.length + " deshabilitadas" + (radios.filter((r) => r.disabled).length === radios.length - 1 ? "" : " ✗"));
+    sheet().querySelector("[data-sheet-close]").click(); await wait(400);
+
     // 4) Detalle: borrar una devolución
     openLoanDetail(juli.id); await wait(500);
     log("detalle: " + sheet().querySelector(".account-detail-balance").textContent + " · devoluciones=" + sheet().querySelectorAll(".loan-payment").length);

@@ -73,7 +73,7 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
             <select id="f-installments" name="installments">
               ${INSTALLMENT_OPTIONS.map((n) => html`<option value="${n}">${n === 1 ? "En un pago" : `${n} cuotas`}</option>`)}
             </select>
-            <p class="field-hint" data-installments-hint>Cada cuota se carga en su mes: la primera hoy y las demás quedan programadas.</p>
+            <p class="field-hint" data-installments-hint>Cada cuota se carga en su mes: la primera en la fecha de la compra y las demás quedan programadas.</p>
           </div>`}
       ${categoryPicker(state, current.type, current.categoryId, { limit: 6 })}
       ${subcategoryPicker(findCategory(state, current.categoryId), current.subcategoryId)}
@@ -121,8 +121,8 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
         const amount = readAmount(form);
         const hint = installmentsBox.querySelector("[data-installments-hint]");
         hint.textContent = n > 1 && amount > 0
-          ? `${n} cuotas de ≈ ${formatMoney(amount / n, form.elements.currency.value)}: la primera hoy y las demás quedan programadas, una por mes.`
-          : "Cada cuota se carga en su mes: la primera hoy y las demás quedan programadas.";
+          ? `${n} cuotas de ≈ ${formatMoney(amount / n, form.elements.currency.value)}: la primera en la fecha de la compra y las demás quedan programadas, una por mes.`
+          : "Cada cuota se carga en su mes: la primera en la fecha de la compra y las demás quedan programadas.";
       }
       form.addEventListener("change", (event) => {
         if (["accountId", "installments", "currency"].includes(event.target.name)) syncInstallments();

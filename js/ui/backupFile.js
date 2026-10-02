@@ -110,7 +110,8 @@ export async function saveBackup(text, { choose = false } = {}) {
     }
   } else {
     const file = new File([text], BACKUP_NAME, { type: "application/json" });
-    if (navigator.canShare?.({ files: [file] })) {
+    const touch = window.matchMedia("(pointer: coarse)").matches;
+    if (touch && navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: "Backup de Neko Finanzas" });
         return { how: "shared" };

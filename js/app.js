@@ -99,7 +99,6 @@ const GLOBAL_ACTIONS = {
     toast("¡Listo! Tu app está vacía y lista para usar", { type: "info" });
     whenHistorySettled(() => (location.hash = "#/inicio"));
   },
-  // Backup completo (.json). Queda anotada la fecha para el recordatorio.
   // Backup completo (.json): siempre el mismo archivo, que se reemplaza.
   // Queda anotada la fecha para el recordatorio.
   "export-data": async (el) => {
@@ -448,7 +447,23 @@ async function start() {
   setMasked(amountsHidden());
   showCustomImage();
   initBackupFile().then(() => currentScreen?.id === "ajustes-datos" && render());
-  await store.initStore();
+  try {
+    await store.initStore();
+  } catch (error) {
+    // No se pudieron leer los datos: se avisa en vez de dejar la pantalla de carga para siempre.
+    console.error("[inicio]", error);
+    $("#app-splash")?.remove();
+    setHTML(
+      viewEl,
+      html`<section class="card render-error">
+        <h2 class="section-title">No se pudieron abrir tus datos</h2>
+        <p class="section-sub">No se borró nada. Cerrá las otras pestañas de Neko Finanzas y recargá la página. Si sigue igual, probá reiniciar el navegador.</p>
+        <div class="form-actions"><button type="button" class="btn btn-primary btn-grow" data-reload>Recargar</button></div>
+      </section>`
+    );
+    viewEl.querySelector("[data-reload]").addEventListener("click", () => location.reload());
+    return;
+  }
   initChartTooltips();
   render({ animate: true });
   animateHero();

@@ -22,8 +22,8 @@ export function accountRow(state, entry) {
         <span class="row-meta">Tarjeta · vence el ${formatDate(card.due)}${card.upcoming.length ? ` · ${card.upcoming.length} en cuotas` : ""}</span>
       </span>
       <span class="account-amount">
-        <span class="account-balance ${card.debt > 0 ? "is-negative" : ""}">${card.debt > 0 ? formatMoney(-card.debt, account.currency) : "Sin deuda"}</span>
-        ${card.debt > 0 ? html`<span class="approx">deuda de hoy</span>` : ""}
+        <span class="account-balance ${card.debt > 0 ? "is-negative" : ""}">${card.debt > 0 ? formatMoney(-card.debt, account.currency) : card.credit > 0 ? formatMoney(card.credit, account.currency) : "Sin deuda"}</span>
+        ${card.debt > 0 ? html`<span class="approx">deuda de hoy</span>` : card.credit > 0 ? html`<span class="approx">a favor</span>` : ""}
       </span>
     </button>`;
   }

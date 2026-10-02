@@ -176,7 +176,7 @@ const ops = {
     store.setRate(pick(["USD", "EUR"]), int(100, 3000));
   },
   mainCurrency() {
-    store.updateSettings({ mainCurrency: pick(["ARS", "USD", "EUR"]) });
+    store.setMainCurrency(pick(["ARS", "USD", "EUR"]));
   },
   undoSnapshot() {
     const before = snap();

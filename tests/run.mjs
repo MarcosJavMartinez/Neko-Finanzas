@@ -130,6 +130,7 @@ for (const [name, file, opts] of [
   ["Tarjeta de crédito y cuotas", "credit-card.js"],
   ["Préstamos", "loans.js"],
   ["Avisos de vencimientos", "reminders.js"],
+  ["Recorrido completo de un usuario nuevo", "journey.js"],
   [
     "Datos: IndexedDB, copias automáticas, iPhone, pestañas",
     "storage.js",

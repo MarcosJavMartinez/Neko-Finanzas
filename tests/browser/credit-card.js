@@ -58,6 +58,12 @@ return (async () => {
     form.requestSubmit(); await wait(500);
     log(`tras pagar: deuda=${Math.round(status().debt)} · total igual=${Math.abs(F.totalBalance(store.getState()) - t0) < 0.01 ? "sí" : "NO ✗"}`);
 
+    // 5b) Pagar de más deja saldo a favor (no "Sin deuda")
+    store.addTransfer({ fromId: store.defaultAccountId(), toId: card().id, amount: 1500, date: today });
+    w.location.hash = "#/inicio"; await wait(200); w.location.hash = "#/cuentas"; await wait(400);
+    const favor = [...d.querySelectorAll("#view .account-row")].find((r) => r.textContent.includes("Tarjeta"));
+    log("pagada de más: " + favor.querySelector(".account-amount").innerText.replace(/s+/g, " ").trim() + (/a favor/.test(favor.innerText) ? "" : " ✗"));
+
     // 6) Editar y borrar una cuota
     openTransactionForm({ tx: cuotas[2] }); await wait(500);
     log("editar cuota: " + (sheet().querySelector(".notice")?.textContent.trim() || "sin aviso ✗"));

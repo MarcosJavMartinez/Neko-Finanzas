@@ -9,7 +9,7 @@
 const DB_NAME = "nekoFinanzas";
 const DB_VERSION = 2;
 const STORES = ["assets", "data", "snapshots"];
-const OPEN_TIMEOUT = 4000;
+const OPEN_TIMEOUT = 8000;
 
 let dbPromise = null;
 
