@@ -184,6 +184,9 @@ async function withDevTools(fn) {
     };
     await send("Page.enable");
     await send("Network.enable");
+    // Lo que la app "descarga" durante una prueba (backups, planillas, imágenes)
+    // va a la carpeta temporal del perfil, no a la carpeta Descargas de la persona.
+    await send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: profile });
     return await fn({ send, evaluate, on });
   } finally {
     try { ws?.close(); } catch {}
