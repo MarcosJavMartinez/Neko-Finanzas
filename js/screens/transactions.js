@@ -113,6 +113,8 @@ export default {
   render(state) {
     const main = state.settings.mainCurrency;
     const totals = monthlyTotals(state, view.month);
+    // Hasta qué mes se puede avanzar: este, o el último con algo programado.
+    const lastMonth = state.transactions.reduce((max, t) => (t.date.slice(0, 7) > max ? t.date.slice(0, 7) : max), currentMonthKey());
     const txs = applyFilter(state, transactionsInMonth(state, view.month)).sort(
       (a, b) => b.date.localeCompare(a.date) || (b.time || "").localeCompare(a.time || "") || b.createdAt.localeCompare(a.createdAt)
     );
@@ -125,7 +127,8 @@ export default {
 
     return html`
       <button type="button" class="btn btn-primary btn-block btn-add reveal" data-action="add-expense">${icon("plus", 20)}Agregar transacción</button>
-      ${monthNav(view.month, "tx-month")}
+      ${monthNav(view.month, "tx-month", lastMonth)}
+      ${view.month > currentMonthKey() ? html`<p class="active-filter">${icon("calendar", 14)} Mes futuro: son movimientos programados, todavía no cuentan en tu saldo. <button type="button" class="chip chip-action" data-action="tx-today">Volver a este mes</button></p>` : ""}
       <div class="month-totals">
         <span class="mt mt-income">${icon("arrowDown", 14)}${formatMoney(totals.income, main)}</span>
         <span class="mt mt-expense">${icon("arrowUp", 14)}${formatMoney(totals.expense, main)}</span>
@@ -164,6 +167,10 @@ export default {
   actions: {
     "tx-month"(el) {
       view.month = shiftMonthKey(view.month, Number(el.dataset.delta));
+      return true;
+    },
+    "tx-today"() {
+      view.month = currentMonthKey();
       return true;
     },
     "tx-filter"(el) {

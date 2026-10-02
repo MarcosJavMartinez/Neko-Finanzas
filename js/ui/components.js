@@ -66,8 +66,10 @@ export function statusChip(level, text) {
 }
 
 /** Selector de mes: ‹ Septiembre 2026 › (no deja ir al futuro). */
-export function monthNav(key, action) {
-  const isCurrent = key === currentMonthKey();
+export function monthNav(key, action, maxKey = currentMonthKey()) {
+  // Por defecto no se pasa de este mes; con movimientos programados (cuotas
+  // que vienen) se puede avanzar hasta el último mes que tenga alguno.
+  const isCurrent = key >= maxKey;
   return html`<div class="month-nav">
     <button type="button" class="icon-btn" data-action="${action}" data-delta="-1" aria-label="Mes anterior">${icon("chevronLeft", 20)}</button>
     <span class="month-nav-label">${formatMonth(key)}</span>

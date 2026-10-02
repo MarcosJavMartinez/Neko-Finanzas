@@ -43,6 +43,16 @@ return (async () => {
     log(`cuotas: ${cuotas.length} · montos=${cuotas.map((c) => c.amount).join("+")}=${cuotas.reduce((s, c) => s + c.amount, 0)} · fechas=${cuotas.map((c) => c.date.slice(5)).join(",")}`);
     log(`la primera baja el total hoy: ${Math.round(totalBefore - F.totalBalance(store.getState()))} · las demás programadas=${cuotas.filter((c) => c.date > today).length}`);
 
+    // 3b) Las cuotas que vienen se ven en Transacciones avanzando de mes
+    w.location.hash = "#/transacciones"; await wait(400);
+    const next = d.querySelector("[data-action=tx-month][data-delta='1']");
+    const enabled = !next.disabled;
+    next.click(); await wait(300);
+    const future = [...d.querySelectorAll("#view .tx-row")].filter((r) => r.textContent.includes("Celular"));
+    log(`mes siguiente: botón habilitado=${enabled} · cuota del Celular visible=${future.length === 1} · etiqueta=${future[0]?.querySelector(".tag-installment")?.textContent} · aviso=${!!d.querySelector("[data-action=tx-today]")}${enabled && future.length === 1 ? "" : " ✗"}`);
+    d.querySelector("[data-action=tx-today]")?.click(); await wait(300);
+    log("volver a este mes: " + (d.querySelector("[data-action=tx-month][data-delta='1']").disabled === false ? "sigue pudiendo avanzar" : "bloqueado"));
+
     // 4) Redondeo: 100 en 3 cuotas
     const g = store.addInstallmentPurchase({ type: "expense", amount: 100, currency: "ARS", date: today, categoryId: "exp-otros", accountId: card().id, description: "Redondeo" }, 3);
     log("100 en 3: " + g.map((t) => t.amount).join(" + "));
