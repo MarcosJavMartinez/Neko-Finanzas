@@ -103,8 +103,8 @@ export function parseAmount(input) {
   return Number.parseFloat(text);
 }
 
-/** Muestra un número en un input con el formato local, sin símbolo. */
+/** Muestra un monto en un input: formato local, siempre con centavos, sin símbolo. */
 export function amountToInput(amount) {
   if (!amount && amount !== 0) return "";
-  return numberFormatter(Number.isInteger(amount) ? 0 : 2).format(amount);
+  return numberFormatter(2).format(amount);
 }

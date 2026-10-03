@@ -17,7 +17,7 @@ import {
   clearErrors,
 } from "./fields.js";
 import * as store from "../../core/store.js";
-import { amountToInput } from "../../core/money.js";
+import { amountToInput, parseAmount } from "../../core/money.js";
 
 const BUDGET_ICONS = ["🧾", "🛒", "🍔", "✈️", "👕", "🛟", "🎮", "🏠", "🚗", "💊", "🎁", "📚", "🐱", "💰", "🎯", "✨"];
 
@@ -53,7 +53,7 @@ export function openBudgetForm({ budget, preset } = {}) {
         <label class="field-label" for="f-value">Valor</label>
         <div class="amount-input">
           <select name="currency" class="amount-currency" aria-label="Moneda" data-fixed-only ${current.mode !== "percent" ? "" : "hidden"}>${currencyOptions(current.currency)}</select>
-          <input id="f-value" name="value" type="text" inputmode="decimal" autocomplete="off" placeholder="${current.mode === "percent" ? "25" : "0"}" value="${current.value ? amountToInput(current.value) : ""}" required />
+          <input id="f-value" name="value" type="text" inputmode="decimal" autocomplete="off" placeholder="${current.mode === "percent" ? "25" : "0,00"}" value="${current.value ? (current.mode === "percent" ? String(current.value).replace(".", ",") : amountToInput(current.value)) : ""}" ${current.mode === "percent" ? "data-plain" : ""} required />
           <span class="amount-suffix" data-percent-only ${current.mode === "percent" ? "" : "hidden"}>%</span>
         </div>
         <p class="field-error" data-error-for="value"></p>
@@ -99,7 +99,12 @@ export function openBudgetForm({ budget, preset } = {}) {
           form.querySelector("[data-fixed-only]").hidden = !fixed;
           form.querySelector("[data-percent-only]").hidden = fixed;
           form.querySelector("[data-daily-only]").hidden = event.target.value !== "daily";
-          form.elements.value.placeholder = fixed ? "0" : "25";
+          const field = form.elements.value;
+          field.placeholder = fixed ? "0,00" : "25";
+          // El porcentaje se escribe tal cual; el monto, con centavos.
+          const typed = parseAmount(field.value);
+          if (fixed === field.hasAttribute("data-plain") && typed > 0) field.value = fixed ? amountToInput(typed) : String(typed).replace(".", ",");
+          field.toggleAttribute("data-plain", !fixed);
           // Los gustos por día vienen con la plata reservada.
           if (event.target.value === "daily") form.elements.reserve.checked = true;
         }

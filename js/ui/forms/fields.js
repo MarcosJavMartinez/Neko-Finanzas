@@ -18,7 +18,7 @@ export function amountField({ name = "amount", value, currency, label = "Monto",
       </div>
     </div>
     <div class="amount-input amount-input-xl">
-      <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="0"
+      <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"
         value="${value ? amountToInput(value) : ""}" ${autofocus ? "data-autofocus" : ""} required />
     </div>
     <p class="field-error" data-error-for="${name}"></p>

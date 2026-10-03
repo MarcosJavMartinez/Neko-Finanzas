@@ -51,12 +51,12 @@ export function openIncomeExtras() {
         ${loaded.filter((e) => e.key !== OTHER.key).map(
           (e) => html`<label class="setup-item">
             <span class="setup-check extra-name"><span>${e.icon} ${e.name}</span>${e.total > 0 ? html`<span class="extra-loaded">ya cargaste ${formatMoney(e.total, main)}</span>` : ""}</span>
-            <span class="amount-input"><input name="extra-${e.key}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="${e.name}" /></span>
+            <span class="amount-input"><input name="extra-${e.key}" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-label="${e.name}" /></span>
           </label>`
         )}
         <div class="setup-item">
           <span class="amount-input"><input name="other-name" type="text" maxlength="40" autocomplete="off" placeholder="Otro (ej.: viáticos)" aria-label="Nombre de otro extra" /></span>
-          <span class="amount-input"><input name="other-amount" data-other type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Monto de otro extra" /></span>
+          <span class="amount-input"><input name="other-amount" data-other type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-label="Monto de otro extra" /></span>
         </div>
         ${loaded.find((e) => e.key === OTHER.key).total > 0 ? html`<span class="extra-loaded">otros extras: ya cargaste ${formatMoney(loaded.find((e) => e.key === OTHER.key).total, main)}</span>` : ""}
       </div>

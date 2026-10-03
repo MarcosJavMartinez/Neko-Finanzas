@@ -290,7 +290,7 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
           <span class="field-hint">Se usa para los presupuestos en % mientras el mes no tenga ingresos cargados.</span>
           <span class="amount-input">
             <span class="amount-currency amount-currency-static">${s.mainCurrency}</span>
-            <input type="text" inputmode="decimal" value="${s.budgetReference ? amountToInput(s.budgetReference) : ""}" placeholder="0" data-change="set-reference" aria-label="Ingreso de referencia" />
+            <input type="text" inputmode="decimal" value="${s.budgetReference ? amountToInput(s.budgetReference) : ""}" placeholder="0,00" data-change="set-reference" aria-label="Ingreso de referencia" />
           </span>
         </label>
       </section>

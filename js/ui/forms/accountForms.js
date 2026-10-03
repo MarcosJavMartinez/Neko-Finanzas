@@ -36,7 +36,7 @@ function fixedAmountField({ name, label, currency, value, hint = "" }) {
     <label class="field-label" for="f-${name}">${label}</label>
     <div class="amount-input">
       <span class="amount-currency amount-currency-static" data-currency-for="${name}">${currency}</span>
-      <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="0" value="${value ? amountToInput(value) : ""}" />
+      <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${value ? amountToInput(value) : ""}" />
     </div>
     ${hint ? html`<p class="field-hint" data-hint-for="${name}">${hint}</p>` : ""}
     <p class="field-error" data-error-for="${name}"></p>
