@@ -81,11 +81,12 @@ const server = await startServer(PORT);
  * Carga la app con la prueba inyectada, en Chrome de verdad (tiempo real:
  * IndexedDB y el service worker no andan con tiempo virtual).
  * `onboarding: true` deja que aparezca el tutorial de la primera vez (las
- * demás pruebas lo dan por visto). `pre` corre antes que la app.
+ * demás pruebas lo dan por visto). `offer: true` deja sin marcar que el
+ * cuestionario ya se ofreció. `pre` corre antes que la app.
  */
-async function runBrowserTest(file, { query = "", onboarding = false, pre = "" } = {}) {
+async function runBrowserTest(file, { query = "", onboarding = false, pre = "", offer = false } = {}) {
   // showSaveFilePicker se apaga: abriría un diálogo del sistema que nadie puede contestar.
-  const head = `<script>window.showSaveFilePicker=undefined;try{sessionStorage.setItem("nekoFinanzas.splash","1");localStorage.setItem("nekoFinanzas.theme","light");${onboarding ? "" : 'localStorage.setItem("nekoFinanzas.onboardingSeen","1");'}${pre}}catch(e){}</script>`;
+  const head = `<script>window.showSaveFilePicker=undefined;try{sessionStorage.setItem("nekoFinanzas.splash","1");localStorage.setItem("nekoFinanzas.theme","light");${onboarding ? "" : 'localStorage.setItem("nekoFinanzas.onboardingSeen","1");'}${onboarding || offer ? "" : 'localStorage.setItem("nekoFinanzas.setupOffered","1");'}${pre}}catch(e){}</script>`;
   const html = readFileSync(join(ROOT, "index.html"), "utf8")
     .replace("<head>", `<head>${head}`)
     .replace(
@@ -132,6 +133,12 @@ for (const [name, file, opts] of [
   ["Avisos de vencimientos", "reminders.js"],
   ["Recorrido completo de un usuario nuevo", "journey.js"],
   ["Cuestionario de inicio", "setup-wizard.js"],
+  ["Cuestionario ofrecido al abrir (con el ejemplo)", "setup-offer.js", { offer: true, query: "?demo" }],
+  [
+    "Cuestionario ofrecido al abrir (app vacía)",
+    "setup-offer.js",
+    { offer: true, query: "?vacia", pre: 'localStorage.setItem("nekoFinanzas.data.v1",JSON.stringify({transactions:[],categories:[],settings:{createdAt:"2026-08-01T00:00:00Z"}}));' },
+  ],
   ["Ingresos: cobro parcial y extras", "income.js"],
   ["Sobres: súper reservado y gustos por día", "envelopes.js"],
   [
@@ -256,6 +263,7 @@ if (wanted("Avisos en segundo plano", "reminders")) try {
     await sleep(6000);
     const setup = await evaluate(`(async () => {
       localStorage.setItem("nekoFinanzas.onboardingSeen", "1");
+      localStorage.setItem("nekoFinanzas.setupOffered", "1");
       const store = await import("/js/core/store.js");
       const R = await import("/js/ui/reminders.js");
       const db = await import("/js/core/db.js");
@@ -292,6 +300,7 @@ if (wanted("Imagen de fondo", "background")) try {
     await sleep(4000);
     const first = await evaluate(`(async () => {
       localStorage.setItem("nekoFinanzas.onboardingSeen", "1");
+      localStorage.setItem("nekoFinanzas.setupOffered", "1");
       const bg = await import("/js/ui/background.js");
       const c = document.createElement("canvas"); c.width = 2400; c.height = 1600;
       c.getContext("2d").fillRect(0, 0, 2400, 1600);

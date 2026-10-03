@@ -13,6 +13,7 @@ import { parseAmount, formatMoney, convert, CURRENCY_CODES } from "../../core/mo
 import { MAX_AMOUNT, isISODate } from "../../core/sanitize.js";
 import { addMonths, currentMonthKey, todayISO } from "../../core/dates.js";
 import * as store from "../../core/store.js";
+import { markSetupOffered } from "../../core/prefs.js";
 
 const STEPS = ["basics", "accounts", "card", "bills", "spending", "loans", "goals", "summary"];
 const MAX_ROWS = 6;
@@ -366,6 +367,7 @@ export function applySetup(a) {
 // ---------------------------------------------------------------------------
 
 export function openSetupWizard() {
+  markSetupOffered();
   const additive = !store.isEmptyState();
   const answers = initialAnswers(store.getState());
   let index = 0;

@@ -30,7 +30,7 @@ import { canPromptInstall, promptInstall, onInstallChange, openInstallHelp } fro
 import { downloadFile } from "./ui/download.js";
 import { saveBackup, initBackupFile } from "./ui/backupFile.js";
 import { syncPlan, fireDue } from "./ui/reminders.js";
-import { snoozeIosNotice, markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen } from "./core/prefs.js";
+import { snoozeIosNotice, markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen, setupOffered } from "./core/prefs.js";
 import { openOnboarding } from "./ui/onboarding.js";
 import { openSetupWizard } from "./ui/forms/setupForm.js";
 import { transactionsToCSV } from "./core/csv.js";
@@ -486,10 +486,16 @@ async function start() {
   requestPersistence();
   // Tutorial la primera vez (app nueva o con los datos de ejemplo del
   // inicio). Quien ya tiene datos propios no lo ve de golpe.
+  // Quien ya lo había visto pero nunca llegó al cuestionario de inicio (y
+  // sigue sin datos propios) lo recibe una vez: vacía, directo el
+  // cuestionario; con los datos de ejemplo, el tutorial que termina en él.
+  const state = store.getState();
+  const noOwnData = state.settings.isDemo || store.isEmptyState(state);
   if (!onboardingSeen()) {
-    const state = store.getState();
-    if (store.isPristineDemo(state) || store.isEmptyState(state)) setTimeout(openOnboarding, splashDelay + 200);
+    if (noOwnData) setTimeout(openOnboarding, splashDelay + 200);
     else markOnboardingSeen();
+  } else if (!setupOffered() && noOwnData) {
+    setTimeout(store.isEmptyState(state) ? openSetupWizard : openOnboarding, splashDelay + 200);
   }
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     navigator.serviceWorker.register("sw.js").catch((error) => console.warn("[sw] registro fallido", error));

@@ -48,7 +48,7 @@ try {
   // Primera carga: sin splash ni tutorial, tema claro (salvo que el js-antes diga otra cosa).
   await send("Page.navigate", { url: `http://localhost:${PORT}/` });
   await sleep(1500);
-  await evaluate(`sessionStorage.setItem("nekoFinanzas.splash","1"); localStorage.setItem("nekoFinanzas.onboardingSeen","1"); localStorage.setItem("nekoFinanzas.theme", localStorage.getItem("nekoFinanzas.theme") || "light");`);
+  await evaluate(`sessionStorage.setItem("nekoFinanzas.splash","1"); localStorage.setItem("nekoFinanzas.onboardingSeen","1"); localStorage.setItem("nekoFinanzas.setupOffered","1"); localStorage.setItem("nekoFinanzas.theme", localStorage.getItem("nekoFinanzas.theme") || "light");`);
   // Con ?captura la URL cambia y la página se recarga de verdad (no solo el #).
   await send("Page.navigate", { url: `http://localhost:${PORT}/?captura${route}` });
   await sleep(2500);

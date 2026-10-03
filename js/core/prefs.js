@@ -10,6 +10,7 @@ const KEYS = {
   backupSnooze: "nekoFinanzas.backupSnooze",
   hideAmounts: "nekoFinanzas.hideAmounts",
   onboardingSeen: "nekoFinanzas.onboardingSeen",
+  setupOffered: "nekoFinanzas.setupOffered",
   iosNoticeSnooze: "nekoFinanzas.iosNoticeSnooze",
   lastAccount: "nekoFinanzas.lastAccount",
   reminders: "nekoFinanzas.reminders",
@@ -92,6 +93,9 @@ export function iosNoticeSnoozed(now = Date.now()) {
 }
 export const snoozeIosNotice = (days = 7) => write(KEYS.iosNoticeSnooze, new Date(Date.now() + days * DAY).toISOString());
 export const markOnboardingSeen = () => write(KEYS.onboardingSeen, "1");
+/** El cuestionario de inicio ya se ofreció (o se abrió) en este dispositivo. */
+export const setupOffered = () => read(KEYS.setupOffered) === "1";
+export const markSetupOffered = () => write(KEYS.setupOffered, "1");
 
 // ---------------------------------------------------------------------------
 // Recordatorio de backup

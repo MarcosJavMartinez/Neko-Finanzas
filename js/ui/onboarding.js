@@ -6,7 +6,7 @@ import { icon } from "./icons.js";
 import { openSheet } from "./sheet.js";
 import { toast } from "./toast.js";
 import { openSetupWizard } from "./forms/setupForm.js";
-import { markOnboardingSeen } from "../core/prefs.js";
+import { markOnboardingSeen, markSetupOffered } from "../core/prefs.js";
 import * as store from "../core/store.js";
 
 const STEPS = [
@@ -40,7 +40,7 @@ export function openOnboarding() {
   // Último paso: la primera vez (con los datos de ejemplo de fondo) se
   // pregunta si empezás con lo tuyo o mirás el ejemplo; con la app vacía, lo
   // mismo pero al revés; con datos propios, nada que reemplazar.
-  const extra = store.isPristineDemo(state)
+  const extra = state.settings.isDemo
     ? { what: "close", label: "Ver el ejemplo", primary: "mine", done: "Empezar con lo mío", question: true }
     : store.isEmptyState(state)
       ? { what: "demo", label: "Ver un ejemplo", primary: "mine", done: "Empezar", question: true }
@@ -92,7 +92,7 @@ export function openOnboarding() {
           close();
           if (what === "mine") {
             // Los datos de ejemplo se van y arranca el asistente de inicio.
-            if (store.isPristineDemo()) store.startFresh();
+            if (store.getState().settings.isDemo) store.startFresh();
             openSetupWizard();
           }
           return;
@@ -101,6 +101,9 @@ export function openOnboarding() {
       });
       show();
     },
-    onClose: markOnboardingSeen,
+    onClose() {
+      markOnboardingSeen();
+      markSetupOffered();
+    },
   });
 }
