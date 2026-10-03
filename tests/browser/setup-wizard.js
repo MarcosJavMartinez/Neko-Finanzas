@@ -8,6 +8,7 @@ const form = () => sheet().querySelector("form.setup");
 const type = (name, value) => { const el = form().elements[name]; el.value = value; el.dispatchEvent(new Event("input", { bubbles: true })); };
 const next = async () => { form().requestSubmit(); await wait(250); };
 const step = () => `${Number(form().dataset.step) + 1}: ${form().querySelector(".setup-title").textContent}`;
+const toSummary = async () => { for (let i = 0; i < 12 && !form().querySelector(".setup-summary, .notice-info"); i++) await next(); };
 const error = () => { const e = form().querySelector("[data-setup-error]"); return e.hidden ? "" : e.textContent; };
 return (async () => {
   try {
@@ -61,6 +62,13 @@ return (async () => {
     type("bill-amount-4", "27.000"); form().elements["bill-day-4"].value = "31";
     await next();
 
+    // 4b) Súper y gustos
+    log("paso " + step());
+    type("groceries", "x"); await next();
+    log("monto inválido: " + (error() || "sin error ✗"));
+    type("groceries", "200.000"); type("treats", "5.000");
+    await next();
+
     // 5) Préstamos
     log("paso " + step());
     type("loan-amount-0", "10.000"); await next();
@@ -99,6 +107,8 @@ return (async () => {
     const loans = F.loansSummary(s);
     log(`préstamos: te deben ${loans.lent} · debés ${loans.borrowed} · movieron plata=${s.transactions.some((t) => t.type === "loan")}${loans.lent === 10000 && loans.borrowed === 60000 ? "" : " ✗"}`);
     log("meta: " + s.goals.map((g) => `${g.name} ${F.goalSaved(g)}/${g.target}`).join(", ") + (F.goalSaved(s.goals[0]) === 40000 ? "" : " ✗"));
+    const env = F.balanceSummary(s).envelopes;
+    log("presupuestos: " + s.budgets.map((b) => `${b.name} ${b.mode} ${b.value} reservado=${b.reserve}`).join(" · ") + ` · reservado por sobres=${Math.round(env.amount)}${s.budgets.length === 2 && env.amount > 0 ? "" : " ✗"}`);
     log(`referencia=${s.settings.budgetReference} · total=${Math.round(sum.total)} · reservado=${Math.round(sum.reserved)} (facturas ${Math.round(sum.reserve.amount)}, cuotas ${Math.round(sum.scheduled.amount)}, deudas ${Math.round(sum.debts.amount)}) · en metas=${Math.round(sum.inGoals)} · disponible=${Math.round(sum.available)}`);
     // Pasarlos por la validación no cambia nada (sin importar el orden de los campos).
     const canon = (v) => (Array.isArray(v) ? v.map(canon) : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().filter((k) => v[k] !== undefined).map((k) => [k, canon(v[k])])) : v);
@@ -112,7 +122,7 @@ return (async () => {
 
     // Todo vacío: no carga nada y no rompe
     openSetupWizard(); await wait(500);
-    for (let i = 0; i < 6; i++) await next();
+    await toSummary();
     log("sin responder nada: " + (form().querySelector(".notice-info")?.innerText.trim().slice(0, 28) || "sin aviso ✗"));
     await next(); await wait(600);
     log("app sigue vacía=" + store.isEmptyState() + " · cuentas=" + store.getState().accounts.length);
@@ -125,7 +135,8 @@ return (async () => {
     log("desde Configuración: " + (form() ? "abre · " + (/se suma a lo que ya tenés/.test(form().innerText) ? "avisa que se suma" : "sin aviso ✗") : "NO ✗"));
     await next();
     type("acc-amount-2", "1.000");
-    for (let i = 0; i < 6; i++) await next();
+    await toSummary();
+    await next();
     await wait(600);
     log(`con datos: cuentas ${before} → ${store.getState().accounts.length} (no pisa la principal)${store.getState().accounts.length === before + 1 ? "" : " ✗"}`);
     log("errores: " + (errs.join(" | ") || "ninguno"));

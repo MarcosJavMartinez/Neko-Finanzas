@@ -21,7 +21,10 @@ import { amountToInput } from "../../core/money.js";
 
 const BUDGET_ICONS = ["🧾", "🛒", "🍔", "✈️", "👕", "🛟", "🎮", "🏠", "🚗", "💊", "🎁", "📚", "🐱", "💰", "🎯", "✨"];
 
-export function openBudgetForm({ budget } = {}) {
+/** Presupuesto sugerido para "gustos por día". */
+const TREATS_PRESET = { name: "Gustos", icon: "☕", color: "#d99a2b", mode: "daily", reserve: true, target: { kind: "categories", categoryIds: ["exp-comida", "exp-entretenimiento"] } };
+
+export function openBudgetForm({ budget, preset } = {}) {
   const state = store.getState();
   const isEdit = Boolean(budget);
   const current = budget || {
@@ -32,6 +35,8 @@ export function openBudgetForm({ budget } = {}) {
     value: null,
     currency: state.settings.mainCurrency,
     target: { kind: "categories", categoryIds: [] },
+    reserve: false,
+    ...(preset === "daily" ? TREATS_PRESET : {}),
   };
   const hasRest = state.budgets.some((b) => b.target.kind === "rest" && b.id !== budget?.id);
 
@@ -41,12 +46,13 @@ export function openBudgetForm({ budget } = {}) {
       ${textField({ name: "name", label: "Nombre", value: current.name, required: true, placeholder: "Ej.: Salidas" })}
       <div class="field">
         <span class="field-label">¿Cómo lo querés definir?</span>
-        ${segmented("mode", [{ value: "percent", label: "% de ingresos" }, { value: "fixed", label: "Monto fijo" }], current.mode)}
+        ${segmented("mode", [{ value: "percent", label: "% de ingresos" }, { value: "fixed", label: "Por mes" }, { value: "daily", label: "Por día" }], current.mode)}
+        <p class="field-hint" data-daily-only ${current.mode === "daily" ? "" : "hidden"}>Para gustos (un café, un alfajor): un monto por día. Lo que no gastás un día se acumula para los siguientes.</p>
       </div>
       <div class="field field-amount">
         <label class="field-label" for="f-value">Valor</label>
         <div class="amount-input">
-          <select name="currency" class="amount-currency" aria-label="Moneda" data-fixed-only ${current.mode === "fixed" ? "" : "hidden"}>${currencyOptions(current.currency)}</select>
+          <select name="currency" class="amount-currency" aria-label="Moneda" data-fixed-only ${current.mode !== "percent" ? "" : "hidden"}>${currencyOptions(current.currency)}</select>
           <input id="f-value" name="value" type="text" inputmode="decimal" autocomplete="off" placeholder="${current.mode === "percent" ? "25" : "0"}" value="${current.value ? amountToInput(current.value) : ""}" required />
           <span class="amount-suffix" data-percent-only ${current.mode === "percent" ? "" : "hidden"}>%</span>
         </div>
@@ -77,7 +83,11 @@ export function openBudgetForm({ budget } = {}) {
       <div data-kind-panel="rest" ${current.target.kind === "rest" ? "" : "hidden"}>
         <p class="field-hint">Incluye todos los gastos cuyas categorías no estén en otro presupuesto.</p>
       </div>
-      ${emojiPicker(current.icon, { choices: BUDGET_ICONS })}
+      <label class="toggle-field" data-reserve-box ${current.target.kind === "goal" ? "hidden" : ""}>
+        <span><span class="toggle-label">Reservar esta plata</span><span class="field-hint">Lo que te falta gastar este mes se descuenta de tu disponible. Si a fin de mes sobra, te ofrecemos pasarlo a una meta. Usalo para gastos que no son facturas (súper, nafta, gustos).</span></span>
+        <input type="checkbox" name="reserve" class="switch" ${current.reserve ? "checked" : ""} />
+      </label>
+      ${emojiPicker(current.icon, { choices: current.icon && !BUDGET_ICONS.includes(current.icon) ? [current.icon, ...BUDGET_ICONS] : BUDGET_ICONS })}
       ${colorPicker(current.color)}
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Crear presupuesto", deletable: isEdit })}
     </form>`,
@@ -85,13 +95,17 @@ export function openBudgetForm({ budget } = {}) {
       const form = panel.querySelector("form");
       form.addEventListener("change", (event) => {
         if (event.target.name === "mode") {
-          const fixed = event.target.value === "fixed";
+          const fixed = event.target.value !== "percent";
           form.querySelector("[data-fixed-only]").hidden = !fixed;
           form.querySelector("[data-percent-only]").hidden = fixed;
+          form.querySelector("[data-daily-only]").hidden = event.target.value !== "daily";
           form.elements.value.placeholder = fixed ? "0" : "25";
+          // Los gustos por día vienen con la plata reservada.
+          if (event.target.value === "daily") form.elements.reserve.checked = true;
         }
         if (event.target.name === "kind") {
           form.querySelectorAll("[data-kind-panel]").forEach((p) => (p.hidden = p.dataset.kindPanel !== event.target.value));
+          form.querySelector("[data-reserve-box]").hidden = event.target.value === "goal";
         }
       });
       form.addEventListener("submit", (event) => {
@@ -123,6 +137,7 @@ export function openBudgetForm({ budget } = {}) {
           value,
           currency: data.currency || current.currency,
           target,
+          reserve: Boolean(data.reserve),
         });
         toast(isEdit ? "Presupuesto actualizado" : "Presupuesto creado");
         close();

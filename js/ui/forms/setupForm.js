@@ -1,6 +1,6 @@
 // Asistente de inicio: un cuestionario corto, paso a paso, que pregunta por
-// todo lo que la app maneja (cuentas, tarjeta y cuotas, facturas, préstamos,
-// metas) y explica en cada paso para qué sirve. Recién al final carga todo
+// todo lo que la app maneja (cuentas, tarjeta y cuotas, facturas, súper y
+// gustos, préstamos, metas) y explica en cada paso para qué sirve. Recién al final carga todo
 // junto, así la persona entiende cómo funciona antes de empezar a usarla.
 // Lo que no tenga se deja vacío; todo se puede cambiar después.
 
@@ -14,7 +14,7 @@ import { MAX_AMOUNT, isISODate } from "../../core/sanitize.js";
 import { addMonths, currentMonthKey, todayISO } from "../../core/dates.js";
 import * as store from "../../core/store.js";
 
-const STEPS = ["basics", "accounts", "card", "bills", "loans", "goals", "summary"];
+const STEPS = ["basics", "accounts", "card", "bills", "spending", "loans", "goals", "summary"];
 const MAX_ROWS = 6;
 
 const BILL_PRESETS = [
@@ -49,6 +49,8 @@ function initialAnswers(state) {
     ],
     card: { on: false, name: "Tarjeta de crédito", debt: "", closingDay: 25, dueDay: 5, purchases: [{ what: "", per: "", left: "" }] },
     bills: BILL_PRESETS.map((p) => ({ ...p, on: false, amount: "", day: 10 })),
+    groceries: "",
+    treats: "",
     loans: [{ direction: "lent", person: "", amount: "", due: "" }],
     goals: [{ name: "", target: "", saved: "" }],
   };
@@ -151,6 +153,13 @@ const RENDER = {
     </div>
     <p class="field-hint">Poné el monto aproximado y el día del mes en que vence. Después podés sumar otras en Facturas.</p>`,
 
+  spending: (a) => html`
+    <h3 class="setup-title">El súper y los gustos</h3>
+    <p class="sheet-text">Hay gastos que no son facturas pero igual los tenés todos los meses. La app puede <strong>reservar</strong> esa plata para que no la cuentes como libre. Lo que no gastes a fin de mes, te ofrece pasarlo a tus ahorros.</p>
+    ${moneyField("groceries", "¿Cuánto gastás por mes en el supermercado? (aprox.)", a.groceries, a.currency)}
+    ${moneyField("treats", "¿Cuánto querés para gustos por día? (un café, un alfajor)", a.treats, a.currency)}
+    <p class="field-hint">Los gustos se acumulan: si un día no gastás, al otro tenés el doble. Cuentan los gastos de Comida y Entretenimiento; lo podés cambiar en Presupuestos.</p>`,
+
   loans: (a) => html`
     <h3 class="setup-title">¿Le debés plata a alguien, o te deben?</h3>
     <p class="sheet-text">Los <strong>préstamos</strong> no son gastos ni ingresos: la app lleva la cuenta de cuánto falta. Lo que debés con fecha se reserva de tu disponible cuando se acerca.</p>
@@ -188,7 +197,7 @@ const RENDER = {
       ${lines.length
         ? html`<ul class="setup-summary">${lines.map(([emoji, text]) => html`<li><span aria-hidden="true">${emoji}</span><span>${text}</span></li>`)}</ul>`
         : html`<p class="notice notice-info">${icon("info", 16)}No cargaste nada todavía. Podés volver atrás, o empezar con la app vacía e ir sumando de a poco.</p>`}
-      <p class="sheet-text">Con eso, el Inicio te va a mostrar tu <strong>saldo disponible</strong>: tu plata total, menos lo reservado para facturas, cuotas y deudas, menos lo apartado en metas.</p>
+      <p class="sheet-text">Con eso, el Inicio te va a mostrar tu <strong>saldo disponible</strong>: tu plata total, menos lo reservado (facturas, cuotas, deudas, súper y gustos), menos lo apartado en metas.</p>
       <p class="field-hint">Después seguís con normalidad: cargás cada gasto e ingreso con «Agregar transacción».</p>`;
   },
 };
@@ -208,6 +217,8 @@ function summaryLines(a, state) {
   }
   const bills = a.bills.filter((b) => b.on && num(b.amount) > 0);
   if (bills.length) lines.push(["🧾", `${bills.length} factura${bills.length === 1 ? "" : "s"}: ${bills.map((b) => b.name).join(", ")} · ${m(bills.reduce((s, b) => s + num(b.amount), 0))} por mes`]);
+  if (num(a.groceries) > 0) lines.push(["🛒", `Supermercado: ${m(num(a.groceries))} reservados por mes`]);
+  if (num(a.treats) > 0) lines.push(["☕", `Gustos: ${m(num(a.treats))} por día, acumulables`]);
   const loans = validLoans(a);
   const lent = loans.filter((l) => l.direction === "lent").reduce((s, l) => s + num(l.amount), 0);
   const borrowed = loans.filter((l) => l.direction === "borrowed").reduce((s, l) => s + num(l.amount), 0);
@@ -239,6 +250,9 @@ function collect(step, form, a) {
     a.card.purchases.forEach((p, i) => Object.assign(p, { what: v(`pur-what-${i}`), per: v(`pur-per-${i}`), left: v(`pur-left-${i}`).trim() }));
   } else if (step === "bills") {
     a.bills.forEach((b, i) => Object.assign(b, { on: on(`bill-on-${i}`), amount: v(`bill-amount-${i}`), day: Number(v(`bill-day-${i}`)) || 10 }));
+  } else if (step === "spending") {
+    a.groceries = v("groceries");
+    a.treats = v("treats");
   } else if (step === "loans") {
     a.loans.forEach((l, i) => Object.assign(l, { direction: v(`loan-dir-${i}`) || "lent", person: v(`loan-person-${i}`), amount: v(`loan-amount-${i}`), due: v(`loan-due-${i}`) }));
   } else if (step === "goals") {
@@ -261,6 +275,7 @@ function validate(step, a) {
     }
   }
   if (step === "bills" && a.bills.some((b) => b.on && !(num(b.amount) > 0))) return "Poné el monto de las facturas que marcaste (o desmarcalas).";
+  if (step === "spending" && (bad(a.groceries) || bad(a.treats))) return "Revisá los montos: alguno no es válido.";
   if (step === "loans") {
     for (const l of a.loans) {
       if (!filled(l.person, l.amount, l.due)) continue;
@@ -324,6 +339,14 @@ export function applySetup(a) {
   for (const b of a.bills.filter((x) => x.on && num(x.amount) > 0)) {
     const day = Math.min(31, Math.max(1, Math.trunc(b.day) || 10));
     store.addBill({ name: b.name, icon: b.icon, amount: num(b.amount), currency: a.currency, dueDate: nextDayOfMonth(day, today), dueDay: day, frequency: "monthly", recurring: true, categoryId: b.categoryId, subcategoryId: b.subcategoryId });
+  }
+
+  // Súper reservado por mes y gustos por día (presupuestos con la plata reservada)
+  if (num(a.groceries) > 0) {
+    store.saveBudget({ name: "Supermercado", icon: "🛒", color: "#2ba66a", mode: "fixed", value: num(a.groceries), currency: a.currency, target: { kind: "categories", categoryIds: ["exp-super"] }, reserve: true });
+  }
+  if (num(a.treats) > 0) {
+    store.saveBudget({ name: "Gustos", icon: "☕", color: "#d99a2b", mode: "daily", value: num(a.treats), currency: a.currency, target: { kind: "categories", categoryIds: ["exp-comida", "exp-entretenimiento"] }, reserve: true });
   }
 
   // Préstamos: solo se anotan (esa plata ya está reflejada en lo que cargaste en tus cuentas)

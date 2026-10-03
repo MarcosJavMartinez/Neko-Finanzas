@@ -27,7 +27,7 @@ export default {
     if (!state.budgets.length) {
       return html`<div class="card">${emptyState({
         title: "Sin presupuestos todavía",
-        text: "Repartí tus ingresos: por ejemplo 25% facturas, 10% viajes, 50% gastos del día a día.",
+        text: "Repartí tus ingresos, reservá lo del súper del mes o ponete un límite de gustos por día.",
         actionLabel: "Crear presupuesto",
         action: "add-budget",
       })}</div>`;
@@ -51,7 +51,7 @@ export default {
           { label: "Sin asignar", value: unassigned, color: "var(--track-strong)", tip: `${Math.round(unassigned)}%` },
         ])}
         <ul class="legend legend-wrap">
-          ${overview.items.map((i) => html`<li class="legend-item"><span class="legend-swatch" style="--c:${i.budget.color}"></span>${i.budget.name} <span class="muted-text">${i.budget.mode === "percent" ? `${i.budget.value}%` : formatMoney(i.budget.value, i.budget.currency)}</span></li>`)}
+          ${overview.items.map((i) => html`<li class="legend-item"><span class="legend-swatch" style="--c:${i.budget.color}"></span>${i.budget.name} <span class="muted-text">${i.budget.mode === "percent" ? `${i.budget.value}%` : i.budget.mode === "daily" ? `${formatMoney(i.budget.value, i.budget.currency)} por día` : formatMoney(i.budget.value, i.budget.currency)}</span></li>`)}
         </ul>
         <p class="fine-print">${icon("info", 14)} ${baseText}${overview.assignedPct > 100.5 ? html` <strong class="text-warn">Asignaste ${Math.round(overview.assignedPct)}%: más de lo que entra.</strong>` : ""}</p>
       </section>
@@ -62,7 +62,7 @@ export default {
             <span class="budget-top">
               <span class="cat-bubble cat-bubble-md" style="--c:${i.budget.color}">${i.budget.icon}</span>
               <span class="row-main">
-                <span class="row-title">${i.budget.name}</span>
+                <span class="row-title">${i.budget.name}${i.budget.reserve ? html` <span class="tag tag-bill">${icon("lock", 12)}Reservado</span>` : ""}</span>
                 <span class="row-meta">${isGoal ? "Ahorrado" : "Gastado"} ${formatMoney(i.spent, main)} de ${formatMoney(i.limit, main)}</span>
               </span>
               <span class="budget-pct">${Math.round(i.pct)}%</span>

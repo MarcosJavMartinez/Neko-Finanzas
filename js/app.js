@@ -18,6 +18,7 @@ import { openTransactionForm } from "./ui/forms/transactionForm.js";
 import { openBillForm, openBillDetail, openPayBill } from "./ui/forms/billForms.js";
 import { openGoalForm, openGoalDetail } from "./ui/forms/goalForms.js";
 import { openBudgetForm } from "./ui/forms/budgetForm.js";
+import { openLeftoverSheet } from "./ui/forms/leftoverForm.js";
 import { openCategoryForm } from "./ui/forms/categoryForm.js";
 import { openAccountForm, openTransferForm, openAccountDetail } from "./ui/forms/accountForms.js";
 import { openLoanForm, openLoanDetail } from "./ui/forms/loanForms.js";
@@ -69,6 +70,13 @@ const GLOBAL_ACTIONS = {
   "add-bill": () => openBillForm(),
   "add-goal": () => openGoalForm(),
   "add-budget": () => openBudgetForm(),
+  "add-treats": () => openBudgetForm({ preset: "daily" }),
+  "leftover-to-goal": (el) => openLeftoverSheet(el.dataset.id),
+  "leftover-keep": (el) => {
+    const backup = store.snapshot();
+    store.settleBudgetLeftover(el.dataset.id, el.dataset.month);
+    toast("Listo, queda en tu disponible", { type: "info", actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+  },
   "add-category": (el) => openCategoryForm({ type: el.dataset.type || "expense" }),
   "edit-tx": (el) => openTransactionForm({ tx: byId(store.getState().transactions, el.dataset.id) }),
   "edit-transfer": (el) => openTransferForm({ tx: byId(store.getState().transactions, el.dataset.id) }),

@@ -28,7 +28,9 @@
  *                      cambia en Configuración) + las vencidas sin pagar
  *                      + gastos programados (con fecha futura, como las
  *                      próximas cuotas de una compra) dentro del horizonte
- *                      + lo que debés de un préstamo que vence en ese plazo.
+ *                      + lo que debés de un préstamo que vence en ese plazo
+ *                      + lo que falta gastar este mes de los presupuestos
+ *                      marcados "reservar" (supermercado, gustos por día).
  *
  *  Préstamos: prestar plata la saca de tu cuenta (no es un gasto) y lo que
  *  te deben no cuenta como plata tuya hasta que te la devuelven; si te
@@ -58,6 +60,7 @@ import {
   monthRange,
   nextDate,
   parseISO,
+  shiftMonthKey,
   todayISO,
 } from "./dates.js";
 
@@ -276,9 +279,10 @@ export function balanceSummary(state, today = todayISO()) {
   const reserve = billReserve(state, today);
   const scheduled = scheduledReserve(state, today);
   const debts = loansReserve(state, today);
-  const reserved = reserve.amount + scheduled.amount + debts.amount;
+  const envelopes = budgetReserve(state, today);
+  const reserved = reserve.amount + scheduled.amount + debts.amount + envelopes.amount;
   const available = total - inGoals - reserved;
-  return { total, inGoals, reserved, reserve, scheduled, debts, available };
+  return { total, inGoals, reserved, reserve, scheduled, debts, envelopes, available };
 }
 
 // ---------------------------------------------------------------------------
@@ -450,9 +454,22 @@ export function budgetBase(state, key) {
   return { amount: toMain(state, ref, state.settings.mainCurrency), source: ref ? "reference" : "none" };
 }
 
-export function budgetLimit(state, budget, base) {
+/**
+ * Días que cuenta un presupuesto "por día" en un mes: todos, o desde el día
+ * en que se creó si fue a mitad de ese mes.
+ */
+function dailyDays(budget, key) {
+  const { start, end } = monthRange(key);
+  if (budget.since && budget.since > end) return 0;
+  const from = budget.since && budget.since > start ? budget.since : start;
+  return daysBetween(from, end) + 1;
+}
+
+export function budgetLimit(state, budget, base, key = monthKey(todayISO())) {
   if (budget.mode === "percent") return (base * budget.value) / 100;
-  return toMain(state, budget.value, budget.currency);
+  const value = toMain(state, budget.value, budget.currency);
+  // "Por día": el límite del mes es el valor diario por los días que cuenta.
+  return budget.mode === "daily" ? value * dailyDays(budget, key) : value;
 }
 
 /** Categorías cubiertas por algún presupuesto "por categorías". */
@@ -462,15 +479,76 @@ function coveredCategoryIds(state) {
   return ids;
 }
 
-export function budgetSpent(state, budget, key) {
-  const expenses = transactionsInMonth(state, key).filter((t) => t.type === "expense");
-  if (budget.target.kind === "goal") return Math.max(0, goalMovementsInMonth(state, key, budget.target.goalId));
+/** Gastos del mes que entran en un presupuesto (por categorías o "todo lo demás"). */
+function budgetExpenses(state, budget, key) {
+  let expenses = transactionsInMonth(state, key).filter((t) => t.type === "expense");
+  // Uno "por día" creado a mitad de mes cuenta desde ese día.
+  if (budget.mode === "daily" && budget.since) expenses = expenses.filter((t) => t.date >= budget.since);
   if (budget.target.kind === "rest") {
     const covered = coveredCategoryIds(state);
-    return sumMain(state, expenses.filter((t) => !covered.has(t.categoryId)));
+    return expenses.filter((t) => !covered.has(t.categoryId));
   }
-  const ids = new Set(budget.target.categoryIds);
-  return sumMain(state, expenses.filter((t) => ids.has(t.categoryId)));
+  const ids = new Set(budget.target.categoryIds || []);
+  return expenses.filter((t) => ids.has(t.categoryId));
+}
+
+export function budgetSpent(state, budget, key) {
+  if (budget.target.kind === "goal") return Math.max(0, goalMovementsInMonth(state, key, budget.target.goalId));
+  return sumMain(state, budgetExpenses(state, budget, key));
+}
+
+// ---------------------------------------------------------------------------
+// Sobres: presupuestos con la plata reservada, y gustos por día
+// ---------------------------------------------------------------------------
+
+const isEnvelope = (budget) => budget.reserve && budget.target.kind !== "goal";
+
+/**
+ * Lo que falta gastar este mes de los presupuestos marcados "reservar" (por
+ * ejemplo, supermercado). Esa plata se descuenta del disponible: está
+ * guardada para eso.
+ */
+export function budgetReserve(state, today = todayISO()) {
+  const key = monthKey(today);
+  const base = budgetBase(state, key).amount;
+  const items = state.budgets
+    .filter(isEnvelope)
+    .map((budget) => ({ budget, amount: Math.max(0, budgetStatus(state, budget, key, base).remaining) }))
+    .filter((item) => item.amount > 0);
+  return { amount: items.reduce((s, i) => s + i.amount, 0), items };
+}
+
+/**
+ * Lo que sobró el mes pasado de cada presupuesto reservado y todavía no se
+ * decidió qué hacer (pasarlo a una meta o dejarlo disponible). La app lo
+ * ofrece; nunca lo mueve sola.
+ */
+export function budgetLeftovers(state, today = todayISO()) {
+  const month = shiftMonthKey(monthKey(today), -1);
+  const base = budgetBase(state, month).amount;
+  return state.budgets
+    .filter((b) => isEnvelope(b) && b.since && monthKey(b.since) <= month && b.settledMonth !== month)
+    .map((budget) => ({ budget, month, amount: Math.round(budgetStatus(state, budget, month, base).remaining * 100) / 100 }))
+    .filter((item) => item.amount > 0);
+}
+
+/**
+ * Gustos por día: el primer presupuesto "por día". Lo que no se gasta se
+ * acumula dentro del mes:
+ *   acumulado = valor por día × días transcurridos − lo gastado hasta hoy
+ */
+export function treatAllowance(state, today = todayISO()) {
+  const budget = state.budgets.find((b) => b.mode === "daily" && b.target.kind !== "goal");
+  if (!budget || (budget.since && budget.since > today)) return null;
+  const key = monthKey(today);
+  const start = monthRange(key).start;
+  const from = budget.since && budget.since > start ? budget.since : start;
+  const days = daysBetween(from, today) + 1;
+  const perDay = toMain(state, budget.value, budget.currency);
+  const expenses = budgetExpenses(state, budget, key).filter((t) => t.date <= today);
+  const spent = sumMain(state, expenses);
+  const spentToday = sumMain(state, expenses.filter((t) => t.date === today));
+  return { budget, perDay, days, spent, spentToday, accumulated: perDay * days - spent };
 }
 
 /**
@@ -479,7 +557,7 @@ export function budgetSpent(state, budget, key) {
  * 100% es bueno, así que usan "done" en vez de "near"/"over".
  */
 export function budgetStatus(state, budget, key, base = budgetBase(state, key).amount) {
-  const limit = budgetLimit(state, budget, base);
+  const limit = budgetLimit(state, budget, base, key);
   const spent = budgetSpent(state, budget, key);
   const pct = percent(spent, limit);
   let level = limit <= 0 ? (spent > 0 ? "over" : "ok") : pct > 100 ? "over" : pct >= 80 ? "near" : "ok";
@@ -491,7 +569,7 @@ export function budgetsOverview(state, key) {
   const base = budgetBase(state, key);
   const items = state.budgets.map((b) => budgetStatus(state, b, key, base.amount));
   const assignedPct = state.budgets.reduce(
-    (sum, b) => sum + (b.mode === "percent" ? b.value : percent(budgetLimit(state, b, base.amount), base.amount)),
+    (sum, b) => sum + (b.mode === "percent" ? b.value : percent(budgetLimit(state, b, base.amount, key), base.amount)),
     0
   );
   return { base, items, assignedPct };

@@ -277,6 +277,42 @@ eq("último día del mes: un día", day.days, 1);
 day = F.dailyAllowance(dayState([{ id: "g", type: "expense", amount: 500000, currency: "ARS", date: "2026-03-10", categoryId: "exp-otros", accountId: "a" }]), "2026-03-22");
 eq("sin disponible, nunca da negativo por día", day.perDay, 0);
 
+// Sobres: presupuesto reservado (súper) y gustos por día
+const env = (budgets, transactions = [], goals = []) => sanitizeState({ accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 500000 }], categories: buildDemoState().categories, budgets, transactions, goals });
+const superB = { id: "sup", name: "Súper", mode: "fixed", value: 200000, currency: "ARS", target: { kind: "categories", categoryIds: ["exp-super"] }, reserve: true, since: "2026-02-10" };
+const gasto = (id, amount, date, categoryId = "exp-super") => ({ id, type: "expense", amount, currency: "ARS", date, categoryId, accountId: "a" });
+let es = env([superB], [gasto("g1", 50000, "2026-03-05")]);
+eq("súper reservado: lo que falta gastar del mes", [F.budgetReserve(es, "2026-03-10").amount, F.balanceSummary(es, "2026-03-10").available], [150000, 300000]);
+eq("gastar en el súper no cambia el disponible", F.balanceSummary(env([superB], [gasto("g1", 50000, "2026-03-05"), gasto("g2", 30000, "2026-03-09")]), "2026-03-10").available, 300000);
+eq("pasarse del presupuesto sí lo baja", F.balanceSummary(env([superB], [gasto("g1", 260000, "2026-03-05")]), "2026-03-10").available, 240000);
+eq("sin 'reservar' no se descuenta", F.budgetReserve(env([{ ...superB, reserve: false }]), "2026-03-10").amount, 0);
+eq("un presupuesto para una meta nunca se reserva", env([{ ...superB, target: { kind: "goal", goalId: "x" } }]).budgets.length, 0);
+es = env([superB], [gasto("g1", 120000, "2026-02-15")], [{ id: "goal", name: "Viaje", target: 1000000, currency: "ARS", movements: [] }]);
+eq("sobrante del mes pasado", F.budgetLeftovers(es, "2026-03-03").map((l) => [l.budget.id, l.month, l.amount]), [["sup", "2026-02", 80000]]);
+eq("en el mismo mes en que se creó no hay sobrante que ofrecer", F.budgetLeftovers(es, "2026-02-20"), []);
+store.restore(es);
+store.settleBudgetLeftover("sup", "2026-02", { goalId: "goal", amount: 80000, note: "Sobrante" });
+eq("pasarlo a la meta: queda apartado y no se vuelve a ofrecer", [F.goalSaved(store.getState().goals[0]), store.getState().budgets[0].settledMonth, F.budgetLeftovers(store.getState(), "2026-03-03").length], [80000, "2026-02", 0]);
+store.restore(es);
+store.settleBudgetLeftover("sup", "2026-02");
+eq("dejarlo disponible: no mueve plata y no se vuelve a ofrecer", [F.goalSaved(store.getState().goals[0]), F.budgetLeftovers(store.getState(), "2026-03-03").length], [0, 0]);
+
+const treatsB = { id: "tr", name: "Gustos", icon: "☕", mode: "daily", value: 5000, currency: "ARS", target: { kind: "categories", categoryIds: ["exp-comida"] }, reserve: true, since: "2026-02-01" };
+let ts = env([treatsB]);
+let tr = F.treatAllowance(ts, "2026-03-04");
+eq("gustos: se acumulan los días sin gastar", [tr.days, tr.perDay, tr.accumulated], [4, 5000, 20000]);
+tr = F.treatAllowance(env([treatsB], [gasto("c1", 3000, "2026-03-02", "exp-comida"), gasto("c2", 4000, "2026-03-04", "exp-comida"), gasto("s", 9999, "2026-03-04", "exp-super")]), "2026-03-04");
+eq("gustos: baja con lo gastado en sus categorías (no con el súper)", [tr.accumulated, tr.spentToday, tr.spent], [13000, 4000, 7000]);
+tr = F.treatAllowance(env([treatsB], [gasto("c1", 30000, "2026-03-01", "exp-comida")]), "2026-03-02");
+eq("gustos: pasarse deja saldo negativo que se recupera con los días", tr.accumulated, -20000);
+eq("gustos: límite del mes = valor por día × días del mes", F.budgetStatus(ts, ts.budgets[0], "2026-03").limit, 155000);
+tr = F.treatAllowance(env([{ ...treatsB, since: "2026-03-20" }], [gasto("c0", 9000, "2026-03-05", "exp-comida")]), "2026-03-22");
+eq("gustos creados a mitad de mes: cuentan desde ese día", [tr.days, tr.accumulated, F.budgetStatus(ts, { ...treatsB, since: "2026-03-20" }, "2026-03").limit], [3, 15000, 60000]);
+eq("sin presupuesto por día no hay gustos", F.treatAllowance(env([superB]), "2026-03-04"), null);
+store.restore(env([]));
+const made = store.saveBudget({ name: "Gustos", icon: "☕", color: "#d99a2b", mode: "daily", value: 100, currency: "ARS", target: { kind: "categories", categoryIds: ["exp-comida"] }, reserve: true });
+eq("al crear uno reservado se anota desde cuándo cuenta", [made.reserve, /^\d{4}-\d{2}-\d{2}$/.test(made.since)], [true, true]);
+
 // Avisos de vencimientos
 const remState = sanitizeState({
   categories: [],

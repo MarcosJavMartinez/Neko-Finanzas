@@ -6,13 +6,15 @@ import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, txRow } from "../ui/components.js";
 import { formatMoney, CURRENCIES, isMasked } from "../core/money.js";
-import { formatDate, currentMonthKey, todayISO } from "../core/dates.js";
+import { formatDate, formatMonth, currentMonthKey, todayISO } from "../core/dates.js";
 import { accountRow } from "./accounts.js";
 import { loanRow } from "./loans.js";
 import {
   accountBalances,
   balanceSummary,
+  budgetLeftovers,
   dailyAllowance,
+  treatAllowance,
   loansSummary,
   monthlyTotals,
   pendingRecurringIncomes,
@@ -33,7 +35,7 @@ function heroSize(text) {
 
 /** "facturas", "facturas y cuotas", "facturas, cuotas y deudas"… */
 function reserveLabel(summary) {
-  const parts = ["facturas", summary.scheduled.amount > 0 && "cuotas", summary.debts.amount > 0 && "deudas"].filter(Boolean);
+  const parts = ["facturas", summary.scheduled.amount > 0 && "cuotas", summary.debts.amount > 0 && "deudas", summary.envelopes.amount > 0 && "gastos del mes"].filter(Boolean);
   return parts.length > 1 ? `${parts.slice(0, -1).join(", ")} y ${parts[parts.length - 1]}` : parts[0];
 }
 
@@ -123,21 +125,51 @@ export default {
       ${trio}
     </section>`;
 
-    // Para los gustos del día (un café, un alfajor): el disponible repartido por día.
+    // Para los gustos del día (un café, un alfajor). Con un presupuesto "por
+    // día" se muestra lo acumulado; si no, el disponible repartido por día.
+    const treats = treatAllowance(state, today);
     const daily = dailyAllowance(state, today);
     const untilText = daily.reason === "income" ? `hasta que cobres, el ${formatDate(daily.until)}` : "hasta fin de mes";
-    const dailyCard = !isEmpty && daily.available > 0
-      ? html`<section class="daily-card reveal ${daily.leftToday < 0 ? "is-over" : ""}" aria-label="Para gastar hoy">
-          <span class="daily-icon" aria-hidden="true">☕</span>
-          <div class="daily-text">
-            ${daily.leftToday >= 0
-              ? html`<p class="daily-main">Hoy podés gastar <strong data-pulse="daily">${m(daily.leftToday)}</strong></p>`
-              : html`<p class="daily-main">Hoy ya te pasaste por <strong data-pulse="daily">${m(-daily.leftToday)}</strong></p>`}
-            <p class="daily-sub">${m(daily.perDay)} por día ${untilText}${daily.spentToday > 0 ? ` · hoy llevás ${m(daily.spentToday)}` : ""}</p>
-            <p class="daily-note">Es tu disponible repartido en ${daily.days} día${daily.days === 1 ? "" : "s"}. Incluye todo lo que no está reservado: la comida y el transporte también salen de acá.</p>
-          </div>
-        </section>`
-      : "";
+    const dailyCard = isEmpty
+      ? ""
+      : treats
+        ? html`<section class="daily-card reveal ${treats.accumulated < 0 ? "is-over" : ""}" aria-label="Gustos de hoy">
+            <span class="daily-icon" aria-hidden="true">${treats.budget.icon}</span>
+            <div class="daily-text">
+              ${treats.accumulated >= 0
+                ? html`<p class="daily-main">Para gustos tenés <strong data-pulse="daily">${m(treats.accumulated)}</strong></p>`
+                : html`<p class="daily-main">En gustos te pasaste por <strong data-pulse="daily">${m(-treats.accumulated)}</strong></p>`}
+              <p class="daily-sub">${m(treats.perDay)} por día${treats.spentToday > 0 ? ` · hoy llevás ${m(treats.spentToday)}` : ""}</p>
+              <p class="daily-note">${treats.accumulated >= 0 ? "Lo que no gastás hoy se acumula para mañana." : "Se va recuperando con los días que no gastes."} Cuenta: ${treats.budget.name}.</p>
+            </div>
+          </section>`
+        : daily.available > 0
+          ? html`<section class="daily-card reveal ${daily.leftToday < 0 ? "is-over" : ""}" aria-label="Para gastar hoy">
+              <span class="daily-icon" aria-hidden="true">☕</span>
+              <div class="daily-text">
+                ${daily.leftToday >= 0
+                  ? html`<p class="daily-main">Hoy podés gastar <strong data-pulse="daily">${m(daily.leftToday)}</strong></p>`
+                  : html`<p class="daily-main">Hoy ya te pasaste por <strong data-pulse="daily">${m(-daily.leftToday)}</strong></p>`}
+                <p class="daily-sub">${m(daily.perDay)} por día ${untilText}${daily.spentToday > 0 ? ` · hoy llevás ${m(daily.spentToday)}` : ""}</p>
+                <p class="daily-note">Es tu disponible repartido en ${daily.days} día${daily.days === 1 ? "" : "s"}: la comida y el transporte también salen de acá. <button type="button" class="inline-link" data-action="add-treats">Ponete un límite de gustos por día</button> y lo que no gastes se acumula.</p>
+              </div>
+            </section>`
+          : "";
+
+    // Sobrantes del mes pasado en presupuestos reservados: se ofrece pasarlos a una meta.
+    const leftovers = budgetLeftovers(state, today).map(
+      (l) => html`<div class="card card-soft card-pending reveal">
+        <span class="mini-icon mini-icon-income">${icon("sparkle", 18)}</span>
+        <div class="row-main">
+          <span class="row-title">Te sobraron ${m(l.amount)} de ${l.budget.name}</span>
+          <span class="row-meta">De ${formatMonth(l.month).toLowerCase()}. ¿Lo pasás a tus ahorros?</span>
+        </div>
+        <div class="card-pending-actions">
+          <button type="button" class="btn btn-sm btn-ghost" data-action="leftover-keep" data-id="${l.budget.id}" data-month="${l.month}">Dejarlo disponible</button>
+          <button type="button" class="btn btn-sm btn-primary" data-action="leftover-to-goal" data-id="${l.budget.id}">Pasar a una meta</button>
+        </div>
+      </div>`
+    );
 
     const actions = html`<nav class="quick-actions card reveal" aria-label="Acciones rápidas">
       <button type="button" class="qa qa-primary" data-action="add-expense"><span class="qa-icon">${icon("plus", 22)}</span><span>Agregar<br />transacción</span></button>
@@ -258,7 +290,7 @@ export default {
           </div>`
         : ""}
       <div class="home-grid">
-        <div class="home-col">${hero}${dailyCard}${savings}${actions}${pending}${isEmpty ? "" : extrasLine}</div>
+        <div class="home-col">${hero}${dailyCard}${savings}${actions}${leftovers}${pending}${isEmpty ? "" : extrasLine}</div>
         <div class="home-col">${accountsCard}${recents}${billsCard}${loansCard}${budgetsCard}${goalsCard}${ratesCard}</div>
       </div>
       <p class="privacy-note">${icon("lock", 14)} Tus datos se guardan solo en este dispositivo.</p>

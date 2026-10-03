@@ -320,7 +320,7 @@ export function sanitizeState(input) {
   const budgetIds = new Set();
   for (const b of arr(data.budgets)) {
     if (!isObj(b) || !id(b.id) || budgetIds.has(b.id) || !isObj(b.target)) continue;
-    const mode = b.mode === "fixed" ? "fixed" : b.mode === "percent" ? "percent" : "";
+    const mode = ["fixed", "percent", "daily"].includes(b.mode) ? b.mode : "";
     const value = positive(b.value);
     if (!mode || !value || (mode === "percent" && value > 100)) continue;
     let target;
@@ -330,7 +330,7 @@ export function sanitizeState(input) {
       target = { kind: "categories", categoryIds: arr(b.target.categoryIds).filter((c) => catById.get(c)?.type === "expense") };
     if (!target) continue;
     budgetIds.add(b.id);
-    budgets.push({
+    const budget = {
       id: b.id,
       name: str(b.name, 60) || "Presupuesto",
       icon: emoji(b.icon, "🎯"),
@@ -339,7 +339,12 @@ export function sanitizeState(input) {
       value,
       currency: currency(b.currency, main),
       target,
-    });
+      // Reservar: lo que falta gastar del mes se descuenta del disponible.
+      reserve: bool(b.reserve) && target.kind !== "goal",
+    };
+    if (date(b.since)) budget.since = b.since;
+    if (typeof b.settledMonth === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(b.settledMonth)) budget.settledMonth = b.settledMonth;
+    budgets.push(budget);
   }
 
   return {

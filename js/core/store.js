@@ -677,10 +677,38 @@ export function deleteGoalMovement(goalId, movementId) {
 // ---------------------------------------------------------------------------
 
 export function saveBudget(data) {
-  commit((s) => {
+  return commit((s) => {
     const existing = data.id && find(s.budgets, data.id);
-    if (existing) Object.assign(existing, data);
-    else s.budgets.push({ ...data, id: uid("bud") });
+    const values = { ...data, reserve: Boolean(data.reserve) && data.target?.kind !== "goal" };
+    // Desde cuándo cuenta: hace falta para los "por día" y para saber si hubo
+    // un mes anterior del que pueda haber sobrado plata.
+    const tracked = values.reserve || values.mode === "daily";
+    if (existing) {
+      Object.assign(existing, values);
+      if (tracked && !existing.since) existing.since = todayISO();
+      return existing;
+    }
+    const budget = { ...values, id: uid("bud"), ...(tracked ? { since: todayISO() } : {}) };
+    s.budgets.push(budget);
+    return budget;
+  });
+}
+
+/**
+ * Qué hacer con lo que sobró de un presupuesto reservado el mes pasado:
+ * pasarlo a una meta (goalId + amount en la moneda principal) o dejarlo
+ * disponible. En los dos casos ese mes queda resuelto y no se vuelve a ofrecer.
+ */
+export function settleBudgetLeftover(budgetId, month, { goalId, amount, note = "" } = {}) {
+  commit((s) => {
+    const budget = find(s.budgets, budgetId);
+    if (!budget) return;
+    budget.settledMonth = month;
+    const goal = goalId && find(s.goals, goalId);
+    if (goal && amount > 0) {
+      const inGoal = Math.round(convert(amount, s.settings.mainCurrency, goal.currency, s.rates) * 100) / 100;
+      if (inGoal > 0) goal.movements.push({ id: uid("mov"), date: todayISO(), amount: inGoal, note: String(note).slice(0, 80) });
+    }
   });
 }
 

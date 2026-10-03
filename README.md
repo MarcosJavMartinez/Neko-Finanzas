@@ -12,6 +12,7 @@ La segunda herramienta de [Neko Tools](https://nekotools.site), después de [Nek
 - **Préstamos**: lo que te deben y lo que debés, con devoluciones en partes. Prestar o devolver no es gasto ni ingreso; lo que debés con fecha se reserva del disponible.
 - **Ingresos y gastos** con categorías propias (ícono y color), fecha, hora opcional y descripción. Los ingresos pueden repetirse (la app te recuerda registrarlos; nunca los suma sola).
 - **Facturas y servicios** recurrentes (semanal a anual): la app calcula cuánto reservar, y al pagarlas registra el gasto y pasa al próximo vencimiento.
+- **Sobres**: un presupuesto puede *reservar* su plata (el súper del mes: lo que falta gastar no cuenta como disponible) y, si sobra a fin de mes, la app ofrece pasarlo a una meta. Los presupuestos *por día* (gustos) se acumulan: lo que no se gasta hoy queda para mañana.
 - **Presupuestos** mensuales por porcentaje de los ingresos o monto fijo, aplicados a categorías, a una meta o "al resto", con avisos suaves.
 - **Metas de ahorro** con depósitos, retiros e historial.
 - **Monedas**: ARS, USD y EUR, con tipo de cambio manual (sin depender de ninguna API).

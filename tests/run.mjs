@@ -133,6 +133,7 @@ for (const [name, file, opts] of [
   ["Recorrido completo de un usuario nuevo", "journey.js"],
   ["Cuestionario de inicio", "setup-wizard.js"],
   ["Ingresos: cobro parcial y extras", "income.js"],
+  ["Sobres: súper reservado y gustos por día", "envelopes.js"],
   [
     "Datos: IndexedDB, copias automáticas, iPhone, pestañas",
     "storage.js",
