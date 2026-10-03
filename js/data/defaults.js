@@ -1,7 +1,7 @@
 // Valores iniciales: categorías predeterminadas, paleta, íconos y el estado
 // vacío de la app.
 
-export const SCHEMA_VERSION = 4; // 3: cuentas y transferencias · 4: extras del sueldo
+export const SCHEMA_VERSION = 5; // 3: cuentas y transferencias · 4 y 5: extras del sueldo
 
 /** Paleta de la versión 1 (verde menta), para migrar colores viejos. */
 export const PALETTE_V1 = ["#1f9e74", "#3a86d4", "#e4705f", "#2a9fb0", "#8a63d2", "#d99a2b", "#d65c96", "#7d9a2e"];
@@ -49,7 +49,7 @@ const SUBCATEGORIES = {
   "exp-suscripciones": [["netflix", "Netflix", "📺"], ["prime", "Prime Video", "🎞️"], ["crunchyroll", "Crunchyroll", "🍥"], ["spotify", "Spotify", "🎵"], ["geforce", "GeForce NOW", "🎮"], ["chatgpt", "ChatGPT", "🤖"], ["disney", "Disney+", "🏰"], ["youtube", "YouTube Premium", "▶️"]],
   "exp-educacion": [["cursos", "Cursos", "🎓"], ["cuota", "Cuota", "🏫"], ["libros", "Libros", "📚"], ["materiales", "Materiales", "✏️"]],
   "exp-viajes": [["pasajes", "Pasajes", "✈️"], ["alojamiento", "Alojamiento", "🏨"], ["excursiones", "Excursiones", "🗺️"], ["comida", "Comida en viaje", "🍝"]],
-  "inc-sueldo": [["mensual", "Sueldo mensual", "💼"], ["aguinaldo", "Aguinaldo", "🎄"], ["extras", "Horas extra", "⏱️"], ["proporcional", "Sueldo proporcional", "⏳"], ["comision", "Comisiones", "📈"], ["bono", "Bono o premio", "🎁"], ["vacaciones", "Vacaciones", "🏖️"]],
+  "inc-sueldo": [["mensual", "Sueldo mensual", "💼"], ["aguinaldo", "Aguinaldo", "🎄"], ["extras", "Horas extra", "⏱️"], ["proporcional", "Sueldo proporcional", "⏳"], ["comision", "Comisiones", "📈"], ["bono", "Bono o premio", "🎁"], ["vacaciones", "Vacaciones", "🏖️"], ["otros", "Otros extras", "✨"]],
   "inc-independiente": [["proyectos", "Proyectos", "🧩"], ["clases", "Clases", "🧑‍🏫"], ["consultoria", "Consultoría", "💬"]],
   "inc-ventas": [["online", "Ventas online", "📦"], ["usados", "Cosas usadas", "♻️"]],
 };

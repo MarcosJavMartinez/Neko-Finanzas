@@ -21,6 +21,7 @@ import {
 } from "../core/finance.js";
 import { backupReminderDue, daysSinceBackup, getLastBackup, iosNoticeSnoozed } from "../core/prefs.js";
 import { needsIosInstall } from "../ui/install.js";
+import { extrasOfMonth } from "../ui/forms/incomeExtras.js";
 
 const RECENT_COUNT = 5;
 
@@ -78,6 +79,14 @@ export default {
         <span class="mini-sub">${state.goals.length} meta${state.goals.length === 1 ? "" : "s"}</span>
       </a>
     </div>`;
+
+    // Sueldo y extras son dos líneas distintas: lo fijo y lo variable del mes.
+    const extrasTotal = extrasOfMonth(state, currentMonthKey()).reduce((s, e) => s + e.total, 0);
+    const extrasLine = html`<p class="extras-line reveal">
+      ${icon("sparkle", 15)}
+      <span>${extrasTotal > 0 ? html`Extras de este mes: <strong>${m(extrasTotal)}</strong>` : "¿Tuviste aguinaldo, horas extra, comisión o propinas?"}</span>
+      <button type="button" class="chip chip-action" data-action="add-extras">${icon("plus", 12)}Cargar extras</button>
+    </p>`;
 
     const savings = html`${month.income || month.expense
       ? html`<p class="savings-pill reveal ${month.saved < 0 ? "is-negative" : ""}">
@@ -232,7 +241,7 @@ export default {
           </div>`
         : ""}
       <div class="home-grid">
-        <div class="home-col">${hero}${savings}${actions}${pending}</div>
+        <div class="home-col">${hero}${savings}${actions}${pending}${isEmpty ? "" : extrasLine}</div>
         <div class="home-col">${accountsCard}${recents}${billsCard}${loansCard}${budgetsCard}${goalsCard}${ratesCard}</div>
       </div>
       <p class="privacy-note">${icon("lock", 14)} Tus datos se guardan solo en este dispositivo.</p>

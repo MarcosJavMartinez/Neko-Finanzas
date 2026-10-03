@@ -22,6 +22,7 @@ import { openCategoryForm } from "./ui/forms/categoryForm.js";
 import { openAccountForm, openTransferForm, openAccountDetail } from "./ui/forms/accountForms.js";
 import { openLoanForm, openLoanDetail } from "./ui/forms/loanForms.js";
 import { openIncomeConfirm } from "./ui/forms/incomeConfirm.js";
+import { openIncomeExtras } from "./ui/forms/incomeExtras.js";
 import { watchSystemTheme, applySavedTheme } from "./ui/theme.js";
 import { showCustomImage } from "./ui/background.js";
 import { canPromptInstall, promptInstall, onInstallChange, openInstallHelp } from "./ui/install.js";
@@ -64,6 +65,7 @@ const byId = (list, id) => list.find((x) => x.id === id);
 const GLOBAL_ACTIONS = {
   "add-income": () => openTransactionForm({ type: "income" }),
   "add-expense": () => openTransactionForm({ type: "expense" }),
+  "add-extras": () => openIncomeExtras(),
   "add-bill": () => openBillForm(),
   "add-goal": () => openGoalForm(),
   "add-budget": () => openBudgetForm(),

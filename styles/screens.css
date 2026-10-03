@@ -2140,3 +2140,38 @@ button.inline-link {
   font-size: 0.86rem;
   gap: 6px;
 }
+
+/* Extras del mes (ingresos variables, aparte del sueldo) */
+.extras-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  font-size: 0.86rem;
+  color: var(--text-2);
+}
+
+.extras-line > span {
+  flex: 1;
+  min-width: 150px;
+}
+
+.extras-line .icon {
+  color: var(--income);
+}
+
+.extra-name {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.extra-loaded {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--income-ink);
+}

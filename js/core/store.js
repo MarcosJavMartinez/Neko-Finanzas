@@ -139,7 +139,7 @@ function migrate(data) {
         if (index !== -1 && category.color === PALETTE_V1[index]) category = { ...category, color: def.color };
       }
       // v3 → v4: el sueldo suma subcategorías para extras (comisión, bono, proporcional…).
-      if ((raw.version || 1) < 4 && category.id === "inc-sueldo" && category.builtin) {
+      if ((raw.version || 1) < 5 && category.id === "inc-sueldo" && category.builtin) {
         const have = new Set(category.subcategories.map((sub) => sub?.id));
         category = { ...category, subcategories: [...category.subcategories, ...defaultSubcategories(category.id).filter((sub) => !have.has(sub.id))] };
       }
@@ -511,6 +511,31 @@ export function confirmRecurring(templateId, { amount, currency, date, accountId
       );
     }
     return tx;
+  });
+}
+
+/**
+ * Extras del mes (aguinaldo, comisión, propinas…): cada uno queda como un
+ * ingreso aparte, sin repetirse.
+ */
+export function addIncomeExtras(extras, { date = todayISO(), accountId, currency } = {}) {
+  return commit((s) => {
+    const createdAt = new Date().toISOString();
+    const created = [];
+    for (const extra of extras) {
+      if (!(extra.amount > 0)) continue;
+      const tx = withValidAccount(
+        s,
+        withValidCategory(
+          s,
+          { id: uid("tx"), type: "income", amount: Math.round(extra.amount * 100) / 100, currency: currency || s.settings.mainCurrency, date, time: "", categoryId: extra.categoryId, subcategoryId: extra.subcategoryId || "", description: String(extra.name || "Extra").slice(0, 80), accountId, createdAt },
+          "income"
+        )
+      );
+      s.transactions.push(tx);
+      created.push(tx);
+    }
+    return created;
   });
 }
 

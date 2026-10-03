@@ -27,7 +27,8 @@ import * as store from "../../core/store.js";
 import { todayISO, FREQUENCIES } from "../../core/dates.js";
 import { formatMoney, amountToInput, parseAmount } from "../../core/money.js";
 import { FALLBACK_CATEGORY, INSTALLMENT_OPTIONS } from "../../data/defaults.js";
-import { confirmDialog } from "../sheet.js";
+import { confirmDialog, whenHistorySettled } from "../sheet.js";
+import { openIncomeExtras } from "./incomeExtras.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
 import { findCategory, findSubcategory } from "../../core/finance.js";
 
@@ -98,6 +99,7 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
           <p class="field-error" data-error-for="usualAmount"></p>
         </div>
       </div>
+      ${isEdit ? "" : html`<p class="notice notice-info extras-link" data-extras-link ${current.type === "income" ? "" : "hidden"}>${icon("sparkle", 16)}<span>¿Es aguinaldo, horas extra, comisión o propinas? <button type="button" class="inline-link" data-open-extras>Cargá los extras del mes</button></span></p>`}
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Guardar", deletable: isEdit })}
     </form>`,
     onMount(panel, close) {
@@ -111,6 +113,8 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
         form.dataset.type = selectedType;
         form.querySelector(".field-amount").className = `field field-amount tone-${selectedType}`;
         form.querySelector(".recurrence-field").hidden = selectedType !== "income";
+        const extrasLink = form.querySelector("[data-extras-link]");
+        if (extrasLink) extrasLink.hidden = selectedType !== "income";
         syncInstallments();
         form.elements.description.placeholder = selectedType === "income" ? "Ej.: Sueldo de septiembre" : "Ej.: Súper del sábado";
         replaceCategoryPicker(form, store.getState(), selectedType, null);
@@ -136,6 +140,11 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
       });
       form.addEventListener("input", (event) => {
         if (event.target.name === "amount") syncInstallments();
+      });
+
+      form.querySelector("[data-open-extras]")?.addEventListener("click", () => {
+        close();
+        whenHistorySettled(() => openIncomeExtras());
       });
 
       bindCategoryPickers(form, () => selectedType);
