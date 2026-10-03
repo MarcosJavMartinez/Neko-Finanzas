@@ -29,6 +29,7 @@ import { saveBackup, initBackupFile } from "./ui/backupFile.js";
 import { syncPlan, fireDue } from "./ui/reminders.js";
 import { snoozeIosNotice, markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen } from "./core/prefs.js";
 import { openOnboarding } from "./ui/onboarding.js";
+import { openSetupWizard } from "./ui/forms/setupForm.js";
 import { transactionsToCSV } from "./core/csv.js";
 import { todayISO } from "./core/dates.js";
 
@@ -126,6 +127,7 @@ const GLOBAL_ACTIONS = {
     toast(`Planilla descargada: ${state.transactions.length} movimiento${state.transactions.length === 1 ? "" : "s"}`);
   },
   "show-onboarding": () => openOnboarding(),
+  "setup-wizard": () => openSetupWizard(),
   "install-help": () => openInstallHelp(),
   "snooze-ios-notice": () => {
     snoozeIosNotice(7);

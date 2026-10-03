@@ -102,7 +102,7 @@ export default {
       ${negative
         ? html`<p class="hero-alert">${icon("alert", 15)} Lo apartado y reservado supera lo que tenés. Revisá metas, facturas, cuotas o deudas.</p>`
         : isEmpty
-          ? html`<p class="hero-alert hero-alert-info">Para empezar, registrá un ingreso o cargá <a class="inline-link" href="#/cuentas">cuánto tenés en tus cuentas</a>.</p>`
+          ? html`<p class="hero-alert hero-alert-info">Para empezar, <button type="button" class="inline-link" data-action="setup-wizard">cargá todo con el asistente</button> o registrá un ingreso.</p>`
           : html`<div class="avail">
               <div class="avail-bar">
                 ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}

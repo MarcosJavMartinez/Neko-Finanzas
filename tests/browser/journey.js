@@ -54,9 +54,10 @@ return (async () => {
     store.loadDemo(); await wait(200);
     forms.ob.openOnboarding(); await wait(400);
     for (let i = 0; i < 4; i++) { sheet().querySelector("[data-ob=next]").click(); await wait(i === 3 ? 700 : 80); }
-    form().elements.opening.value = "500.000";
     form().elements.salary.value = "800.000";
     await submit();
+    set(form().elements["acc-amount-0"], "500.000");
+    for (let i = 0; i < 6; i++) await submit();
     await check("asistente (plata hoy 500.000, sueldo 800.000)");
 
     // 1) Ingreso que se repite

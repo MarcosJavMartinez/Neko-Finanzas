@@ -430,6 +430,11 @@ export default {
             ${icon("chevronRight", 18, "more-chevron")}
           </a>`
         )}
+        <button type="button" class="more-item reveal" data-action="setup-wizard">
+          <span class="more-icon">${icon("list", 22)}</span>
+          <span class="more-text"><span class="more-title">Asistente de carga</span><span class="more-sub">Cuentas, tarjeta, facturas, préstamos y metas, paso a paso</span></span>
+          ${icon("chevronRight", 18, "more-chevron")}
+        </button>
         <button type="button" class="more-item reveal" data-action="show-onboarding">
           <span class="more-icon">${icon("help", 22)}</span>
           <span class="more-text"><span class="more-title">Cómo funciona la app</span><span class="more-sub">Un repaso rápido en 4 pasos</span></span>

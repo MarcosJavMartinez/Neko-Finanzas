@@ -65,12 +65,15 @@ return (async () => {
     log(`asistente: ${s?.querySelector(".sheet-title")?.textContent || "NO ✗"} · datos de ejemplo borrados=${store.getState().transactions.length === 0 && !store.getState().settings.isDemo}`);
     const form = s.querySelector("form");
     form.querySelector("input[name=currency][value=USD]").click();
-    form.elements.opening.value = "1.500,50";
     form.elements.salary.value = "abc";
     form.requestSubmit(); await wait(200);
-    log("sueldo inválido: " + (form.querySelector('[data-error-for="salary"]').textContent || "sin error ✗"));
+    log("sueldo inválido: " + (form.querySelector("[data-setup-error]").textContent || "sin error ✗"));
     form.elements.salary.value = "900";
-    form.requestSubmit(); await wait(500);
+    form.requestSubmit(); await wait(250);
+    form.elements["acc-amount-0"].value = "1.500,50";
+    form.elements["acc-amount-0"].dispatchEvent(new Event("input", { bubbles: true }));
+    for (let i = 0; i < 6; i++) { form.requestSubmit(); await wait(250); }
+    await wait(500);
     const st = store.getState().settings;
     const acc0 = store.getState().accounts[0];
     log(`guardado: moneda=${st.mainCurrency} saldo=${acc0.opening} (${acc0.currency}) referencia=${st.budgetReference} · hoja cerrada=${!sheet()}`);

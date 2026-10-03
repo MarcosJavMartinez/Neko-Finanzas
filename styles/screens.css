@@ -1992,3 +1992,151 @@ button.more-item {
 .loan-row .row-meta {
   white-space: normal;
 }
+
+/* ---------------------------------------------------------------------------
+   Cuestionario de inicio
+--------------------------------------------------------------------------- */
+
+.setup-progress {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.setup .ob-dots {
+  margin: 4px 0 6px;
+}
+
+.setup-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.setup-subtitle {
+  margin-top: 6px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.setup [data-setup-body],
+.setup [data-card-box]:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.setup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.setup-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.setup-item-bill {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
+}
+
+.setup-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.setup-day {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.setup-day select {
+  min-height: 44px;
+  padding: 0 6px;
+  border: 1.5px solid var(--input-border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.setup-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+}
+
+.setup .btn-sm {
+  align-self: flex-start;
+}
+
+.setup-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-summary li {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+
+button.inline-link {
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 359px) {
+  .setup-item,
+  .setup-item-bill {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Más lugar para el nombre: la moneda y el monto van más compactos */
+.setup-item {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+}
+
+.setup-item-bill {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+}
+
+.setup-item .amount-currency {
+  padding-inline: 8px;
+  font-size: 0.75rem;
+}
+
+.setup-item .amount-input input {
+  padding-inline: 8px;
+  min-width: 0;
+}
+
+.setup-check {
+  font-size: 0.86rem;
+  gap: 6px;
+}

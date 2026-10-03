@@ -18,7 +18,7 @@ La segunda herramienta de [Neko Tools](https://nekotools.site), después de [Nek
 - **Reportes**: resumen del mes, gastos por categoría, ingresos contra gastos y evolución del dinero.
 - **Deshacer** en todas las acciones que borran o mueven plata.
 - **PWA** instalable que funciona sin conexión.
-- **Primera vez**: un tutorial corto que termina preguntando si empezás con lo tuyo (con un asistente: moneda, cuánto tenés hoy y tu sueldo) o mirás un ejemplo.
+- **Primera vez**: un tutorial corto que termina preguntando si empezás con lo tuyo o mirás un ejemplo. «Empezar con lo mío» abre un cuestionario de 7 pasos (moneda y sueldo, cuentas, tarjeta y cuotas, facturas, préstamos, metas, resumen) que explica cada concepto y al final carga todo junto. También está en Configuración → Asistente de carga.
 - **Avisos de vencimientos** (se pueden apagar): una notificación cuando se acerca una factura, el resumen de la tarjeta o un préstamo, el mismo día o 1 o 3 días antes. Sin servidor: salen al abrir la app y, en Android con la app instalada, también en segundo plano cuando Chrome despierta al service worker.
 - **Vencimientos en tu calendario**: exporta las facturas a un `.ics` (Google Calendar, iPhone, Outlook) con aviso el día antes.
 - **Copias automáticas** que se pueden restaurar, backup en JSON y exportación a CSV.
