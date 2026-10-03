@@ -21,6 +21,7 @@ import { openBudgetForm } from "./ui/forms/budgetForm.js";
 import { openCategoryForm } from "./ui/forms/categoryForm.js";
 import { openAccountForm, openTransferForm, openAccountDetail } from "./ui/forms/accountForms.js";
 import { openLoanForm, openLoanDetail } from "./ui/forms/loanForms.js";
+import { openIncomeConfirm } from "./ui/forms/incomeConfirm.js";
 import { watchSystemTheme, applySavedTheme } from "./ui/theme.js";
 import { showCustomImage } from "./ui/background.js";
 import { canPromptInstall, promptInstall, onInstallChange, openInstallHelp } from "./ui/install.js";
@@ -79,11 +80,8 @@ const GLOBAL_ACTIONS = {
   "pay-bill": (el) => openPayBill(el.dataset.id),
   "bill-detail": (el) => openBillDetail(el.dataset.id),
   "goal-detail": (el) => openGoalDetail(el.dataset.id),
-  "confirm-recurring": (el) => {
-    const backup = store.snapshot();
-    const tx = store.confirmRecurring(el.dataset.id);
-    if (tx) toast(`${tx.description || "Ingreso"} registrado: ${formatMoney(tx.amount, tx.currency)}`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
-  },
+  // Registrar el sueldo del mes: se puede ajustar el monto y sumar extras.
+  "confirm-recurring": (el) => openIncomeConfirm(el.dataset.id),
   "skip-recurring": (el) => {
     store.skipRecurring(el.dataset.id);
     toast("Listo, te lo recordamos el próximo período", { type: "info" });

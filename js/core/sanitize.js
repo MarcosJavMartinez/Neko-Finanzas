@@ -224,6 +224,8 @@ export function sanitizeState(input) {
     }
     if (isObj(t.recurrence) && FREQUENCIES[t.recurrence.freq] && isISODate(t.recurrence.nextDate) && type === "income") {
       tx.recurrence = { freq: t.recurrence.freq, nextDate: t.recurrence.nextDate };
+      // Monto habitual, si el último cobro fue distinto (parcial, con descuento…).
+      if (positive(t.recurrence.amount)) tx.recurrence.amount = positive(t.recurrence.amount);
     }
     transactions.push(tx);
   }

@@ -1,7 +1,7 @@
 // Valores iniciales: categorías predeterminadas, paleta, íconos y el estado
 // vacío de la app.
 
-export const SCHEMA_VERSION = 3; // 3: cuentas y transferencias
+export const SCHEMA_VERSION = 4; // 3: cuentas y transferencias · 4: extras del sueldo
 
 /** Paleta de la versión 1 (verde menta), para migrar colores viejos. */
 export const PALETTE_V1 = ["#1f9e74", "#3a86d4", "#e4705f", "#2a9fb0", "#8a63d2", "#d99a2b", "#d65c96", "#7d9a2e"];
@@ -49,7 +49,7 @@ const SUBCATEGORIES = {
   "exp-suscripciones": [["netflix", "Netflix", "📺"], ["prime", "Prime Video", "🎞️"], ["crunchyroll", "Crunchyroll", "🍥"], ["spotify", "Spotify", "🎵"], ["geforce", "GeForce NOW", "🎮"], ["chatgpt", "ChatGPT", "🤖"], ["disney", "Disney+", "🏰"], ["youtube", "YouTube Premium", "▶️"]],
   "exp-educacion": [["cursos", "Cursos", "🎓"], ["cuota", "Cuota", "🏫"], ["libros", "Libros", "📚"], ["materiales", "Materiales", "✏️"]],
   "exp-viajes": [["pasajes", "Pasajes", "✈️"], ["alojamiento", "Alojamiento", "🏨"], ["excursiones", "Excursiones", "🗺️"], ["comida", "Comida en viaje", "🍝"]],
-  "inc-sueldo": [["mensual", "Sueldo mensual", "💼"], ["aguinaldo", "Aguinaldo", "🎄"], ["extras", "Horas extra", "⏱️"]],
+  "inc-sueldo": [["mensual", "Sueldo mensual", "💼"], ["aguinaldo", "Aguinaldo", "🎄"], ["extras", "Horas extra", "⏱️"], ["proporcional", "Sueldo proporcional", "⏳"], ["comision", "Comisiones", "📈"], ["bono", "Bono o premio", "🎁"], ["vacaciones", "Vacaciones", "🏖️"]],
   "inc-independiente": [["proyectos", "Proyectos", "🧩"], ["clases", "Clases", "🧑‍🏫"], ["consultoria", "Consultoría", "💬"]],
   "inc-ventas": [["online", "Ventas online", "📦"], ["usados", "Cosas usadas", "♻️"]],
 };
@@ -99,6 +99,15 @@ export const ACCOUNT_KINDS = {
   // tarjeta (no es un gasto nuevo).
   credit: { label: "Tarjeta de crédito", icon: "💳" },
 };
+
+/** Extras que pueden venir junto con el sueldo (cada uno se registra como un ingreso aparte). */
+export const INCOME_EXTRAS = [
+  { key: "aguinaldo", name: "Aguinaldo", icon: "🎄", categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.aguinaldo" },
+  { key: "extras", name: "Horas extra", icon: "⏱️", categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.extras" },
+  { key: "comision", name: "Comisión", icon: "📈", categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.comision" },
+  { key: "bono", name: "Bono o premio", icon: "🎁", categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.bono" },
+  { key: "propinas", name: "Propinas", icon: "🪙", categoryId: "inc-propinas", subcategoryId: "" },
+];
 
 /** Cuotas que se ofrecen al comprar con tarjeta. */
 export const INSTALLMENT_OPTIONS = [1, 2, 3, 6, 9, 12, 18, 24];

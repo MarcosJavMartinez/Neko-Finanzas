@@ -242,6 +242,22 @@ eq("y vuelve al volver", store.getState().settings.budgetReference, 800000);
 store.setMainCurrency("XXX");
 eq("moneda inventada: no cambia nada", store.getState().settings.mainCurrency, "ARS");
 
+// Sueldo: cobro parcial, monto habitual y extras
+const oldCats = buildDemoState().categories.map((c) => (c.id === "inc-sueldo" ? { ...c, subcategories: c.subcategories.slice(0, 3) } : c));
+store.restore({ version: 3, categories: oldCats, accounts: [{ id: "bank", name: "Banco", currency: "ARS", kind: "bank" }], transactions: [{ id: "s1", type: "income", amount: 400000, currency: "ARS", date: "2026-10-10", categoryId: "inc-sueldo", accountId: "bank", description: "Sueldo", recurrence: { freq: "monthly", nextDate: "2026-11-10", amount: 800000 } }] });
+eq("cobro parcial: se guarda el monto habitual", store.getState().transactions[0].recurrence.amount, 800000);
+const paid = store.confirmRecurring("s1");
+eq("al mes siguiente se propone lo habitual, no el parcial", [paid.amount, paid.date, paid.recurrence.nextDate, paid.recurrence.amount], [800000, "2026-11-10", "2026-12-10", undefined]);
+eq("la recurrencia pasa al cobro nuevo", store.getState().transactions.filter((t) => t.recurrence).map((t) => t.id), [paid.id]);
+const dec = store.confirmRecurring(paid.id, { amount: 750000, date: "2026-12-11", extras: [{ name: "Aguinaldo", amount: 400000, categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.aguinaldo" }, { name: "Propinas", amount: 5000, categoryId: "inc-propinas" }, { name: "Nada", amount: 0, categoryId: "inc-sueldo" }] });
+eq("cobro con descuento: registra lo real y conserva lo habitual", [dec.amount, dec.date, dec.recurrence.amount, dec.recurrence.nextDate], [750000, "2026-12-11", 800000, "2027-01-10"]);
+const extrasTx = store.getState().transactions.filter((t) => ["Aguinaldo", "Propinas", "Nada"].includes(t.description));
+eq("extras: un ingreso aparte por cada uno", extrasTx.map((t) => [t.description, t.amount, t.categoryId, t.subcategoryId, t.date, t.accountId]), [["Aguinaldo", 400000, "inc-sueldo", "inc-sueldo.aguinaldo", "2026-12-11", "bank"], ["Propinas", 5000, "inc-propinas", "", "2026-12-11", "bank"]]);
+eq("ingresos de diciembre = sueldo + extras", F.monthlyTotals(store.getState(), "2026-12").income, 1155000);
+const raise = store.confirmRecurring(dec.id, { amount: 900000, keepAsUsual: true });
+eq("aumento: el monto nuevo pasa a ser el habitual", [raise.amount, raise.recurrence.amount], [900000, undefined]);
+eq("datos de antes reciben las subcategorías nuevas del sueldo", store.getState().categories.find((c) => c.id === "inc-sueldo").subcategories.map((x) => x.id).includes("inc-sueldo.comision"), true);
+
 // Avisos de vencimientos
 const remState = sanitizeState({
   categories: [],

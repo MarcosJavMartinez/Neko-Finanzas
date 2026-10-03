@@ -25,10 +25,10 @@ import { accountSelect } from "./accountForms.js";
 import { getLastAccount, setLastAccount } from "../../core/prefs.js";
 import * as store from "../../core/store.js";
 import { todayISO, FREQUENCIES } from "../../core/dates.js";
-import { formatMoney } from "../../core/money.js";
+import { formatMoney, amountToInput, parseAmount } from "../../core/money.js";
 import { FALLBACK_CATEGORY, INSTALLMENT_OPTIONS } from "../../data/defaults.js";
 import { confirmDialog } from "../sheet.js";
-import { isISODate } from "../../core/sanitize.js";
+import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
 import { findCategory, findSubcategory } from "../../core/finance.js";
 
 const RECURRENCE_OPTIONS = [
@@ -91,6 +91,12 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
       <div class="recurrence-field" ${current.type === "income" ? "" : "hidden"}>
         ${selectField({ name: "recurrence", label: "Repetir", options: RECURRENCE_OPTIONS, value: current.recurrence?.freq || "" })}
         <p class="field-hint">Te vamos a recordar registrarlo cuando llegue la fecha; nunca se suma solo.</p>
+        <div class="field" data-usual ${current.recurrence ? "" : "hidden"}>
+          <label class="field-label" for="f-usualAmount">Monto habitual <span class="optional">(si este cobro fue parcial)</span></label>
+          <div class="amount-input"><input id="f-usualAmount" name="usualAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="Igual a este monto" value="${current.recurrence?.amount ? amountToInput(current.recurrence.amount) : ""}" /></div>
+          <p class="field-hint">Por ejemplo, si empezaste a mitad de mes y cobraste solo unos días: poné acá tu sueldo completo y el próximo recordatorio te va a proponer ese monto.</p>
+          <p class="field-error" data-error-for="usualAmount"></p>
+        </div>
       </div>
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Guardar", deletable: isEdit })}
     </form>`,
@@ -99,6 +105,7 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
       let selectedType = current.type;
 
       form.addEventListener("change", (event) => {
+        if (event.target.name === "recurrence") form.querySelector("[data-usual]").hidden = !event.target.value;
         if (event.target.name !== "type") return;
         selectedType = event.target.value;
         form.dataset.type = selectedType;
@@ -160,6 +167,12 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
             freq: data.recurrence,
             nextDate: keepNext ? current.recurrence.nextDate : FREQUENCIES[data.recurrence].next(data.date),
           };
+          // Monto habitual distinto de este cobro (cobro parcial).
+          if ((data.usualAmount || "").trim()) {
+            const usual = parseAmount(data.usualAmount);
+            if (!(usual > 0) || usual > MAX_AMOUNT) return fieldError(form, "usualAmount", "Ese monto no es válido.");
+            if (Math.round(usual * 100) / 100 !== amount) values.recurrence.amount = Math.round(usual * 100) / 100;
+          }
         } else {
           values.recurrence = undefined;
         }

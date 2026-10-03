@@ -138,6 +138,11 @@ function migrate(data) {
         const index = def ? PALETTE.indexOf(def.color) : -1;
         if (index !== -1 && category.color === PALETTE_V1[index]) category = { ...category, color: def.color };
       }
+      // v3 → v4: el sueldo suma subcategorías para extras (comisión, bono, proporcional…).
+      if ((raw.version || 1) < 4 && category.id === "inc-sueldo" && category.builtin) {
+        const have = new Set(category.subcategories.map((sub) => sub?.id));
+        category = { ...category, subcategories: [...category.subcategories, ...defaultSubcategories(category.id).filter((sub) => !have.has(sub.id))] };
+      }
       return category;
     });
   }
@@ -460,24 +465,51 @@ export function deleteTransaction(id) {
   });
 }
 
-/** Confirma un ingreso recurrente: lo registra y programa el siguiente. */
-export function confirmRecurring(templateId) {
+/**
+ * Confirma un ingreso recurrente: lo registra y programa el siguiente.
+ * Opciones: amount (lo que se cobró de verdad; si no, lo habitual), date,
+ * accountId, keepAsUsual (ese monto pasa a ser el habitual) y extras
+ * (aguinaldo, comisión…: cada uno queda como un ingreso aparte).
+ */
+export function confirmRecurring(templateId, { amount, currency, date, accountId, keepAsUsual = false, extras = [] } = {}) {
   return commit((s) => {
     const template = find(s.transactions, templateId);
     if (!template?.recurrence) return null;
-    const { freq, nextDate: date } = template.recurrence;
-    const tx = {
+    const { freq, nextDate: due } = template.recurrence;
+    const usual = template.recurrence.amount || template.amount;
+    const paid = amount > 0 ? Math.round(amount * 100) / 100 : usual;
+    const createdAt = new Date().toISOString();
+    const tx = withValidAccount(s, {
       ...template,
       id: uid("tx"),
-      date,
+      amount: paid,
+      currency: currency || template.currency,
+      date: date || due,
       time: "",
-      createdAt: new Date().toISOString(),
-    };
+      accountId: accountId || template.accountId,
+      createdAt,
+    });
     delete tx.recurrence;
     s.transactions.push(tx);
-    // La recurrencia pasa al registro nuevo, así se edita desde el último.
-    tx.recurrence = { freq, nextDate: nextDate(date, freq) };
+    // La recurrencia pasa al registro nuevo, así se edita desde el último. Un
+    // cobro distinto de lo habitual (parcial, con descuento) no cambia lo que
+    // se propone el mes que viene, salvo que se pida.
+    tx.recurrence = { freq, nextDate: nextDate(due, freq) };
+    if (!keepAsUsual && usual !== paid) tx.recurrence.amount = usual;
     delete template.recurrence;
+    for (const extra of extras) {
+      if (!(extra.amount > 0)) continue;
+      s.transactions.push(
+        withValidAccount(
+          s,
+          withValidCategory(
+            s,
+            { id: uid("tx"), type: "income", amount: Math.round(extra.amount * 100) / 100, currency: tx.currency, date: tx.date, time: "", categoryId: extra.categoryId, subcategoryId: extra.subcategoryId || "", description: extra.name, accountId: tx.accountId, createdAt },
+            "income"
+          )
+        )
+      );
+    }
     return tx;
   });
 }

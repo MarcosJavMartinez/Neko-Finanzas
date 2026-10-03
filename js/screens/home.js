@@ -125,7 +125,7 @@ export default {
         <span class="mini-icon mini-icon-income">${icon("repeat", 18)}</span>
         <div class="row-main">
           <span class="row-title">¿Ya cobraste “${tx.description || "tu ingreso"}”?</span>
-          <span class="row-meta">${formatMoney(tx.amount, tx.currency)} · esperado el ${formatDate(tx.recurrence.nextDate)}</span>
+          <span class="row-meta">${formatMoney(tx.recurrence.amount || tx.amount, tx.currency)} · esperado el ${formatDate(tx.recurrence.nextDate)}</span>
         </div>
         <div class="card-pending-actions">
           <button type="button" class="btn btn-sm btn-ghost" data-action="skip-recurring" data-id="${tx.id}">Omitir</button>
