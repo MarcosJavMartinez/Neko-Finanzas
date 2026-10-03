@@ -265,7 +265,7 @@ export default {
         ? html`<div class="demo-banner reveal">
             <span class="demo-banner-icon">${icon("sparkle", 16)}</span>
             <span class="demo-banner-text"><strong>Datos de ejemplo.</strong> Explorá tranquilo; cuando quieras, empezá con los tuyos.</span>
-            <button type="button" class="btn btn-sm btn-soft" data-action="start-fresh">Empezar de cero</button>
+            <button type="button" class="btn btn-sm btn-soft" data-action="start-fresh">Empezar con lo mío</button>
           </div>`
         : ""}
       ${needsIosInstall() && !iosNoticeSnoozed()

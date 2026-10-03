@@ -211,6 +211,7 @@
 }
 
 .hero-alert-info {
+  display: block;
   background: var(--brand-soft);
   color: var(--text-2);
   font-weight: 500;

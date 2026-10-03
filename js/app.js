@@ -99,14 +99,18 @@ const GLOBAL_ACTIONS = {
   "start-fresh": async () => {
     const ok = await confirmDialog({
       title: "¿Empezar de cero?",
-      text: "Se borran movimientos, facturas, metas y presupuestos. Tus categorías y tipos de cambio se mantienen.",
+      text: "Se borran movimientos, facturas, metas y presupuestos. Tus categorías y tipos de cambio se mantienen. Después te hacemos unas preguntas para cargar tu punto de partida.",
       confirmLabel: "Empezar de cero",
       danger: true,
     });
     if (!ok) return;
     store.startFresh();
-    toast("¡Listo! Tu app está vacía y lista para usar", { type: "info" });
-    whenHistorySettled(() => (location.hash = "#/inicio"));
+    // Con la app vacía arranca el cuestionario: es la forma de cargar el punto
+    // de partida. Quien no lo quiera, lo cierra.
+    whenHistorySettled(() => {
+      location.hash = "#/inicio";
+      setTimeout(openSetupWizard, 250);
+    });
   },
   // Backup completo (.json): siempre el mismo archivo, que se reemplaza.
   // Queda anotada la fecha para el recordatorio.

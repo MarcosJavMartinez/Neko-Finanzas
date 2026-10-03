@@ -94,6 +94,15 @@ return (async () => {
     d.querySelector("input[name='main-currency'][value=ARS]").click(); await wait(300);
     const stAfter = store.getState();
     log(`moneda principal USD→ARS: referencia ${refBefore} → ${stAfter.settings.budgetReference} (1 USD = ${stAfter.rates.USD})${stAfter.settings.budgetReference === refBefore * stAfter.rates.USD ? "" : " ✗"}`);
+
+    // 8) "Empezar con lo mío" desde el aviso de datos de ejemplo abre el cuestionario
+    store.loadDemo(); await wait(300);
+    w.location.hash = "#/transacciones"; await wait(200); w.location.hash = "#/inicio"; await wait(500);
+    d.querySelector(".demo-banner [data-action=start-fresh]").click(); await wait(600);
+    [...sheet().querySelectorAll("button")].find((b) => b.textContent.trim() === "Empezar de cero").click(); await wait(1800);
+    const wizard = !!sheet()?.querySelector("form.setup");
+    log(`empezar con lo mío: app vacía=${store.isEmptyState()} · abre el cuestionario=${wizard}${wizard && store.isEmptyState() ? "" : " ✗"}`);
+    sheet()?.querySelector("[data-sheet-close]")?.click(); await wait(400);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {
     log("ERROR " + e.stack);
