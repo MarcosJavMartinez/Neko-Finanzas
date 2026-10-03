@@ -847,6 +847,18 @@ export function releaseBillCushion(amount) {
   });
 }
 
+/** Pasa plata del colchón de facturas a una meta (amount en la moneda principal). */
+export function moveCushionToGoal(goalId, amount) {
+  commit((s) => {
+    const goal = find(s.goals, goalId);
+    if (!goal || !(amount > 0)) return;
+    const inGoal = Math.round(convert(amount, s.settings.mainCurrency, goal.currency, s.rates) * 100) / 100;
+    if (!(inGoal > 0)) return;
+    s.settings.billCushionReleased = Math.round(((s.settings.billCushionReleased || 0) + amount) * 100) / 100;
+    goal.movements.push({ id: uid("mov"), date: todayISO(), amount: inGoal, note: "Colchón de facturas" });
+  });
+}
+
 export function updateSettings(data) {
   commit((s) => {
     Object.assign(s.settings, data);

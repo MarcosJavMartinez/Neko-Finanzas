@@ -2249,3 +2249,13 @@ button.inline-link {
 .cushion-card strong {
   color: var(--bill-ink);
 }
+
+.cushion-card {
+  flex-wrap: wrap;
+}
+
+.cushion-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}

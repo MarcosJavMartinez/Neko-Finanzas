@@ -9,6 +9,7 @@ import { formatMoney } from "../core/money.js";
 import { currentMonthKey, formatDate, formatMonth, monthRange, parseISO, shiftMonthKey, todayISO } from "../core/dates.js";
 import { billCalendar, billCushion, billReserve, billStatus, toMain } from "../core/finance.js";
 import { releaseBillCushion, snapshot, restore } from "../core/store.js";
+import { openCushionSheet } from "../ui/forms/leftoverForm.js";
 import { getState } from "../core/store.js";
 import { billsToICS } from "../core/ics.js";
 import { downloadFile } from "../ui/download.js";
@@ -140,7 +141,12 @@ export default {
               <span class="row-title">Colchón de facturas: <strong data-pulse="cushion">${formatMoney(cushion.amount, main)}</strong></span>
               <span class="row-meta">${cushion.amount > 0 ? "Lo que sobró de facturas que vinieron por menos. Está reservado para las próximas." : "Cuando una factura venga por menos de lo esperado, la diferencia se guarda acá."}</span>
             </div>
-            ${cushion.amount > 0 ? html`<button type="button" class="btn btn-sm btn-ghost" data-action="release-cushion">Liberar</button>` : ""}
+            ${cushion.amount > 0
+              ? html`<span class="cushion-actions">
+                  <button type="button" class="btn btn-sm btn-ghost" data-action="release-cushion">Liberar</button>
+                  <button type="button" class="btn btn-sm btn-soft" data-action="cushion-to-goal">Pasar a una meta</button>
+                </span>`
+              : ""}
           </section>`
         : ""}
       ${calendar(state, today)}
@@ -169,6 +175,9 @@ export default {
     },
     "bills-day"(el) {
       openDay(el.dataset.date);
+    },
+    "cushion-to-goal"() {
+      openCushionSheet();
     },
     "release-cushion"() {
       const amount = billCushion(getState()).amount;

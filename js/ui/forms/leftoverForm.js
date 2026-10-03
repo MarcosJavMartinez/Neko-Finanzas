@@ -11,7 +11,7 @@ import * as store from "../../core/store.js";
 import { formatMonth } from "../../core/dates.js";
 import { MAX_AMOUNT } from "../../core/sanitize.js";
 import { amountToInput, formatMoney, parseAmount } from "../../core/money.js";
-import { budgetLeftovers, goalProgress } from "../../core/finance.js";
+import { billCushion, budgetLeftovers, goalProgress } from "../../core/finance.js";
 
 export function openLeftoverSheet(budgetId) {
   const state = store.getState();
@@ -64,6 +64,62 @@ export function openLeftoverSheet(budgetId) {
         store.settleBudgetLeftover(budget.id, month, { goalId: goal.id, amount: Math.round(value * 100) / 100, note: `Sobrante de ${budget.name} (${formatMonth(month).toLowerCase()})` });
         close();
         toast(`${formatMoney(value, main)} pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+      });
+    },
+  });
+}
+
+/** Pasar a una meta lo guardado en el colchón de facturas (todo o una parte). */
+export function openCushionSheet() {
+  const state = store.getState();
+  const main = state.settings.mainCurrency;
+  const amount = billCushion(state).amount;
+  if (!(amount > 0)) return;
+
+  openSheet({
+    title: "Colchón de facturas",
+    body: state.goals.length
+      ? html`<form class="form" novalidate>
+          <p class="sheet-text">Tenés <strong>${formatMoney(amount, main)}</strong> guardados de facturas que vinieron por menos. Lo que pases a una meta deja de cubrir tus próximas facturas y queda apartado como ahorro.</p>
+          <div class="field">
+            <label class="field-label" for="f-goalId">¿A qué meta?</label>
+            <select id="f-goalId" name="goalId">
+              ${state.goals.map((g) => html`<option value="${g.id}">${g.icon} ${g.name} · faltan ${formatMoney(goalProgress(g).remaining, g.currency)}</option>`)}
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="f-amount">¿Cuánto?</label>
+            <div class="amount-input">
+              <span class="amount-currency amount-currency-static">${main}</span>
+              <input id="f-amount" name="amount" type="text" inputmode="decimal" autocomplete="off" value="${amountToInput(amount)}" />
+            </div>
+            <p class="field-hint">Si pasás menos, el resto sigue en el colchón.</p>
+            <p class="field-error" data-error-for="amount"></p>
+          </div>
+          ${formActions({ submitLabel: "Pasar a la meta" })}
+        </form>`
+      : html`<p class="sheet-text">Tenés <strong>${formatMoney(amount, main)}</strong> en el colchón. Para pasarlos a tus ahorros, primero creá una meta.</p>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" data-sheet-close>Ahora no</button>
+            <button type="button" class="btn btn-primary btn-grow" data-new-goal>${icon("plus", 18)}Crear una meta</button>
+          </div>`,
+    onMount(panel, close) {
+      panel.querySelector("[data-new-goal]")?.addEventListener("click", () => {
+        close();
+        whenHistorySettled(() => openGoalForm());
+      });
+      const form = panel.querySelector("form");
+      form?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearErrors(form);
+        const value = parseAmount(form.elements.amount.value);
+        if (!(value > 0) || value > MAX_AMOUNT) return fieldError(form, "amount", "Ingresá un monto mayor a cero.");
+        if (value > amount + 0.005) return fieldError(form, "amount", `Es más de lo que hay en el colchón (${formatMoney(amount, main)}).`);
+        const goal = store.getState().goals.find((g) => g.id === form.elements.goalId.value);
+        const backup = store.snapshot();
+        store.moveCushionToGoal(goal.id, Math.round(value * 100) / 100);
+        close();
+        toast(`${formatMoney(value, main)} del colchón pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });

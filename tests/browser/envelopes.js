@@ -98,8 +98,18 @@ return (async () => {
     log(`colchón=${F.billCushion(store.getState()).amount} · disponible ${a1} → ${avail()}${F.billCushion(store.getState()).amount === 9000 ? "" : " ✗"}`);
     w.location.hash = "#/facturas"; await wait(400);
     log("en Facturas: " + text(".cushion-card .row-title"));
+    d.querySelector("[data-action=cushion-to-goal]").click(); await wait(500);
+    log("pasar a una meta: " + sheet().querySelector(".sheet-title").textContent + " · propone " + form().elements.amount.value);
+    form().elements.amount.value = "20.000";
+    form().requestSubmit(); await wait(200);
+    log("más de lo que hay: " + (form().querySelector('[data-error-for="amount"]').textContent || "sin error ✗"));
+    form().elements.amount.value = "4.000";
+    const g0 = F.goalSaved(store.getState().goals[0]);
+    form().requestSubmit(); await wait(600);
+    log(`a la meta: ${F.goalSaved(store.getState().goals[0]) - g0} · colchón=${F.billCushion(store.getState()).amount} · disponible=${avail()}${F.billCushion(store.getState()).amount === 5000 && avail() === a1 ? "" : " ✗"}`);
+    w.location.hash = "#/inicio"; await wait(200); w.location.hash = "#/facturas"; await wait(400);
     d.querySelector("[data-action=release-cushion]").click(); await wait(400);
-    log(`liberar: colchón=${F.billCushion(store.getState()).amount} · disponible=${avail()}${avail() === a1 + 9000 ? "" : " ✗"}`);
+    log(`liberar: colchón=${F.billCushion(store.getState()).amount} · disponible=${avail()}${avail() === a1 + 5000 ? "" : " ✗"}`);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {
     log("ERROR " + e.stack);
