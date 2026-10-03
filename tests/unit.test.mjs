@@ -258,6 +258,25 @@ const raise = store.confirmRecurring(dec.id, { amount: 900000, keepAsUsual: true
 eq("aumento: el monto nuevo pasa a ser el habitual", [raise.amount, raise.recurrence.amount], [900000, undefined]);
 eq("datos de antes reciben las subcategorías nuevas del sueldo", store.getState().categories.find((c) => c.id === "inc-sueldo").subcategories.map((x) => x.id).filter((id) => /comision|otros/.test(id)), ["inc-sueldo.comision", "inc-sueldo.otros"]);
 
+// Para gastar por día
+const dayState = (extra = []) => sanitizeState({ categories: [], accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }], bills: [{ id: "b", name: "Luz", amount: 10000, dueDate: "2026-03-20", recurring: true, frequency: "monthly" }], transactions: extra });
+let day = F.dailyAllowance(dayState(), "2026-03-22");
+eq("por día hasta fin de mes (10 días; 100.000 menos dos vencimientos de 10.000)", [day.days, day.reason, Math.round(day.perDay), Math.round(day.leftToday)], [10, "month", 8000, 8000]);
+day = F.dailyAllowance(dayState([{ id: "s", type: "income", amount: 1, currency: "ARS", date: "2026-03-01", categoryId: "inc-sueldo", accountId: "a", recurrence: { freq: "monthly", nextDate: "2026-03-27" } }]), "2026-03-22");
+eq("por día hasta el próximo cobro (5 días)", [day.days, day.reason, day.until, Math.round(day.perDay)], [5, "income", "2026-03-27", 16000]);
+day = F.dailyAllowance(dayState([{ id: "c", type: "expense", amount: 3000, currency: "ARS", date: "2026-03-22", categoryId: "exp-otros", accountId: "a" }]), "2026-03-22");
+eq("un café de hoy baja lo de hoy, no lo de cada día", [Math.round(day.perDay), Math.round(day.leftToday), day.spentToday], [8000, 5000, 3000]);
+day = F.dailyAllowance(dayState([{ id: "c", type: "expense", amount: 30000, currency: "ARS", date: "2026-03-22", categoryId: "exp-otros", accountId: "a" }]), "2026-03-22");
+eq("si hoy te pasaste, da negativo", [Math.round(day.perDay), Math.round(day.leftToday)], [8000, -22000]);
+day = F.dailyAllowance(dayState([{ id: "p", type: "expense", amount: 10000, currency: "ARS", date: "2026-03-22", categoryId: "exp-otros", accountId: "a", billId: "b" }]), "2026-03-22");
+eq("pagar una factura no cuenta como gasto del día", day.spentToday, 0);
+day = F.dailyAllowance(dayState([{ id: "q", type: "expense", amount: 10000, currency: "ARS", date: "2026-03-22", categoryId: "exp-otros", accountId: "a", installment: { group: "g", n: 2, of: 3 } }]), "2026-03-22");
+eq("una cuota que cae hoy tampoco", day.spentToday, 0);
+day = F.dailyAllowance(dayState(), "2026-03-31");
+eq("último día del mes: un día", day.days, 1);
+day = F.dailyAllowance(dayState([{ id: "g", type: "expense", amount: 500000, currency: "ARS", date: "2026-03-10", categoryId: "exp-otros", accountId: "a" }]), "2026-03-22");
+eq("sin disponible, nunca da negativo por día", day.perDay, 0);
+
 // Avisos de vencimientos
 const remState = sanitizeState({
   categories: [],

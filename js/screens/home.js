@@ -12,6 +12,7 @@ import { loanRow } from "./loans.js";
 import {
   accountBalances,
   balanceSummary,
+  dailyAllowance,
   loansSummary,
   monthlyTotals,
   pendingRecurringIncomes,
@@ -121,6 +122,22 @@ export default {
             </div>`}
       ${trio}
     </section>`;
+
+    // Para los gustos del día (un café, un alfajor): el disponible repartido por día.
+    const daily = dailyAllowance(state, today);
+    const untilText = daily.reason === "income" ? `hasta que cobres, el ${formatDate(daily.until)}` : "hasta fin de mes";
+    const dailyCard = !isEmpty && daily.available > 0
+      ? html`<section class="daily-card reveal ${daily.leftToday < 0 ? "is-over" : ""}" aria-label="Para gastar hoy">
+          <span class="daily-icon" aria-hidden="true">☕</span>
+          <div class="daily-text">
+            ${daily.leftToday >= 0
+              ? html`<p class="daily-main">Hoy podés gastar <strong data-pulse="daily">${m(daily.leftToday)}</strong></p>`
+              : html`<p class="daily-main">Hoy ya te pasaste por <strong data-pulse="daily">${m(-daily.leftToday)}</strong></p>`}
+            <p class="daily-sub">${m(daily.perDay)} por día ${untilText}${daily.spentToday > 0 ? ` · hoy llevás ${m(daily.spentToday)}` : ""}</p>
+            <p class="daily-note">Es tu disponible repartido en ${daily.days} día${daily.days === 1 ? "" : "s"}. Incluye todo lo que no está reservado: la comida y el transporte también salen de acá.</p>
+          </div>
+        </section>`
+      : "";
 
     const actions = html`<nav class="quick-actions card reveal" aria-label="Acciones rápidas">
       <button type="button" class="qa qa-primary" data-action="add-expense"><span class="qa-icon">${icon("plus", 22)}</span><span>Agregar<br />transacción</span></button>
@@ -241,7 +258,7 @@ export default {
           </div>`
         : ""}
       <div class="home-grid">
-        <div class="home-col">${hero}${savings}${actions}${pending}${isEmpty ? "" : extrasLine}</div>
+        <div class="home-col">${hero}${dailyCard}${savings}${actions}${pending}${isEmpty ? "" : extrasLine}</div>
         <div class="home-col">${accountsCard}${recents}${billsCard}${loansCard}${budgetsCard}${goalsCard}${ratesCard}</div>
       </div>
       <p class="privacy-note">${icon("lock", 14)} Tus datos se guardan solo en este dispositivo.</p>

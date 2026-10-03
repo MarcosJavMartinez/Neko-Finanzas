@@ -2175,3 +2175,50 @@ button.inline-link {
   font-weight: 500;
   color: var(--income-ink);
 }
+
+/* Para gastar hoy: el disponible repartido por día */
+.daily-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--brand-soft);
+  box-shadow: var(--shadow-xs);
+}
+
+.daily-icon {
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.daily-main {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: var(--text);
+}
+
+.daily-main strong {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--brand-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.daily-card.is-over .daily-main strong {
+  color: var(--expense-ink);
+}
+
+.daily-sub {
+  margin-top: 2px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.daily-note {
+  margin-top: 4px;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
