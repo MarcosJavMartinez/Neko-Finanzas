@@ -133,6 +133,7 @@ for (const [name, file, opts] of [
   ["Avisos de vencimientos", "reminders.js"],
   ["Recorrido completo de un usuario nuevo", "journey.js"],
   ["Cuestionario de inicio", "setup-wizard.js"],
+  ["Campos de monto: miles automáticos, un solo decimal", "amount-input.js"],
   ["Cuestionario ofrecido al abrir (con el ejemplo)", "setup-offer.js", { offer: true, query: "?demo" }],
   [
     "Cuestionario ofrecido al abrir (app vacía)",

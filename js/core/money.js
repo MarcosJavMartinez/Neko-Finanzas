@@ -92,6 +92,8 @@ export function parseAmount(input) {
   let text = String(input || "").replace(/[^\d.,-]/g, "");
   if (!text) return NaN;
   if (text.includes(",")) {
+    // Varias comas y ningún punto: miles a la inglesa ("1,350,000").
+    if (!text.includes(".") && text.split(",").length > 2) text = text.replace(/,/g, "");
     text = text.replace(/\./g, "").replace(",", ".");
   } else {
     const dots = text.split(".").length - 1;

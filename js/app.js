@@ -30,6 +30,7 @@ import { canPromptInstall, promptInstall, onInstallChange, openInstallHelp } fro
 import { downloadFile } from "./ui/download.js";
 import { saveBackup, initBackupFile } from "./ui/backupFile.js";
 import { syncPlan, fireDue } from "./ui/reminders.js";
+import "./ui/amountInput.js";
 import { snoozeIosNotice, markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen, setupOffered } from "./core/prefs.js";
 import { openOnboarding } from "./ui/onboarding.js";
 import { openSetupWizard } from "./ui/forms/setupForm.js";
