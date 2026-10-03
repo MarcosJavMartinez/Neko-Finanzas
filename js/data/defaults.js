@@ -129,6 +129,8 @@ export function createEmptyState() {
       mainCurrency: "ARS",
       reserveHorizon: "30d", // "30d" | "month"
       budgetReference: 0,
+      billCushion: false, // guardar lo que sobra de las facturas para las próximas
+      billCushionReleased: 0,
       isDemo: false,
       demoEdited: false,
       createdAt: new Date().toISOString(),

@@ -600,7 +600,8 @@ export function payBill(id, { date = todayISO(), amount, currency, accountId } =
       createdAt: new Date().toISOString(),
     });
     s.transactions.push(tx);
-    bill.payments.push({ txId: tx.id, dueDate: bill.dueDate, paidAt: date });
+    // Se anota lo que se esperaba pagar: la diferencia alimenta (o usa) el colchón.
+    bill.payments.push({ txId: tx.id, dueDate: bill.dueDate, paidAt: date, expected: bill.amount, expectedCurrency: bill.currency });
     if (bill.recurring) bill.dueDate = nextDate(bill.dueDate, bill.frequency, bill.dueDay);
     else bill.status = "paid";
     return tx;
@@ -820,6 +821,29 @@ export function setMainCurrency(code) {
     if (previous === code) return;
     s.settings.budgetReference = Math.round(convert(s.settings.budgetReference || 0, previous, code, s.rates) * 100) / 100;
     s.settings.mainCurrency = code;
+  });
+}
+
+/**
+ * Colchón de facturas: lo que sobra cuando una factura viene por menos de lo
+ * esperado queda guardado para las próximas (y cubre las que vengan por más).
+ * Cuenta los pagos hechos desde que se activa.
+ */
+export function setBillCushion(on) {
+  commit((s) => {
+    s.settings.billCushion = Boolean(on);
+    // Cada vez que se activa arranca de cero: no cuenta pagos anteriores.
+    if (on) {
+      s.settings.billCushionSince = todayISO();
+      s.settings.billCushionReleased = 0;
+    }
+  });
+}
+
+/** Libera lo guardado en el colchón: vuelve a contar como disponible. */
+export function releaseBillCushion(amount) {
+  commit((s) => {
+    if (amount > 0) s.settings.billCushionReleased = Math.round(((s.settings.billCushionReleased || 0) + amount) * 100) / 100;
   });
 }
 

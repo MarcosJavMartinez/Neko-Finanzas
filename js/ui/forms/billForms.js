@@ -27,7 +27,7 @@ import { getLastAccount, setLastAccount } from "../../core/prefs.js";
 import { addDays, formatDate, formatDue, parseISO, todayISO, FREQUENCIES } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
 import { formatMoney } from "../../core/money.js";
-import { billStatus, findCategory, findSubcategory } from "../../core/finance.js";
+import { billCushion, billStatus, findCategory, findSubcategory, toMain } from "../../core/finance.js";
 
 const FREQUENCY_OPTIONS = Object.entries(FREQUENCIES).map(([value, f]) => ({ value, label: f.label }));
 const BILL_ICONS = ["🧾", "💡", "🔥", "💧", "🌐", "📱", "🏠", "🛡️", "📺", "🎵", "🤖", "🎮", "☁️", "🚗", "🏋️", "📚", "🐱", "💳"];
@@ -158,7 +158,12 @@ export function openPayBill(billId) {
         const backup = store.snapshot();
         store.payBill(bill.id, { date, amount, currency, accountId });
         close();
-        toast(`${bill.name} pagada · se registró el gasto`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        // Con el colchón activado, se cuenta qué pasó con la diferencia.
+        const after = store.getState();
+        const diff = after.settings.billCushion ? toMain(after, bill.amount, bill.currency) - toMain(after, amount, currency) : 0;
+        const main = after.settings.mainCurrency;
+        const extra = diff > 0.005 ? ` · ${formatMoney(diff, main)} menos de lo esperado: quedan guardados para tus próximas facturas` : diff < -0.005 ? ` · ${formatMoney(-diff, main)} más de lo esperado${billCushion(after).saved - (after.settings.billCushionReleased || 0) >= 0 ? ": salieron del colchón" : ""}` : "";
+        toast(`${bill.name} pagada · se registró el gasto${extra}`, { duration: extra ? 7000 : undefined, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });

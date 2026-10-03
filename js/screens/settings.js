@@ -206,6 +206,10 @@ const handlers = {
       setBackupEvery(el.value);
       toast(el.value === "never" ? "Listo, no te vamos a recordar" : "Recordatorio de backup actualizado", { type: "info" });
     },
+    "set-bill-cushion"(el) {
+      store.setBillCushion(el.checked);
+      toast(el.checked ? "Listo: lo que sobre de tus facturas queda guardado para las próximas" : "Colchón de facturas desactivado", { type: "info" });
+    },
     "set-horizon"(el) {
       store.updateSettings({ reserveHorizon: el.value });
       toast("Reserva de facturas actualizada");
@@ -272,6 +276,13 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
           <span class="setting-label">Saldos iniciales</span>
           <span class="field-hint">Cada cuenta tiene el suyo: lo que tenía antes de que empezaras a cargar movimientos.</span>
           <a class="btn btn-soft btn-sm" href="#/cuentas">${icon("wallet", 16)} Ir a Cuentas</a>
+        </div>
+
+        <div class="setting">
+          <label class="toggle-field">
+            <span><span class="toggle-label">Guardar lo que sobra de las facturas</span><span class="field-hint">Si una factura viene por menos de lo esperado, la diferencia queda reservada para las próximas (y cubre las que vengan por más), en vez de pasar a tu disponible.</span></span>
+            <input type="checkbox" class="switch" ${s.billCushion ? "checked" : ""} data-change="set-bill-cushion" />
+          </label>
         </div>
 
         <label class="setting">

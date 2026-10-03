@@ -313,6 +313,27 @@ store.restore(env([]));
 const made = store.saveBudget({ name: "Gustos", icon: "☕", color: "#d99a2b", mode: "daily", value: 100, currency: "ARS", target: { kind: "categories", categoryIds: ["exp-comida"] }, reserve: true });
 eq("al crear uno reservado se anota desde cuándo cuenta", [made.reserve, /^\d{4}-\d{2}-\d{2}$/.test(made.since)], [true, true]);
 
+// Colchón de facturas
+const cushionState = (on) => sanitizeState({ settings: { billCushion: on, billCushionSince: "2026-01-01", reserveHorizon: "month" }, categories: buildDemoState().categories, accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 300000 }], bills: [{ id: "luz", name: "Luz", amount: 40000, currency: "ARS", dueDate: "2026-03-10", dueDay: 10, recurring: true, frequency: "monthly", categoryId: "exp-servicios" }] });
+store.restore(cushionState(true));
+const before = F.balanceSummary(store.getState(), "2026-03-09").available;
+store.payBill("luz", { date: "2026-03-09", amount: 30000 });
+eq("vino por menos: la diferencia queda en el colchón", [F.billCushion(store.getState()).amount, store.getState().bills[0].payments[0].expected], [10000, 40000]);
+eq("y el disponible no cambia", F.balanceSummary(store.getState(), "2026-03-09").available, before);
+store.payBill("luz", { date: "2026-04-09", amount: 46000 });
+eq("vino por más: sale del colchón", F.billCushion(store.getState()).amount, 4000);
+store.payBill("luz", { date: "2026-05-09", amount: 50000 });
+eq("el colchón nunca es negativo", F.billCushion(store.getState()).amount, 0);
+store.undoLastPayment("luz");
+eq("deshacer un pago lo recalcula", F.billCushion(store.getState()).amount, 4000);
+store.releaseBillCushion(4000);
+eq("liberar: vuelve al disponible", [F.billCushion(store.getState()).amount, store.getState().settings.billCushionReleased], [0, 4000]);
+store.restore(cushionState(false));
+store.payBill("luz", { date: "2026-03-09", amount: 30000 });
+eq("desactivado: no reserva nada", [F.billCushion(store.getState()).amount, F.balanceSummary(store.getState(), "2026-03-09").available], [0, 270000]);
+store.setBillCushion(true);
+eq("al activarlo no cuenta los pagos anteriores", F.billCushion(store.getState()).amount, 0);
+
 // Avisos de vencimientos
 const remState = sanitizeState({
   categories: [],

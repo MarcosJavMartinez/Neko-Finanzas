@@ -7,7 +7,8 @@ import { billRow, emptyState } from "../ui/components.js";
 import { openSheet } from "../ui/sheet.js";
 import { formatMoney } from "../core/money.js";
 import { currentMonthKey, formatDate, formatMonth, monthRange, parseISO, shiftMonthKey, todayISO } from "../core/dates.js";
-import { billCalendar, billReserve, billStatus, toMain } from "../core/finance.js";
+import { billCalendar, billCushion, billReserve, billStatus, toMain } from "../core/finance.js";
+import { releaseBillCushion, snapshot, restore } from "../core/store.js";
 import { getState } from "../core/store.js";
 import { billsToICS } from "../core/ics.js";
 import { downloadFile } from "../ui/download.js";
@@ -109,6 +110,7 @@ export default {
       })}</div>`;
     }
     const reserve = billReserve(state, today);
+    const cushion = billCushion(state);
     const withStatus = state.bills.map((b) => ({ bill: b, status: billStatus(b, today) }));
     const byDue = (a, b) => a.bill.dueDate.localeCompare(b.bill.dueDate);
     const overdue = withStatus.filter((x) => x.status === "overdue").sort(byDue);
@@ -131,6 +133,16 @@ export default {
         </div>
         <button type="button" class="btn btn-primary btn-sm" data-action="add-bill">${icon("plus", 18)}Agregar</button>
       </section>
+      ${cushion.enabled
+        ? html`<section class="card cushion-card reveal">
+            <span class="mini-icon">${icon("shield", 20)}</span>
+            <div class="row-main">
+              <span class="row-title">Colchón de facturas: <strong data-pulse="cushion">${formatMoney(cushion.amount, main)}</strong></span>
+              <span class="row-meta">${cushion.amount > 0 ? "Lo que sobró de facturas que vinieron por menos. Está reservado para las próximas." : "Cuando una factura venga por menos de lo esperado, la diferencia se guarda acá."}</span>
+            </div>
+            ${cushion.amount > 0 ? html`<button type="button" class="btn btn-sm btn-ghost" data-action="release-cushion">Liberar</button>` : ""}
+          </section>`
+        : ""}
       ${calendar(state, today)}
       ${group("Vencidas", overdue)}
       ${group("Pendientes", pending)}
@@ -157,6 +169,12 @@ export default {
     },
     "bills-day"(el) {
       openDay(el.dataset.date);
+    },
+    "release-cushion"() {
+      const amount = billCushion(getState()).amount;
+      const backup = snapshot();
+      releaseBillCushion(amount);
+      toast(`${formatMoney(amount, getState().settings.mainCurrency)} volvieron a tu disponible`, { type: "info", actionLabel: "Deshacer", onAction: () => restore(backup) });
     },
     "export-ics"() {
       const { ics, count } = billsToICS(getState());

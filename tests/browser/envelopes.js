@@ -83,6 +83,23 @@ return (async () => {
     const other = d.querySelector("[data-action=leftover-keep]");
     if (other) { other.click(); await wait(400); }
     log("'dejarlo disponible' saca el aviso: quedan " + d.querySelectorAll("[data-action=leftover-keep]").length + " · metas sin cambios=" + (F.goalSaved(store.getState().goals[0]) === 50000));
+    // 6) Colchón de facturas: se activa en Configuración y se ve en Facturas
+    const { openPayBill } = await w.eval('import("/js/ui/forms/billForms.js")');
+    w.location.hash = "#/ajustes-calculo"; await wait(400);
+    d.querySelector("[data-change=set-bill-cushion]").click(); await wait(300);
+    log("colchón activado: " + store.getState().settings.billCushion);
+    store.addBill({ name: "Luz", icon: "💡", amount: 40000, currency: "ARS", dueDate: today, dueDay: Number(today.slice(8)), frequency: "monthly", recurring: true, categoryId: "exp-servicios" });
+    const luz = store.getState().bills.find((x) => x.name === "Luz");
+    const a1 = avail();
+    openPayBill(luz.id); await wait(500);
+    form().elements.amount.value = "31.000";
+    form().requestSubmit(); await wait(600);
+    log("aviso al pagar menos: " + [...d.querySelectorAll(".toast")].pop()?.textContent.trim().split("\n")[0]);
+    log(`colchón=${F.billCushion(store.getState()).amount} · disponible ${a1} → ${avail()}${F.billCushion(store.getState()).amount === 9000 ? "" : " ✗"}`);
+    w.location.hash = "#/facturas"; await wait(400);
+    log("en Facturas: " + text(".cushion-card .row-title"));
+    d.querySelector("[data-action=release-cushion]").click(); await wait(400);
+    log(`liberar: colchón=${F.billCushion(store.getState()).amount} · disponible=${avail()}${avail() === a1 + 9000 ? "" : " ✗"}`);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {
     log("ERROR " + e.stack);

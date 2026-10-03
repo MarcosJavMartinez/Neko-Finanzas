@@ -2222,3 +2222,30 @@ button.inline-link {
   font-size: 0.76rem;
   color: var(--muted);
 }
+
+/* Colchón de facturas */
+.cushion-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cushion-card .mini-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--bill-soft);
+  color: var(--bill-ink);
+}
+
+.cushion-card .row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.cushion-card :is(.row-title, .row-meta) {
+  white-space: normal;
+}
+
+.cushion-card strong {
+  color: var(--bill-ink);
+}

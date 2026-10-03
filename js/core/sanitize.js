@@ -70,10 +70,13 @@ export function sanitizeState(input) {
     mainCurrency: main,
     reserveHorizon: s.reserveHorizon === "month" ? "month" : "30d",
     budgetReference: positive(s.budgetReference) || 0,
+    billCushion: bool(s.billCushion),
+    billCushionReleased: positive(s.billCushionReleased) || 0,
     isDemo: bool(s.isDemo),
     demoEdited: bool(s.demoEdited),
     createdAt: Number.isFinite(Date.parse(str(s.createdAt, 40))) ? str(s.createdAt, 40) : base.settings.createdAt,
   };
+  if (isISODate(s.billCushionSince)) settings.billCushionSince = s.billCushionSince;
 
   // Categorías (las de respaldo "Otros" tienen que existir siempre).
   const seen = new Set();
@@ -256,7 +259,12 @@ export function sanitizeState(input) {
       status: b.status === "paid" ? "paid" : "pending",
       payments: arr(b.payments)
         .filter((p) => isObj(p) && id(p.txId) && isISODate(p.dueDate) && isISODate(p.paidAt))
-        .map((p) => ({ txId: p.txId, dueDate: p.dueDate, paidAt: p.paidAt })),
+        .map((p) => {
+          const payment = { txId: p.txId, dueDate: p.dueDate, paidAt: p.paidAt };
+          // Lo que se esperaba pagar (para el colchón de facturas).
+          if (positive(p.expected)) Object.assign(payment, { expected: positive(p.expected), expectedCurrency: currency(p.expectedCurrency, main) });
+          return payment;
+        }),
       createdAt: str(b.createdAt, 40) || dueDate,
     });
   }

@@ -30,7 +30,9 @@
  *                      próximas cuotas de una compra) dentro del horizonte
  *                      + lo que debés de un préstamo que vence en ese plazo
  *                      + lo que falta gastar este mes de los presupuestos
- *                      marcados "reservar" (supermercado, gustos por día).
+ *                      marcados "reservar" (supermercado, gustos por día)
+ *                      + el colchón de facturas, si está activado: lo que
+ *                      sobró de facturas que vinieron por menos.
  *
  *  Préstamos: prestar plata la saca de tu cuenta (no es un gasto) y lo que
  *  te deben no cuenta como plata tuya hasta que te la devuelven; si te
@@ -246,6 +248,27 @@ export function scheduledReserve(state, today = todayISO()) {
   return { amount: sumMain(state, items), items, until };
 }
 
+/**
+ * Colchón de facturas (opcional): la suma de lo que sobró al pagar facturas
+ * por menos de lo esperado, menos lo que hubo que poner de más cuando
+ * vinieron más caras, menos lo que se liberó a mano. Nunca es negativo.
+ * Mientras tenga saldo, queda reservado para las próximas facturas.
+ */
+export function billCushion(state) {
+  const s = state.settings;
+  if (!s.billCushion) return { amount: 0, saved: 0, enabled: false };
+  const txById = new Map(state.transactions.map((t) => [t.id, t]));
+  let saved = 0;
+  for (const bill of state.bills) {
+    for (const p of bill.payments) {
+      const tx = txById.get(p.txId);
+      if (!p.expected || !tx || (s.billCushionSince && p.paidAt < s.billCushionSince)) continue;
+      saved += toMain(state, p.expected, p.expectedCurrency || bill.currency) - toMain(state, tx.amount, tx.currency);
+    }
+  }
+  return { amount: Math.max(0, Math.round((saved - (s.billCushionReleased || 0)) * 100) / 100), saved, enabled: true };
+}
+
 // ---------------------------------------------------------------------------
 // Préstamos
 // ---------------------------------------------------------------------------
@@ -280,9 +303,10 @@ export function balanceSummary(state, today = todayISO()) {
   const scheduled = scheduledReserve(state, today);
   const debts = loansReserve(state, today);
   const envelopes = budgetReserve(state, today);
-  const reserved = reserve.amount + scheduled.amount + debts.amount + envelopes.amount;
+  const cushion = billCushion(state);
+  const reserved = reserve.amount + scheduled.amount + debts.amount + envelopes.amount + cushion.amount;
   const available = total - inGoals - reserved;
-  return { total, inGoals, reserved, reserve, scheduled, debts, envelopes, available };
+  return { total, inGoals, reserved, reserve, scheduled, debts, envelopes, cushion, available };
 }
 
 // ---------------------------------------------------------------------------
