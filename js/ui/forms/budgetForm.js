@@ -117,6 +117,8 @@ export function openBudgetForm({ budget, preset } = {}) {
         if (!(value > 0)) return fieldError(form, "value", "Ingresá un valor mayor a cero.");
         if (data.mode === "percent" && value > 100) return fieldError(form, "value", "El porcentaje no puede superar 100%.");
         let target;
+        // "Por día" es para gastos chicos del día a día: no aplica a una meta.
+        if (data.kind === "goal" && data.mode === "daily") return toast("Los presupuestos por día se aplican a categorías de gasto, no a una meta", { type: "error" });
         if (data.kind === "goal") {
           // Sin metas no hay a qué asignarlo: se avisa (el campo ni siquiera existe).
           if (!data.goalId) return store.getState().goals.length ? fieldError(form, "goalId", "Elegí una meta.") : toast("Primero creá una meta para asignarle un presupuesto", { type: "error" });

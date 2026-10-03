@@ -2259,3 +2259,87 @@ button.inline-link {
   gap: 8px;
   margin-left: auto;
 }
+
+/* ---------------------------------------------------------------------------
+   Ajustes de la revisión de diseño
+--------------------------------------------------------------------------- */
+
+/* Colchón de facturas: texto a lo ancho y botones abajo (antes el texto
+   quedaba aplastado al lado de los dos botones) */
+.cushion-card .row-main {
+  flex: 1 1 200px;
+}
+
+.cushion-actions {
+  flex: 1 1 100%;
+  margin-left: 0;
+  justify-content: flex-end;
+}
+
+/* Avisos del inicio (sobrante, sueldo por registrar): el texto puede ocupar
+   dos líneas y los botones bajan y se reparten si no entran */
+.card-pending .row-main {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.card-pending :is(.row-title, .row-meta) {
+  white-space: normal;
+  overflow: visible;
+}
+
+.card-pending-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Los montos nunca se parten entre el símbolo y el número */
+.daily-main strong,
+.extras-line strong,
+.savings-pill strong {
+  white-space: nowrap;
+}
+
+@media (max-width: 359px) {
+  .card-pending-actions {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+
+  .card-pending-actions .btn {
+    flex: 1;
+  }
+
+  /* Ingresos / Gastos / Metas: sin el ícono, así entra el rótulo */
+  .trio .mini-icon {
+    display: none;
+  }
+
+  .mini-value {
+    font-size: 0.78rem;
+  }
+}
+
+/* "Otro" extra: es un texto, no un monto */
+.setup-item input[name="other-name"] {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Cuestionario en celulares muy angostos: el nombre arriba y el monto abajo */
+@media (max-width: 359px) {
+  .setup-item,
+  .setup-item-bill {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 6px;
+  }
+
+  .setup-item .setup-check {
+    grid-column: 1 / -1;
+  }
+
+  .setup-item:not(.setup-item-bill) .amount-input {
+    grid-column: 1 / -1;
+  }
+}
