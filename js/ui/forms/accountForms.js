@@ -87,7 +87,11 @@ export function openAccountForm({ account } = {}) {
           : segmented("currency", CURRENCY_CODES.map((c) => ({ value: c, label: c })), current.currency)}
       </div>
       <div data-opening-normal ${isCard ? "hidden" : ""}>
-        ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: isCard ? 0 : current.opening, hint: "Lo que tenía esta cuenta antes de cargar movimientos. Puede ser negativo (con un “-” adelante)." })}
+        ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: isCard ? 0 : Math.abs(current.opening || 0), hint: "Lo que tenía esta cuenta antes de cargar movimientos." })}
+        <label class="toggle-field">
+          <span><span class="toggle-label">Está en rojo</span><span class="field-hint">El saldo es negativo: es plata que debés (descubierto).</span></span>
+          <input type="checkbox" name="openingNegative" class="switch" ${!isCard && current.opening < 0 ? "checked" : ""} />
+        </label>
       </div>
       <div data-opening-card ${isCard ? "" : "hidden"}>
         ${fixedAmountField({ name: "openingDebt", label: "Deuda al empezar", currency: current.currency, value: isCard && current.opening < 0 ? -current.opening : 0, hint: "Lo que ya debías en la tarjeta (sin las cuotas que todavía no llegaron)." })}
@@ -129,7 +133,7 @@ export function openAccountForm({ account } = {}) {
         const typed = openingText ? parseAmount(openingText) : 0;
         if (!Number.isFinite(typed) || Math.abs(typed) > MAX_AMOUNT || (card && typed < 0)) return fieldError(form, field, "Ese monto no es válido.");
         // En una tarjeta, la deuda es saldo negativo.
-        const opening = card ? -typed : typed;
+        const opening = card || form.elements.openingNegative.checked ? -Math.abs(typed) : typed;
         const saved = store.saveAccount({
           id: account?.id,
           name: data.name,

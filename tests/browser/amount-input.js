@@ -89,6 +89,22 @@ return (async () => {
     log(`al pasar a "Por mes": "${converted}" + un 0 → "${input.value}"${converted === "25,00" && input.value === "250,00" ? "" : " ✗"}`);
     form.querySelector("input[name=mode][value=percent]").click(); await wait(150);
     log(`de vuelta a porcentaje: "${input.value}"${input.value === "250" ? "" : " ✗"}`);
+    sheet().querySelector("[data-sheet-close]").click(); await wait(500);
+
+    // Cuenta en rojo: el signo no se tipea, se marca con un interruptor
+    const { openAccountForm } = await w.eval('import("/js/ui/forms/accountForms.js")');
+    openAccountForm(); await wait(500);
+    const acc = sheet().querySelector("form");
+    acc.elements.name.value = "Descubierto";
+    input = acc.elements.opening;
+    fresh("5000000");
+    acc.elements.openingNegative.click();
+    acc.requestSubmit(); await wait(600);
+    const red = store.getState().accounts.find((x) => x.name === "Descubierto");
+    log(`cuenta en rojo: saldo inicial ${red?.opening}${red?.opening === -50000 ? "" : " ✗"}`);
+    openAccountForm({ account: red }); await wait(500);
+    const again = sheet().querySelector("form");
+    log(`al editarla: "${again.elements.opening.value}" · en rojo=${again.elements.openingNegative.checked}${again.elements.opening.value === "50.000,00" && again.elements.openingNegative.checked ? "" : " ✗"}`);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {
     log("ERROR " + e.stack);
