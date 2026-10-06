@@ -178,6 +178,10 @@ export default {
       <button type="button" class="qa qa-income" data-action="add-income"><span class="qa-icon">${icon("arrowDown", 20)}</span><span>Ingresar<br />dinero</span></button>
       <a class="qa qa-bill" href="#/facturas"><span class="qa-icon">${icon("receipt", 20)}</span><span>Pago de<br />factura</span></a>
       <button type="button" class="qa qa-goal" data-action="add-goal"><span class="qa-icon">${icon("flag", 20)}</span><span>Nueva<br />meta</span></button>
+      <button type="button" class="qa qa-more" data-action="add-card-purchase"><span class="qa-icon">${icon("card", 20)}</span><span>Tarjeta<br />y cuotas</span></button>
+      <button type="button" class="qa qa-more" data-action="add-loan" data-direction="lent"><span class="qa-icon">${icon("arrowUp", 20)}</span><span>Le<br />presté</span></button>
+      <button type="button" class="qa qa-more" data-action="add-loan" data-direction="borrowed"><span class="qa-icon">${icon("arrowDown", 20)}</span><span>Me<br />prestaron</span></button>
+      <button type="button" class="qa qa-more" data-action="add-transfer"><span class="qa-icon">${icon("swap", 20)}</span><span>Mover<br />plata</span></button>
     </nav>`;
 
     const pending = pendingIncomes.map(

@@ -37,7 +37,7 @@ const RECURRENCE_OPTIONS = [
   ...["weekly", "biweekly", "monthly"].map((f) => ({ value: f, label: FREQUENCIES[f].label })),
 ];
 
-export function openTransactionForm({ type = "expense", tx } = {}) {
+export function openTransactionForm({ type = "expense", tx, accountId: presetAccount } = {}) {
   const state = store.getState();
   const isEdit = Boolean(tx);
   const current = tx || {
@@ -54,7 +54,7 @@ export function openTransactionForm({ type = "expense", tx } = {}) {
   // Cuenta: la del movimiento, o la última usada, o la principal.
   const activeAccounts = state.accounts.filter((a) => !a.archived);
   const lastAccount = activeAccounts.find((a) => a.id === getLastAccount())?.id;
-  const accountId = current.accountId || lastAccount || store.defaultAccountId();
+  const accountId = current.accountId || activeAccounts.find((a) => a.id === presetAccount)?.id || lastAccount || store.defaultAccountId();
   const showAccount = activeAccounts.length > 1 || (current.accountId && !activeAccounts.some((a) => a.id === current.accountId));
   const isCardAccount = (id) => state.accounts.find((a) => a.id === id)?.kind === "credit";
   const plan = current.installment;

@@ -67,6 +67,14 @@ const byId = (list, id) => list.find((x) => x.id === id);
 const GLOBAL_ACTIONS = {
   "add-income": () => openTransactionForm({ type: "income" }),
   "add-expense": () => openTransactionForm({ type: "expense" }),
+  // Compra con tarjeta: un gasto con la tarjeta ya elegida (y sus cuotas a la
+  // vista). Sin tarjeta cargada, primero se crea.
+  "add-card-purchase": () => {
+    const card = store.getState().accounts.find((a) => a.kind === "credit" && !a.archived);
+    if (card) return openTransactionForm({ type: "expense", accountId: card.id });
+    openAccountForm({ kind: "credit" });
+    toast("Primero cargá tu tarjeta. Después anotás cada compra desde acá", { type: "info" });
+  },
   "add-extras": () => openIncomeExtras(),
   "add-bill": () => openBillForm(),
   "add-goal": () => openGoalForm(),

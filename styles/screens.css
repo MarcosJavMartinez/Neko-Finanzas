@@ -2414,3 +2414,19 @@ button.inline-link {
   margin: -4px auto 4px;
   filter: drop-shadow(0 6px 8px rgba(8, 120, 150, 0.14));
 }
+
+/* Acciones rápidas, segunda fila: tarjeta, préstamos y mover plata */
+.qa-more {
+  min-height: 84px;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.qa-more .qa-icon {
+  color: var(--brand-ink);
+}
+
+.qa-more .qa-icon .icon {
+  width: 24px;
+  height: 24px;
+}

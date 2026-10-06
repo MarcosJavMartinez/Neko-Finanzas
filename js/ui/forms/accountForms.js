@@ -52,10 +52,11 @@ function readMoney(form, name) {
 // Crear / editar cuenta
 // ---------------------------------------------------------------------------
 
-export function openAccountForm({ account } = {}) {
+export function openAccountForm({ account, kind: presetKind } = {}) {
   const state = store.getState();
   const isEdit = Boolean(account);
-  const current = account || { name: "", icon: "🏦", color: "#08a7c8", currency: state.settings.mainCurrency, kind: "bank", opening: 0, closingDay: 25, dueDay: 5 };
+  const startKind = Object.prototype.hasOwnProperty.call(ACCOUNT_KINDS, presetKind || "") ? presetKind : "bank";
+  const current = account || { name: "", icon: ACCOUNT_KINDS[startKind].icon, color: "#08a7c8", currency: state.settings.mainCurrency, kind: startKind, opening: 0, closingDay: 25, dueDay: 5 };
   const used = isEdit ? store.countAccountUsage(account.id) : 0;
   const isCard = current.kind === "credit";
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
