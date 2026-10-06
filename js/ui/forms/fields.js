@@ -4,7 +4,7 @@ import { html, setHTML } from "../dom.js";
 import { icon } from "../icons.js";
 import { amountToInput, parseAmount, CURRENCY_CODES } from "../../core/money.js";
 import { MAX_AMOUNT } from "../../core/sanitize.js";
-import { EMOJI_OPTIONS, PALETTE } from "../../data/defaults.js";
+import { EMOJI_OPTIONS, LISTA_ICONS, PALETTE } from "../../data/defaults.js";
 
 /** Monto grande con la moneda como cápsulas (ARS | USD | EUR). */
 export function amountField({ name = "amount", value, currency, label = "Monto", autofocus = true, tone = "" }) {
@@ -120,7 +120,9 @@ export function subcategoryPicker(category, selectedId = "") {
 }
 
 export function emojiPicker(selected, { name = "icon", choices = EMOJI_OPTIONS } = {}) {
-  const options = choices.includes(selected) || !selected ? choices : [selected, ...choices];
+  // Primero los íconos propios del formulario; después, todos los de Neko Lista.
+  const all = [...new Set([...choices, ...LISTA_ICONS])];
+  const options = all.includes(selected) || !selected ? all : [selected, ...all];
   return html`<div class="field">
     <span class="field-label">Ícono</span>
     <div class="emoji-picker">

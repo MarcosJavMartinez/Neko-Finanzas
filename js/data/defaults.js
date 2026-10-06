@@ -30,6 +30,25 @@ export const EMOJI_OPTIONS = [
 ];
 
 /**
+ * Los íconos de Neko Lista (comida, limpieza, farmacia, hogar, mascotas…).
+ * Se ofrecen en todos los selectores de ícono, después de los propios de
+ * cada formulario, así las dos apps comparten el mismo juego.
+ */
+export const LISTA_ICONS = [
+  "🛒", "🥚", "🪒", "🧺", "🧼", "🫒", "🥛", "🥣", "☕", "🧂", "🧈", "🧀",
+  "🍲", "🧻", "🪥", "🤧", "🍞", "🍝", "🍚", "🍅", "🐟", "🍗", "🥩", "🧴",
+  "🧽", "🧹", "🪶", "🌸", "🛡️", "💊", "🧅", "🧄", "🫑", "🌶️", "🫚", "🥦",
+  "🥔", "🥕", "🍎", "🍌", "🍊", "🍋", "🥑", "🥬", "🌼", "🌿", "🧉", "💧",
+  "🥤", "🍺", "🍷", "🍫", "🍪", "🍶", "🍯", "🥢", "🌭", "🧷", "👖", "🥒",
+  "🌽", "🍄", "🍆", "🥭", "🍍", "🍇", "🍑", "🍒", "🍓", "🥝", "🍐", "🍈",
+  "🍉", "🥐", "🥖", "🍰", "🧁", "🍩", "🫓", "🥯", "🥓", "🍔", "🍤", "🍳",
+  "🍿", "🍨", "🍮", "🍬", "🥜", "🫘", "🥗", "🧃", "🍼", "🔋", "💡", "🕯️",
+  "🧵", "🧦", "🧢", "🎁", "🔧", "🩹", "🐕", "🐈", "🥞", "🧇", "🥧", "🌮",
+  "🌯", "🍕", "🍖", "🦴", "🦐", "🦀", "🦑", "🍱", "🥫", "🍭", "🍦", "🧊",
+  "🌰", "🍹", "🧶", "🪡", "👕", "🔨", "🪛", "🧰", "🐾", "🌡️",
+];
+
+/**
  * Subcategorías predeterminadas. Son opcionales: un movimiento siempre
  * pertenece a su categoría (lo que usan presupuestos y reportes) y puede
  * además llevar una subcategoría para tener más detalle.
