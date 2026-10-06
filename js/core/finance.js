@@ -273,17 +273,35 @@ export function billCushion(state) {
 // Préstamos
 // ---------------------------------------------------------------------------
 
-/** Lo que falta devolver de un préstamo (nunca negativo). */
-export function loanOutstanding(loan) {
+/**
+ * Un préstamo en cuotas: cuántas faltan, cuándo vence la próxima y cuánto se
+ * termina devolviendo. Las cuotas son los gastos programados del préstamo;
+ * las que ya pasaron de fecha cuentan como pagadas.
+ */
+export function loanPlanStatus(state, loan, today = todayISO()) {
+  if (!loan.plan) return null;
+  const all = state.transactions.filter((t) => t.installment?.group === loan.plan.group).sort((a, b) => a.date.localeCompare(b.date));
+  const pending = all.filter((t) => t.date > today);
+  const left = Math.round(pending.reduce((s, t) => s + t.amount, 0) * 100) / 100;
+  const total = Math.round(loan.plan.count * loan.plan.amount * 100) / 100;
+  return { count: loan.plan.count, amount: loan.plan.amount, installments: all, remaining: pending.length, paid: all.length - pending.length, next: pending[0]?.date || "", left, total, interest: Math.round((total - loan.amount) * 100) / 100 };
+}
+
+/**
+ * Lo que falta devolver de un préstamo (nunca negativo). En uno en cuotas
+ * (hace falta el estado para verlas) es la suma de las cuotas por venir.
+ */
+export function loanOutstanding(loan, state, today = todayISO()) {
+  if (loan.plan && state) return loanPlanStatus(state, loan, today).left;
   const paid = loan.payments.reduce((s, p) => s + p.amount, 0);
   return Math.max(0, Math.round((loan.amount - paid) * 100) / 100);
 }
 
 /** Te deben / debés, en la moneda principal, con cada préstamo abierto. */
-export function loansSummary(state) {
+export function loansSummary(state, today = todayISO()) {
   const items = (state.loans || []).map((loan) => {
-    const outstanding = loanOutstanding(loan);
-    return { loan, outstanding, outstandingMain: toMain(state, outstanding, loan.currency) };
+    const outstanding = loanOutstanding(loan, state, today);
+    return { loan, outstanding, outstandingMain: toMain(state, outstanding, loan.currency), plan: loanPlanStatus(state, loan, today) };
   });
   const sum = (dir) => items.filter((i) => i.loan.direction === dir).reduce((s, i) => s + i.outstandingMain, 0);
   return { items, lent: sum("lent"), borrowed: sum("borrowed"), open: items.filter((i) => i.outstanding > 0).length };

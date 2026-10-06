@@ -9,10 +9,10 @@ import { toast } from "../toast.js";
 import { segmented, progressBar } from "../components.js";
 import { amountField, textField, dateField, formActions, readForm, readAmount, fieldError, clearErrors } from "./fields.js";
 import * as store from "../../core/store.js";
-import { formatDate, formatDue, todayISO } from "../../core/dates.js";
+import { addMonths, formatDate, formatDue, todayISO } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
-import { formatMoney } from "../../core/money.js";
-import { findAccount, loanOutstanding, percent } from "../../core/finance.js";
+import { formatMoney, parseAmount } from "../../core/money.js";
+import { findAccount, loanOutstanding, loanPlanStatus, percent } from "../../core/finance.js";
 import { getLastAccount } from "../../core/prefs.js";
 
 /** Cuenta por la que pasó la plata, o "no pasó por mis cuentas". */
@@ -139,10 +139,141 @@ export function openLoanPayment(loanId) {
   });
 }
 
+/**
+ * Préstamo en cuotas: de un banco o una billetera (Mercado Pago, etc.). Se
+ * carga lo que te dieron, cuántas cuotas son, de cuánto y cuándo vence la
+ * primera; la app programa las cuotas.
+ */
+export function openCreditLoanForm() {
+  const state = store.getState();
+  const today = todayISO();
+  const accounts = state.accounts.filter((a) => !a.archived && a.kind !== "credit");
+  const preferred = accounts.find((a) => a.id === getLastAccount())?.id || accounts[0]?.id || store.defaultAccountId();
+  const counts = Array.from({ length: 59 }, (_, i) => i + 2);
+
+  openSheet({
+    title: "Préstamo en cuotas",
+    body: html`<form class="form" novalidate>
+      <p class="sheet-text">Para un préstamo de un banco o una billetera que devolvés en cuotas fijas. Si te prestó una persona, usá "Me prestaron".</p>
+      ${textField({ name: "person", label: "¿Quién te lo dio?", value: "", required: true, maxlength: 40, placeholder: "Ej.: Mercado Pago, Banco Nación" })}
+      ${amountField({ value: null, currency: state.settings.mainCurrency, label: "¿Cuánto recibiste?", autofocus: false, tone: "tone-goal" })}
+      <div class="field">
+        <label class="field-label" for="f-accountId">¿A qué cuenta entró?</label>
+        <select id="f-accountId" name="accountId">
+          ${accounts.map((a) => html`<option value="${a.id}" ${a.id === preferred ? "selected" : ""}>${a.icon} ${a.name}</option>`)}
+        </select>
+        <p class="field-hint">Las cuotas se descuentan de esta misma cuenta.</p>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="f-count">Cantidad de cuotas</label>
+          <select id="f-count" name="count">${counts.map((n) => html`<option value="${n}" ${n === 6 ? "selected" : ""}>${n} cuotas</option>`)}</select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="f-installment">Valor de cada cuota</label>
+          <div class="amount-input"><input id="f-installment" name="installment" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" /></div>
+          <p class="field-error" data-error-for="installment"></p>
+        </div>
+      </div>
+      ${dateField({ name: "firstDue", label: "La primera cuota vence el", value: addMonths(today, 1) })}
+      <p class="notice notice-info" data-loan-total hidden>${icon("info", 16)}<span></span></p>
+      <p class="field-hint">Lo que recibís no cuenta como ingreso. Cada cuota queda programada como gasto en su mes y se reserva de tu disponible cuando se acerca.</p>
+      ${formActions({ submitLabel: "Guardar préstamo" })}
+    </form>`,
+    onMount(panel, close) {
+      const form = panel.querySelector("form");
+      const totalBox = form.querySelector("[data-loan-total]");
+      const currency = () => form.querySelector("input[name=currency]:checked")?.value || state.settings.mainCurrency;
+      // Cuánto se termina devolviendo, mientras se cargan los números.
+      const sync = () => {
+        const received = readAmount(form);
+        const each = parseAmount(form.elements.installment.value);
+        const count = Number(form.elements.count.value);
+        const ready = received > 0 && each > 0;
+        totalBox.hidden = !ready;
+        if (!ready) return;
+        const total = Math.round(each * count * 100) / 100;
+        const extra = Math.round((total - received) * 100) / 100;
+        totalBox.querySelector("span").textContent =
+          extra > 0
+            ? `En total devolvés ${formatMoney(total, currency(), { reveal: true })}: ${formatMoney(extra, currency(), { reveal: true })} más de lo que recibiste.`
+            : `En total devolvés ${formatMoney(total, currency(), { reveal: true })}.`;
+      };
+      form.addEventListener("input", sync);
+      form.addEventListener("change", sync);
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearErrors(form);
+        const data = readForm(form);
+        const received = readAmount(form);
+        const each = parseAmount(data.installment);
+        const count = Number(data.count);
+        if (!data.person.trim()) return fieldError(form, "person", "¿Quién te dio el préstamo?");
+        if (!(received > 0)) return fieldError(form, "amount", "Ingresá cuánto recibiste.");
+        if (!(each > 0)) return fieldError(form, "installment", "Ingresá el valor de la cuota.");
+        if (!isISODate(data.firstDue)) return fieldError(form, "firstDue", "Elegí una fecha válida.");
+        if (data.firstDue < today) return fieldError(form, "firstDue", "La primera cuota tiene que vencer de hoy en adelante.");
+        const saved = store.addCreditLoan({ lender: data.person, received, count, installment: each, firstDue: data.firstDue, currency: data.currency, accountId: data.accountId });
+        close();
+        toast(`Anotado: ${saved.plan.count} cuotas de ${formatMoney(saved.plan.amount, saved.currency)} a ${saved.person}`);
+      });
+    },
+  });
+}
+
+/** Detalle de un préstamo en cuotas: lo que falta y cada cuota. */
+function openCreditLoanDetail(state, loan) {
+  const today = todayISO();
+  const plan = loanPlanStatus(state, loan, today);
+  const done = plan.remaining === 0;
+  openSheet({
+    title: `🏦 ${loan.person}`,
+    body: html`<div class="loan-detail">
+      <p class="account-detail-label">Préstamo en cuotas · recibiste ${formatMoney(loan.amount, loan.currency)} el ${formatDate(loan.date)}</p>
+      <p class="account-detail-balance">${done ? "Terminado de pagar" : formatMoney(plan.left, loan.currency)}</p>
+      <p class="fine-print">${done ? `${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)}` : `Faltan ${plan.remaining} de ${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)} · la próxima vence el ${formatDate(plan.next)}`}</p>
+      ${progressBar(percent(plan.paid, plan.count), { color: "var(--goal)", label: "Cuotas pagadas" })}
+      <p class="sheet-text">En total devolvés ${formatMoney(plan.total, loan.currency)}${plan.interest > 0 ? html`: <strong>${formatMoney(plan.interest, loan.currency)}</strong> de interés` : ""}.</p>
+      <h3 class="section-title section-title-spaced">Cuotas</h3>
+      <div class="rows rows-plain">
+        ${plan.installments.map(
+          (t) => html`<div class="row loan-payment ${t.date <= today ? "is-done" : ""}">
+            <span class="row-main">
+              <span class="row-title">Cuota ${t.installment.n} de ${t.installment.of} · ${formatMoney(t.amount, loan.currency)}</span>
+              <span class="row-meta">${t.date <= today ? `Pagada el ${formatDate(t.date, { withYear: true })}` : `Vence el ${formatDate(t.date, { withYear: true })}`}</span>
+            </span>
+            <span aria-hidden="true">${t.date <= today ? "✅" : ""}</span>
+          </div>`
+        )}
+      </div>
+      <p class="fine-print">${icon("info", 14)} Cada cuota se descuenta de tu cuenta el día que vence. Si cambia una fecha o un monto, editá esa cuota desde Transacciones.</p>
+      <div class="account-detail-actions">
+        <button type="button" class="btn btn-ghost btn-sm" data-do="delete">${icon("trash", 16)} Borrar préstamo</button>
+      </div>
+    </div>`,
+    onMount(panel, close) {
+      panel.querySelector("[data-do=delete]").addEventListener("click", async () => {
+        const ok = await confirmDialog({
+          title: `¿Borrar el préstamo de ${loan.person}?`,
+          text: "Se borran la plata recibida y todas sus cuotas, pagadas y por venir.",
+          confirmLabel: "Borrar",
+          danger: true,
+        });
+        if (!ok) return;
+        const backup = store.snapshot();
+        store.deleteLoan(loan.id);
+        close();
+        toast("Préstamo borrado", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+      });
+    },
+  });
+}
+
 export function openLoanDetail(loanId) {
   const state = store.getState();
   const loan = state.loans.find((l) => l.id === loanId);
   if (!loan) return;
+  if (loan.plan) return openCreditLoanDetail(state, loan);
   const outstanding = loanOutstanding(loan);
   const paid = loan.amount - outstanding;
   const tx = loan.txId && state.transactions.find((t) => t.id === loan.txId);

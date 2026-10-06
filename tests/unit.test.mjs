@@ -340,6 +340,25 @@ eq("desactivado: no reserva nada", [F.billCushion(store.getState()).amount, F.ba
 store.setBillCushion(true);
 eq("al activarlo no cuenta los pagos anteriores", F.billCushion(store.getState()).amount, 0);
 
+// Préstamo en cuotas (banco o billetera): entra lo recibido y las cuotas quedan programadas
+store.restore(sanitizeState({ accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }], categories: buildDemoState().categories, settings: { reserveHorizon: "month" } }));
+const credit = store.addCreditLoan({ lender: "Mercado Pago", received: 100000, count: 6, installment: 25000, firstDue: "2099-02-10", currency: "ARS", accountId: "a", date: "2099-01-10" });
+let cs = store.getState();
+let cp = F.loanPlanStatus(cs, cs.loans[0], "2099-01-15");
+eq("préstamo en cuotas: entra lo recibido, sin contar como ingreso", [F.balanceSummary(cs, "2099-01-15").total, cs.transactions.filter((t) => t.type === "income").length], [200000, 0]);
+eq("préstamo en cuotas: faltan todas, próxima y total con interés", [cp.remaining, cp.next, cp.left, cp.total, cp.interest], [6, "2099-02-10", 150000, 150000, 50000]);
+eq("préstamo en cuotas: cuenta en lo que debés", F.loansSummary(cs, "2099-01-15").borrowed, 150000);
+eq("préstamo en cuotas: la cuota que se acerca queda reservada", F.scheduledReserve(cs, "2099-02-05").amount, 25000);
+eq("préstamo en cuotas: no se reserva dos veces", F.loansReserve(cs, "2099-02-05").amount, 0);
+cp = F.loanPlanStatus(cs, cs.loans[0], "2099-03-15");
+eq("préstamo en cuotas: las cuotas vencidas bajan la plata y la deuda", [cp.paid, cp.remaining, cp.left, F.balanceSummary(cs, "2099-03-15").total], [2, 4, 100000, 150000]);
+eq("préstamo en cuotas: al terminar no se debe nada", [F.loanPlanStatus(cs, cs.loans[0], "2099-08-01").remaining, F.loansSummary(cs, "2099-08-01").borrowed], [0, 0]);
+const csBack = sanitizeState(JSON.parse(JSON.stringify(cs)));
+eq("préstamo en cuotas: sobrevive a un backup", [csBack.loans[0].plan.count, csBack.loans[0].plan.amount, csBack.transactions.filter((t) => t.installment?.group === csBack.loans[0].plan.group).length], [6, 25000, 6]);
+eq("préstamo en cuotas: un plan inválido se descarta", sanitizeState({ ...JSON.parse(JSON.stringify(cs)), loans: [{ ...cs.loans[0], plan: { group: "x", count: 1, amount: 5 } }] }).loans[0].plan, undefined);
+store.deleteLoan(credit.id);
+eq("préstamo en cuotas: borrarlo se lleva la plata y las cuotas", [store.getState().loans.length, store.getState().transactions.length], [0, 0]);
+
 // Avisos de vencimientos
 const remState = sanitizeState({
   categories: [],

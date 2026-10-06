@@ -21,7 +21,7 @@ import { openBudgetForm } from "./ui/forms/budgetForm.js";
 import { openLeftoverSheet } from "./ui/forms/leftoverForm.js";
 import { openCategoryForm } from "./ui/forms/categoryForm.js";
 import { openAccountForm, openTransferForm, openAccountDetail } from "./ui/forms/accountForms.js";
-import { openLoanForm, openLoanDetail } from "./ui/forms/loanForms.js";
+import { openLoanForm, openLoanDetail, openCreditLoanForm } from "./ui/forms/loanForms.js";
 import { openIncomeConfirm } from "./ui/forms/incomeConfirm.js";
 import { openIncomeExtras } from "./ui/forms/incomeExtras.js";
 import { watchSystemTheme, applySavedTheme } from "./ui/theme.js";
@@ -93,6 +93,7 @@ const GLOBAL_ACTIONS = {
   "add-account": () => openAccountForm(),
   "account-detail": (el) => openAccountDetail(el.dataset.id),
   "add-loan": (el) => openLoanForm({ direction: el.dataset.direction || "lent" }),
+  "add-credit-loan": () => openCreditLoanForm(),
   "loan-detail": (el) => openLoanDetail(el.dataset.id),
   "edit-budget": (el) => openBudgetForm({ budget: byId(store.getState().budgets, el.dataset.id) }),
   "edit-category": (el) => openCategoryForm({ category: byId(store.getState().categories, el.dataset.id) }),

@@ -2430,3 +2430,12 @@ button.inline-link {
   width: 24px;
   height: 24px;
 }
+
+/* Préstamos: tres formas de anotar, la tercera a lo ancho */
+.loan-actions {
+  flex-wrap: wrap;
+}
+
+.loan-payment.is-done .row-title {
+  color: var(--text-2);
+}

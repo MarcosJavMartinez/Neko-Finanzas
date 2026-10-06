@@ -89,6 +89,36 @@ return (async () => {
     sheet().querySelector("[data-form-delete]").click(); await wait(500);
     sheet().querySelector("[data-confirm]").click(); await wait(600);
     log(`borrado: efectivo=${bal(cash)} (antes ${c0}) · movimientos de Juli=${store.getState().transactions.filter((t) => t.loanId === juli.id).length}`);
+
+    // 9) Préstamo en cuotas (banco o billetera)
+    const { openCreditLoanForm } = await w.eval('import("/js/ui/forms/loanForms.js")');
+    const mpBefore = Math.round(F.balanceSummary(store.getState()).total);
+    w.location.hash = "#/inicio"; await wait(300); w.location.hash = "#/prestamos"; await wait(500);
+    d.querySelector("[data-action=add-credit-loan]").click(); await wait(600);
+    let cf = sheet().querySelector("form");
+    cf.requestSubmit(); await wait(200);
+    log("sin datos: " + (cf.querySelector('[data-error-for="person"]')?.textContent || "sin error ✗"));
+    cf.elements.person.value = "Mercado Pago";
+    cf.elements.amount.value = "100.000,00";
+    cf.elements.count.value = "6";
+    cf.elements.installment.value = "25.000,00";
+    cf.dispatchEvent(new w.Event("change", { bubbles: true })); await wait(100);
+    const note = cf.querySelector("[data-loan-total]");
+    log("total en vivo: " + (note.hidden ? "oculto ✗" : note.textContent.trim()));
+    cf.requestSubmit(); await wait(700);
+    const mp = store.getState().loans.find((l) => l.person === "Mercado Pago");
+    const mpPlan = F.loanPlanStatus(store.getState(), mp);
+    const total1 = Math.round(F.balanceSummary(store.getState()).total);
+    log(`guardado: ${mpPlan.count} cuotas de ${mpPlan.amount} · faltan ${mpPlan.remaining} · interés ${mpPlan.interest} · total ${mpBefore} → ${total1}${mpPlan.remaining === 6 && mpPlan.interest === 50000 && total1 === mpBefore + 100000 ? "" : " ✗"}`);
+    await wait(300);
+    const row = [...d.querySelectorAll(".loan-row")].find((r) => r.textContent.includes("Mercado Pago"));
+    log("en la lista: " + (row ? row.querySelector(".row-meta").textContent.replace(/\s+/g, " ").trim() : "no aparece ✗"));
+    row.click(); await wait(600);
+    log("detalle: " + sheet().querySelector(".sheet-title").textContent.trim() + " · " + sheet().querySelectorAll(".loan-payment").length + " cuotas listadas");
+    sheet().querySelector("[data-do=delete]").click(); await wait(500);
+    sheet().querySelector("[data-confirm]").click(); await wait(700);
+    const total2 = Math.round(F.balanceSummary(store.getState()).total);
+    log(`borrado: préstamos de Mercado Pago=${store.getState().loans.filter((l) => l.person === "Mercado Pago").length} · cuotas=${store.getState().transactions.filter((t) => t.installment?.group === mp.plan.group).length} · total ${total2}${total2 === mpBefore ? "" : " ✗"}`);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {
     log("ERROR " + e.stack);

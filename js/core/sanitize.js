@@ -320,6 +320,11 @@ export function sanitizeState(input) {
       createdAt: str(l.createdAt, 40) || date(l.date),
     };
     if (loanTx(l.txId)) loan.txId = l.txId;
+    // Préstamo en cuotas: cuántas son y de cuánto (las cuotas son gastos programados).
+    if (isObj(l.plan) && id(l.plan.group) && l.direction === "borrowed") {
+      const count = Math.trunc(finite(l.plan.count));
+      if (count >= 2 && count <= 60 && positive(l.plan.amount)) loan.plan = { group: l.plan.group, count, amount: positive(l.plan.amount) };
+    }
     loans.push(loan);
   }
 

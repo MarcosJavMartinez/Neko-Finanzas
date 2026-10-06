@@ -12,7 +12,7 @@
 // worker solo lee ese plan: no necesita la lógica financiera.
 
 import { withStore } from "../core/db.js";
-import { cardStatus, loanOutstanding } from "../core/finance.js";
+import { cardStatus, loanOutstanding, loanPlanStatus } from "../core/finance.js";
 import { formatMoney } from "../core/money.js";
 import { addDays, daysBetween, todayISO } from "../core/dates.js";
 import { amountsHidden, getReminderDays, remindersEnabled, setRemindersEnabled } from "../core/prefs.js";
@@ -64,6 +64,12 @@ export function buildPlan(state, today = todayISO(), daysBefore = getReminderDay
     if (card.debt > 0) add(`tarjeta:${account.id}`, card.due, account.name, money(card.debt, account.currency), "card");
   }
   for (const loan of state.loans || []) {
+    // Préstamo en cuotas: se avisa la próxima cuota.
+    if (loan.plan) {
+      const plan = loanPlanStatus(state, loan, today);
+      if (plan.next) add(`cuota:${loan.id}`, plan.next, `la cuota del préstamo ${loan.person}`, money(plan.amount, loan.currency), "bill");
+      continue;
+    }
     const outstanding = loanOutstanding(loan);
     if (outstanding > 0 && loan.dueDate) add(`prestamo:${loan.id}`, loan.dueDate, loan.person, money(outstanding, loan.currency), loan.direction === "borrowed" ? "debt" : "lent");
   }

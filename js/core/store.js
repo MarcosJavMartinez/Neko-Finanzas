@@ -373,8 +373,58 @@ export function updateLoan(id, data) {
 /** Borra el préstamo y la plata que movió (con "deshacer" desde la UI). */
 export function deleteLoan(id) {
   commit((s) => {
+    const group = find(s.loans, id)?.plan?.group;
     s.loans = without(s.loans, id);
-    s.transactions = s.transactions.filter((t) => !(t.type === "loan" && t.loanId === id));
+    // Un préstamo en cuotas se lleva también sus cuotas, pagadas y por venir.
+    s.transactions = s.transactions.filter((t) => !(t.type === "loan" && t.loanId === id) && !(group && t.installment?.group === group));
+  });
+}
+
+/**
+ * Préstamo en cuotas (un banco, una billetera): entra a la cuenta lo que te
+ * dieron y cada cuota queda programada como gasto en su mes, igual que las
+ * cuotas de la tarjeta. Así se reservan solas cuando se acercan y la deuda
+ * baja a medida que pasan. Lo recibido no es un ingreso; las cuotas sí son
+ * gasto (incluyen el interés).
+ */
+export function addCreditLoan({ lender, received, count, installment, firstDue, currency, accountId, date = todayISO(), note = "" }) {
+  const n = Math.max(2, Math.min(60, Math.trunc(count)));
+  const amount = Math.round(received * 100) / 100;
+  const each = Math.round(installment * 100) / 100;
+  if (!(amount > 0) || !(each > 0)) throw new Error("Ingresá montos mayores a cero");
+  return commit((s) => {
+    const group = uid("cuotas");
+    const loan = {
+      id: uid("loan"),
+      direction: "borrowed",
+      person: (lender || "").trim().slice(0, 40) || "Préstamo",
+      amount,
+      currency,
+      date,
+      dueDate: "",
+      note: (note || "").trim().slice(0, 120),
+      payments: [],
+      plan: { group, count: n, amount: each },
+      createdAt: new Date().toISOString(),
+    };
+    const tx = loanMovement(s, loan, { amount, accountId, date, isPayment: false });
+    s.transactions.push(tx);
+    loan.txId = tx.id;
+    const day = Number(firstDue.slice(8));
+    for (let k = 0; k < n; k++) {
+      s.transactions.push(
+        withValidAccount(
+          s,
+          withValidCategory(
+            s,
+            { id: uid("tx"), type: "expense", amount: each, currency, date: addMonths(firstDue, k, day), time: "", categoryId: FALLBACK_CATEGORY.expense, subcategoryId: "", description: `Cuota préstamo ${loan.person}`.slice(0, 80), accountId: tx.accountId, installment: { group, n: k + 1, of: n }, createdAt: new Date().toISOString() },
+            "expense"
+          )
+        )
+      );
+    }
+    (s.loans ||= []).push(loan);
+    return loan;
   });
 }
 
