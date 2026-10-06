@@ -140,6 +140,14 @@ eq("metas válidas + color seguro", evil.goals.map((g) => [g.id, g.color, g.move
 eq("presupuestos inválidos descartados", evil.budgets.length, 0);
 eq("no se contamina el prototipo", ({}).polluted, undefined);
 
+// --- ids: miles creados de corrido no se repiten ---------------------------------
+{
+  const { uid } = await import(base + "data/defaults.js");
+  const made = new Set();
+  for (let i = 0; i < 200000; i++) made.add(uid("tx"));
+  eq("ids únicos aunque se creen en el mismo milisegundo", made.size, 200000);
+}
+
 // --- el demo sobrevive a la validación sin perder nada ------------------------
 const demo = buildDemoState();
 const clean = sanitizeState(JSON.parse(JSON.stringify(demo)));

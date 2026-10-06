@@ -166,6 +166,13 @@ export function createEmptyState() {
   };
 }
 
+// Contador de la sesión: dos ids creados en el mismo milisegundo (las cuotas
+// de una compra, el cuestionario, los datos de ejemplo) nunca coinciden. Sin
+// él, cada tanto dos movimientos salían con el mismo id y, al volver a
+// cargar, la validación descartaba uno.
+let uidCount = 0;
+
 export function uid(prefix = "id") {
-  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  uidCount = (uidCount + 1) % 1679616; // 36^4
+  return `${prefix}-${Date.now().toString(36)}-${uidCount.toString(36).padStart(4, "0")}${Math.random().toString(36).slice(2, 6)}`;
 }
