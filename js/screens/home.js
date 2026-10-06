@@ -151,7 +151,9 @@ export default {
                   ? html`<p class="daily-main">Hoy podés gastar <strong data-pulse="daily">${m(daily.leftToday)}</strong></p>`
                   : html`<p class="daily-main">Hoy ya te pasaste por <strong data-pulse="daily">${m(-daily.leftToday)}</strong></p>`}
                 <p class="daily-sub">${m(daily.perDay)} por día ${untilText}${daily.spentToday > 0 ? ` · hoy llevás ${m(daily.spentToday)}` : ""}</p>
-                <p class="daily-note">Es tu disponible repartido en ${daily.days} día${daily.days === 1 ? "" : "s"}: la comida y el transporte también salen de acá. <button type="button" class="inline-link" data-action="add-treats">Ponete un límite de gustos por día</button> y lo que no gastes se acumula.</p>
+                <p class="daily-note">${daily.days === 1
+                  ? `Es todo tu disponible: ${daily.reason === "income" ? "mañana cobrás" : "hoy termina el mes"}. La comida`
+                  : `Es tu disponible repartido en los ${daily.days} días que faltan ${daily.reason === "income" ? "para tu próximo cobro" : "para terminar el mes"}, contando hoy: la comida`} y el transporte también salen de acá. <button type="button" class="inline-link" data-action="add-treats">Ponete un límite de gustos por día</button> y lo que no gastes se acumula.</p>
               </div>
             </section>`
           : "";
