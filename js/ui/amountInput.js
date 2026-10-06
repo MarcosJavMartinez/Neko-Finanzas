@@ -5,8 +5,13 @@
 //
 // Los campos marcados `data-plain` (un porcentaje) no usan centavos: ahí se
 // escribe el número tal cual, con una única coma decimal.
+//
+// Con "Cargar montos con centavos" apagado (Configuración) se escriben pesos
+// enteros: 1-5-0-0 es 1.500. Un monto que ya traía centavos se sigue editando
+// con centavos, para no perderlos.
 
 import { amountToInput, parseAmount } from "../core/money.js";
+import { amountCents } from "../core/prefs.js";
 
 const SELECTOR = 'input[inputmode="decimal"]';
 const MAX_DIGITS = 15;
@@ -40,6 +45,24 @@ function formatCents(input, event, before) {
   caretToEnd(input);
 }
 
+/** Pesos enteros con puntos de miles: "1500" → "1.500". */
+function formatWhole(input) {
+  const [int, dec] = input.value.split(",");
+  let digits = digitsOf(int);
+  // Si quedó un ",00" a la vista, lo tipeado o borrado después de él cuenta igual.
+  if (dec !== undefined) {
+    const extra = digitsOf(dec);
+    digits = extra.length > 2 ? digits + extra.slice(2) : extra.length < 2 ? digits.slice(0, -1) : digits;
+  }
+  digits = digits.replace(/^0+(?=\d)/, "").slice(0, MAX_DIGITS - 2);
+  input.value = digits ? signOf(input.value) + dots(digits) : "";
+  caretToEnd(input);
+}
+
+/** El monto del campo trae centavos de verdad (no un ",00"): se edita con centavos. */
+const keepsCents = (text) => text.includes(",") && /[1-9]/.test(digitsOf(text.split(",")[1]).slice(0, 2));
+const hasCents = (text) => /,\d*[1-9]/.test(text);
+
 /** Número tal cual: solo dígitos y una coma decimal (hasta 2 decimales). */
 function formatPlain(input, event) {
   const value = input.value;
@@ -68,6 +91,7 @@ function format(input, event, before) {
     return;
   }
   if (input.hasAttribute("data-plain")) formatPlain(input, event);
+  else if (!amountCents() && !keepsCents(input.value)) formatWhole(input);
   else formatCents(input, event, before);
 }
 
@@ -89,6 +113,11 @@ document.addEventListener("input", (event) => {
 document.addEventListener("focusin", (event) => {
   const input = event.target;
   if (!(input instanceof HTMLInputElement) || !input.matches(SELECTOR) || input.hasAttribute("data-plain")) return;
+  // Sin centavos: el ",00" de un monto ya cargado no se edita.
+  if (!amountCents()) {
+    if (!hasCents(input.value)) input.value = input.value.split(",")[0];
+    if (input.placeholder === "0,00") input.placeholder = "0";
+  } else if (input.placeholder === "0") input.placeholder = "0,00";
   previous.set(input, input.value);
   requestAnimationFrame(() => caretToEnd(input));
 });

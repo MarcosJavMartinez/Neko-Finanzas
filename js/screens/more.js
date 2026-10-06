@@ -27,21 +27,29 @@ export default {
     const budgets = budgetsOverview(state, currentMonthKey());
     const alerts = budgets.items.filter((b) => b.level === "near" || b.level === "over").length;
     const activeAccounts = state.accounts.filter((a) => !a.archived).length;
-    const items = [
+    const groups = [
+      { title: "Tu plata", items: [
       { href: "#/cuentas", icon: "wallet", title: "Cuentas", sub: activeAccounts > 1 ? `${activeAccounts} cuentas · efectivo, banco, billeteras` : "Efectivo, banco, billeteras virtuales" },
       { href: "#/presupuestos", icon: "pie", title: "Presupuestos", sub: state.budgets.length ? `${state.budgets.length} activos${alerts ? ` · ${alerts} para mirar` : ""}` : "Repartí tus ingresos" },
       { href: "#/prestamos", icon: "swap", title: "Préstamos", sub: loanSub(state) },
       { href: "#/facturas", icon: "receipt", title: "Facturas y servicios", sub: state.bills.length ? `${formatMoney(reserve.amount, main)} a reservar` : "Luz, internet, suscripciones…" },
       { href: "#/reportes", icon: "chart", title: "Reportes", sub: "Tu mes de un vistazo" },
+      ] },
+      { title: "Ajustes", items: [
       { href: "#/categorias", icon: "tag", title: "Categorías", sub: `${state.categories.length} categorías` },
       { href: "#/monedas", icon: "coins", title: "Monedas", sub: `Principal: ${main}` },
       { href: "#/ajustes", icon: "settings", title: "Configuración", sub: "Apariencia, tus datos, instalar la app" },
+      ] },
+      { title: "Ayuda", items: [
       { action: "show-onboarding", icon: "help", title: "Cómo funciona", sub: "Un repaso rápido en 4 pasos" },
       { action: "share-app", icon: "share", title: "Compartir Neko Finanzas", sub: "Pasale la app a alguien" },
+      ] },
     ];
     return html`
-      <nav class="more-grid" aria-label="Más secciones">
-        ${items.map(
+      ${groups.map(
+        (group) => html`<h2 class="more-heading reveal">${group.title}</h2>
+      <nav class="more-grid" aria-label="${group.title}">
+        ${group.items.map(
           (i) => {
             const inner = html`<span class="more-icon">${icon(i.icon, 22)}</span>
               <span class="more-text"><span class="more-title">${i.title}</span><span class="more-sub">${i.sub}</span></span>
@@ -51,7 +59,8 @@ export default {
               : html`<button type="button" class="more-item reveal" data-action="${i.action}">${inner}</button>`;
           }
         )}
-      </nav>
+      </nav>`
+      )}
       <a class="brand-card reveal" href="https://nekotools.site" target="_blank" rel="noopener">
         <img src="img/neko-tools-mark-v2.png" alt="" width="44" height="44" />
         <span><strong>Neko Finanzas</strong> es parte de <strong>Neko Tools</strong><br /><span class="muted-text">Pequeñas herramientas simples, gratis y privadas.</span></span>

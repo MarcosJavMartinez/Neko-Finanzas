@@ -206,5 +206,12 @@ export function buildDemoState(today = todayISO()) {
     { id: uid("bud"), name: "Gastos generales", icon: "🛒", color: "#d99a2b", mode: "percent", value: 50, currency: "ARS", target: { kind: "rest" } },
   ];
 
+  // Los gastos sueltos que caen justo hoy pasan a ayer: quien abre el ejemplo
+  // ve cuánto puede gastar hoy, no un "ya te pasaste" que depende del día.
+  const yesterday = addDays(today, -1);
+  for (const t of state.transactions) {
+    if (t.type === "expense" && t.date === today && !t.billId && !t.installment) t.date = t.createdAt = yesterday;
+  }
+
   return state;
 }

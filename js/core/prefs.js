@@ -11,6 +11,7 @@ const KEYS = {
   hideAmounts: "nekoFinanzas.hideAmounts",
   onboardingSeen: "nekoFinanzas.onboardingSeen",
   setupOffered: "nekoFinanzas.setupOffered",
+  amountCents: "nekoFinanzas.amountCents",
   iosNoticeSnooze: "nekoFinanzas.iosNoticeSnooze",
   lastAccount: "nekoFinanzas.lastAccount",
   reminders: "nekoFinanzas.reminders",
@@ -70,6 +71,13 @@ export const amountsHidden = () => read(KEYS.hideAmounts) === "1";
 export const setAmountsHidden = (on) => write(KEYS.hideAmounts, on ? "1" : null);
 
 export const onboardingSeen = () => read(KEYS.onboardingSeen) === "1";
+
+/**
+ * Cargar montos con centavos (los números entran desde los centavos) o sin
+ * ellos (se escribe el número entero: 1500 es $ 1.500).
+ */
+export const amountCents = () => read(KEYS.amountCents) !== "off";
+export const setAmountCents = (on) => write(KEYS.amountCents, on ? null : "off");
 
 // Avisos de vencimientos (apagados hasta que la persona los prende).
 export const REMINDER_DAYS = [0, 1, 3];

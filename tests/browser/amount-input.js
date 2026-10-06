@@ -91,6 +91,29 @@ return (async () => {
     log(`de vuelta a porcentaje: "${input.value}"${input.value === "250" ? "" : " ✗"}`);
     sheet().querySelector("[data-sheet-close]").click(); await wait(500);
 
+    // Sin centavos (Configuración): se escriben pesos enteros
+    w.localStorage.setItem("nekoFinanzas.amountCents", "off");
+    openTransactionForm({ type: "expense" }); await wait(600);
+    input = sheet().querySelector("input[name=amount]");
+    const refocus = (value) => { input.value = value; input.focus(); input.dispatchEvent(new w.FocusEvent("focusin", { bubbles: true })); };
+    refocus("");
+    const whole = [];
+    for (const ch of "1500") { type(ch); whole.push(input.value); }
+    log(`sin centavos, tipeo 1-5-0-0: ${whole.join(" → ")} · se ve "${input.placeholder}"${whole.join("|") === "1|15|150|1.500" && input.placeholder === "0" ? "" : " ✗"}`);
+    d.execCommand("delete");
+    log(`sin centavos, borrar: "${input.value}"${input.value === "150" ? "" : " ✗"}`);
+    refocus("2.000,00");
+    const stripped = input.value; type("5");
+    log(`sin centavos, monto ya cargado: "${stripped}" + un 5 → "${input.value}"${stripped === "2.000" && input.value === "20.005" ? "" : " ✗"}`);
+    refocus("2.500,50"); type("0");
+    log(`sin centavos, monto que traía centavos: "${input.value}"${input.value === "25.005,00" ? "" : " ✗"}`);
+    refocus(""); type("1500");
+    sheet().querySelector("form").requestSubmit(); await wait(700);
+    const wholeTx = store.getState().transactions.find((t) => t.amount === 1500);
+    log(`sin centavos, guardado: ${wholeTx?.amount}${wholeTx ? "" : " ✗"}`);
+    w.localStorage.removeItem("nekoFinanzas.amountCents");
+    sheet()?.querySelector("[data-sheet-close]")?.click(); await wait(500);
+
     // Cuenta en rojo: el signo no se tipea, se marca con un interruptor
     const { openAccountForm } = await w.eval('import("/js/ui/forms/accountForms.js")');
     openAccountForm(); await wait(500);

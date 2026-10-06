@@ -53,6 +53,8 @@ import {
   canVibrate,
   vibrationEnabled,
   setVibration,
+  amountCents,
+  setAmountCents,
   getBackupEvery,
   setBackupEvery,
   getLastBackup,
@@ -197,6 +199,10 @@ const handlers = {
       await syncPlan(store.getState());
       await fireDue();
       toast("Avisos actualizados", { type: "info" });
+    },
+    "set-amount-cents"(el) {
+      setAmountCents(el.checked);
+      toast(el.checked ? "Los montos se cargan con centavos" : "Los montos se cargan sin centavos", { type: "info" });
     },
     "set-vibration"(el) {
       setVibration(el.checked);
@@ -372,6 +378,13 @@ export const settingsDevice = sub("ajustes-dispositivo", "En este dispositivo", 
           : ""}
 
         ${remindersBlock()}
+
+        <div class="setting">
+          <label class="toggle-field">
+            <span><span class="toggle-label">Cargar montos con centavos</span><span class="field-hint">Prendido, los números entran desde los centavos: 1-5-0-0 es $ 15,00. Apagado, se escriben pesos enteros: 1-5-0-0 es $ 1.500.</span></span>
+            <input type="checkbox" class="switch" ${amountCents() ? "checked" : ""} data-change="set-amount-cents" />
+          </label>
+        </div>
 
         <div class="setting">
           <label class="toggle-field">
