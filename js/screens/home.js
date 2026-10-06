@@ -109,7 +109,7 @@ export default {
           <p class="hero-amount ${negative ? "is-negative" : ""} ${heroSize(m(summary.available))}" data-pulse="hero" data-count="${isMasked() ? 0 : summary.available}">${m(summary.available)}</p>
           <p class="hero-sub">de <strong>${m(summary.total)}</strong> totales</p>
         </div>
-        <img class="hero-art" src="img/hero-wallet.png" alt="" width="132" height="120" />
+        <img class="hero-art ${negative ? "hero-art-neko" : ""}" src="img/${negative ? "neko-preocupado" : "hero-wallet"}.webp" alt="" width="120" height="${negative ? 120 : 129}" />
       </div>
       ${negative
         ? html`<p class="hero-alert">${icon("alert", 15)} Lo apartado y reservado supera lo que tenés. Revisá metas, facturas, cuotas o deudas.</p>`
@@ -196,7 +196,7 @@ export default {
       ${sectionHeader("Recientes", { href: "#/transacciones", linkText: "Ver todos" })}
       ${recent.length
         ? html`<div class="tx-list">${recent.map((tx) => txRow(state, tx, { withDate: true }))}</div>`
-        : emptyState({ title: "Todavía no hay movimientos", text: "Registrá tu primer ingreso o gasto y va a aparecer acá.", actionLabel: "Agregar transacción", action: "add-expense", compact: true, mood: "sleepy" })}
+        : emptyState({ art: "neko-anotando", title: "Todavía no hay movimientos", text: "Registrá tu primer ingreso o gasto y va a aparecer acá.", actionLabel: "Agregar transacción", action: "add-expense", compact: true, mood: "sleepy" })}
     </section>`;
 
     // Con más de una cuenta: cuánto hay en cada una.
@@ -222,7 +222,7 @@ export default {
       ${sectionHeader("Próximas facturas", { href: "#/facturas", linkText: "Ver todas" })}
       ${bills.length
         ? html`<div class="rows">${bills.map((b) => billRow(state, b, { today, compact: true }))}</div>`
-        : emptyState({ title: "Sin facturas cargadas", text: "Sumá luz, internet o suscripciones y te decimos cuánto reservar.", actionLabel: "Agregar factura", action: "add-bill", compact: true, mood: "sleepy" })}
+        : emptyState({ art: "neko-durmiendo", title: "Sin facturas cargadas", text: "Sumá luz, internet o suscripciones y te decimos cuánto reservar.", actionLabel: "Agregar factura", action: "add-bill", compact: true, mood: "sleepy" })}
     </section>`;
 
     const budgetsCard = budgetAlerts.length
@@ -242,7 +242,7 @@ export default {
       ${sectionHeader("Metas de ahorro", { href: "#/metas", linkText: "Ver todas" })}
       ${state.goals.length
         ? html`<div class="goal-list">${state.goals.slice(0, 3).map((g) => goalCard(state, g, { compact: true }))}</div>`
-        : emptyState({ title: "Todavía no tenés metas", text: "Creá una y empezá a separar dinero para eso que querés.", actionLabel: "Crear meta", action: "add-goal", compact: true })}
+        : emptyState({ art: "neko-ahorrando", title: "Todavía no tenés metas", text: "Creá una y empezá a separar dinero para eso que querés.", actionLabel: "Crear meta", action: "add-goal", compact: true })}
     </section>`;
 
     const ratesCard = html`<section class="card reveal">

@@ -4,7 +4,7 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v41";
+const CACHE_VERSION = "neko-finanzas-v42";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -84,7 +84,22 @@ const APP_SHELL = [
   "img/neko-tools-mark-v2.png",
   "img/bg-pattern-light.jpg",
   "img/bg-pattern-dark.jpg",
-  "img/hero-wallet.png",
+  "img/hero-wallet.webp",
+  "img/ilus-alcancia.webp",
+  "img/ilus-factura.webp",
+  "img/ilus-frascos.webp",
+  "img/ilus-grafico.webp",
+  "img/ilus-monedas.webp",
+  "img/neko-ahorrando.webp",
+  "img/neko-anotando.webp",
+  "img/neko-buscando.webp",
+  "img/neko-durmiendo.webp",
+  "img/neko-festejando.webp",
+  "img/neko-grafico.webp",
+  "img/neko-hola.webp",
+  "img/neko-preocupado.webp",
+  "img/neko-repartiendo.webp",
+  "img/neko-seguro.webp",
 ];
 
 self.addEventListener("install", (event) => {

@@ -2,7 +2,7 @@
 
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
-import { emptyState, monthNav, progressBar, statusChip } from "../ui/components.js";
+import { art, emptyState, monthNav, progressBar, statusChip } from "../ui/components.js";
 import { stackBar } from "../ui/charts.js";
 import { formatMoney } from "../core/money.js";
 import { currentMonthKey, formatMonth, shiftMonthKey } from "../core/dates.js";
@@ -26,6 +26,7 @@ export default {
     const main = state.settings.mainCurrency;
     if (!state.budgets.length) {
       return html`<div class="card">${emptyState({
+        art: "neko-repartiendo",
         title: "Sin presupuestos todavía",
         text: "Repartí tus ingresos, reservá lo del súper del mes o ponete un límite de gustos por día.",
         actionLabel: "Crear presupuesto",
@@ -44,7 +45,7 @@ export default {
     return html`
       ${monthNav(view.month, "budget-month")}
       <section class="card reveal">
-        <div class="section-head"><h2 class="section-title">Cómo repartís tus ingresos</h2>
+        <div class="section-head"><h2 class="section-title section-title-art">${art("ilus-frascos", 48)}Cómo repartís tus ingresos</h2>
           <button type="button" class="section-link" data-action="add-budget">${icon("plus", 16)}Nuevo</button></div>
         ${stackBar([
           ...overview.items.map((i) => ({ label: i.budget.name, value: Math.max(0.0001, (i.limit / (overview.base.amount || 1)) * 100), color: i.budget.color, tip: formatMoney(i.limit, main) })),

@@ -3,7 +3,7 @@
 
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
-import { emptyState, monthNav } from "../ui/components.js";
+import { art, emptyState, monthNav } from "../ui/components.js";
 import { donutChart, barChart, lineChart } from "../ui/charts.js";
 import { formatMoney } from "../core/money.js";
 import { currentMonthKey, formatMonth, shiftMonthKey } from "../core/dates.js";
@@ -74,7 +74,7 @@ export default {
       </section>
 
       <section class="card reveal">
-        <h2 class="section-title">¿En qué se fue la plata?</h2>
+        <h2 class="section-title section-title-art">${art("ilus-grafico", 48)}¿En qué se fue la plata?</h2>
         ${slices.length
           ? html`<div class="donut-wrap">
               ${donutChart(slices, { currency: main, centerLabel: "Gastos", centerValue: formatMoney(totals.expense, main) })}
@@ -102,7 +102,7 @@ export default {
                 })}
               </ul>
             </div>`
-          : emptyState({ title: "Sin gastos este mes", text: "Cuando registres gastos vas a ver cómo se reparten.", compact: true, mood: "sleepy" })}
+          : emptyState({ art: "neko-grafico", title: "Sin gastos este mes", text: "Cuando registres gastos vas a ver cómo se reparten.", compact: true, mood: "sleepy" })}
       </section>
 
       <section class="card reveal">

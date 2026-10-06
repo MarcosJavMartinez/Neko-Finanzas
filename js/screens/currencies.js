@@ -1,6 +1,7 @@
 // Monedas: moneda principal y tipos de cambio manuales.
 
 import { html } from "../ui/dom.js";
+import { art } from "../ui/components.js";
 import { icon } from "../ui/icons.js";
 import { toast } from "../ui/toast.js";
 import { CURRENCIES, PIVOT, amountToInput, formatMoney, parseAmount } from "../core/money.js";
@@ -17,7 +18,7 @@ export default {
     const updated = state.ratesUpdatedAt ? formatDate(toISO(new Date(state.ratesUpdatedAt)), { withYear: true }) : "";
     return html`
       <section class="card reveal">
-        <h2 class="section-title">Moneda principal</h2>
+        <h2 class="section-title section-title-art">${art("ilus-monedas", 48)}Moneda principal</h2>
         <p class="section-sub">Todos los totales se muestran en esta moneda.</p>
         <div class="currency-choices">
           ${Object.values(CURRENCIES).map(

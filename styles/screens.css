@@ -2344,3 +2344,57 @@ button.inline-link {
     grid-column: 1 / -1;
   }
 }
+
+/* Ilustraciones en el saldo, las tarjetas de resumen y el tutorial */
+.hero-art-neko {
+  width: 104px;
+}
+
+.summary-card.has-art {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.summary-card.has-art .summary-text {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.summary-card.has-art .summary-art {
+  grid-area: 1 / 2;
+}
+
+.summary-card.has-art > .btn {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.summary-art {
+  filter: drop-shadow(0 6px 8px rgba(8, 120, 150, 0.14));
+}
+
+.ob-art:has(.ob-art-img) {
+  background: none;
+}
+
+@media (max-width: 359px) {
+  .summary-art {
+    width: 60px;
+    height: 60px;
+  }
+
+  .hero-art-neko {
+    width: 80px;
+  }
+}
+
+.summary-amount {
+  white-space: nowrap;
+}
+
+@media (max-width: 359px) {
+  .summary-card.has-art .summary-amount {
+    font-size: 1.7rem;
+  }
+}

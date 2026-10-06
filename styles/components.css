@@ -2379,3 +2379,21 @@ details[open] > :not(summary) {
 .kind-option:active span {
   transform: scale(0.97);
 }
+
+/* Ilustraciones (mascota y secciones) */
+.art {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.empty .empty-art {
+  margin: 0 auto 6px;
+  filter: drop-shadow(0 8px 10px rgba(8, 120, 150, 0.12));
+}
+
+.section-title-art {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

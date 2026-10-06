@@ -9,3 +9,6 @@ Thumbs.db
 
 .vercel
 .env*
+
+# Ilustraciones originales en alta resolución (las de la app son img/*.webp)
+img/[0-9]*.*.png

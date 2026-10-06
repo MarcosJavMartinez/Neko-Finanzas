@@ -11,7 +11,7 @@ import * as store from "../core/store.js";
 
 const STEPS = [
   {
-    art: html`<img class="ob-art-img" src="img/hero-wallet.png" alt="" width="132" height="120" />`,
+    art: html`<img class="ob-art-img" src="img/neko-hola.webp" alt="" width="150" height="150" />`,
     title: "Tu plata, clara",
     text: "Neko Finanzas responde cuatro preguntas: ¿cuánto tengo?, ¿cuánto tengo que reservar?, ¿cuánto puedo gastar? y ¿cuánto estoy ahorrando?",
   },
@@ -28,8 +28,7 @@ const STEPS = [
     text: "Tocá «Agregar transacción» para anotar un gasto o un ingreso. Sumá tus facturas con su vencimiento y te decimos cuánto reservar.",
   },
   {
-    icon: "shield",
-    tone: "goal",
+    art: html`<img class="ob-art-img" src="img/neko-seguro.webp" alt="" width="150" height="150" />`,
     title: "Tus datos son tuyos",
     text: "Todo queda en este dispositivo: sin cuentas ni publicidad. Hacé un backup de vez en cuando desde Configuración.",
   },

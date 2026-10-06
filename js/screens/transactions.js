@@ -156,6 +156,7 @@ export default {
             })}
           </section>`
         : html`<div class="card">${emptyState({
+            art: filtered ? "neko-buscando" : "neko-anotando",
             title: filtered ? "No hay movimientos con estos filtros" : "Sin movimientos este mes",
             text: filtered ? "Probá con otra búsqueda, otro filtro o cambiá de mes." : "Registrá un ingreso o un gasto y va a aparecer acá.",
             actionLabel: filtered ? "" : "Agregar transacción",

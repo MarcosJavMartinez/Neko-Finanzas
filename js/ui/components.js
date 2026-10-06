@@ -40,9 +40,14 @@ export function sectionHeader(title, { href, linkText = "Ver todo", action } = {
   </div>`;
 }
 
-export function emptyState({ title, text, actionLabel, action, mood = "happy", compact = false }) {
+/** Ilustración de la mascota o de una sección (img/<nombre>.webp, 320 px). */
+export function art(name, size = 120, extraClass = "") {
+  return html`<img class="art ${extraClass}" src="img/${name}.webp" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" />`;
+}
+
+export function emptyState({ title, text, actionLabel, action, mood = "happy", compact = false, art: artName = "" }) {
   return html`<div class="empty ${compact ? "empty-compact" : ""}">
-    ${nekoArt({ size: compact ? 76 : 112, mood })}
+    ${artName ? art(artName, compact ? 96 : 136, "empty-art") : nekoArt({ size: compact ? 76 : 112, mood })}
     <p class="empty-title">${title}</p>
     ${text ? html`<p class="empty-text">${text}</p>` : ""}
     ${actionLabel ? html`<button type="button" class="btn btn-primary btn-sm" data-action="${action}">${icon("plus", 18)}${actionLabel}</button>` : ""}

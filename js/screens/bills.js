@@ -3,7 +3,7 @@
 
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
-import { billRow, emptyState } from "../ui/components.js";
+import { art, billRow, emptyState } from "../ui/components.js";
 import { openSheet } from "../ui/sheet.js";
 import { formatMoney } from "../core/money.js";
 import { currentMonthKey, formatDate, formatMonth, monthRange, parseISO, shiftMonthKey, todayISO } from "../core/dates.js";
@@ -103,6 +103,7 @@ export default {
     const main = state.settings.mainCurrency;
     if (!state.bills.length) {
       return html`<div class="card">${emptyState({
+        art: "neko-durmiendo",
         title: "Todavía no cargaste facturas",
         text: "Agregá luz, gas, internet o tus suscripciones con su fecha de vencimiento y te decimos cuánto reservar.",
         actionLabel: "Agregar factura",
@@ -126,8 +127,9 @@ export default {
       list.length ? html`<h2 class="section-title section-title-spaced">${title}</h2><div class="card card-flush rows">${list.map((x) => billRow(state, x.bill, { today }))}</div>` : "";
 
     return html`
-      <section class="summary-card summary-bill reveal">
-        <div>
+      <section class="summary-card summary-bill has-art reveal">
+        ${art("ilus-factura", 84, "summary-art")}
+        <div class="summary-text">
           <p class="summary-label">Dinero a reservar para facturas</p>
           <p class="summary-amount">${formatMoney(reserve.amount, main)}</p>
           <p class="summary-sub">${reserve.items.length} vencimiento${reserve.items.length === 1 ? "" : "s"} ${horizon} · ya descontado de tu disponible</p>
