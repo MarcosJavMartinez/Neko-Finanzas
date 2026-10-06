@@ -40,7 +40,7 @@ export default {
 
     if (!summary.items.length) {
       return html`<div class="card">${emptyState({
-        art: "neko-anotando",
+        art: "ilus-prestamo",
         title: "Sin préstamos anotados",
         text: "Anotá cuando le prestás plata a alguien o te prestan, y la app lleva la cuenta de cuánto falta.",
         actionLabel: "Anotar un préstamo",

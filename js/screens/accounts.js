@@ -3,7 +3,7 @@
 
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
-import { txRow } from "../ui/components.js";
+import { art, txRow } from "../ui/components.js";
 import { formatMoney } from "../core/money.js";
 import { accountBalances, cardStatus } from "../core/finance.js";
 import { formatDate } from "../core/dates.js";
@@ -57,8 +57,9 @@ export default {
       .slice(0, 5);
 
     return html`
-      <section class="summary-card summary-accounts reveal">
-        <div>
+      <section class="summary-card summary-accounts has-art reveal">
+        ${art("ilus-cuentas", 84, "summary-art")}
+        <div class="summary-text">
           <p class="summary-label">Tu plata, sumando todas las cuentas</p>
           <p class="summary-amount" data-pulse="accounts-total">${formatMoney(total, main)}</p>
           <p class="summary-sub">${active.length} cuenta${active.length === 1 ? "" : "s"} activa${active.length === 1 ? "" : "s"}${archived.length ? ` · ${archived.length} archivada${archived.length === 1 ? "" : "s"}` : ""}</p>

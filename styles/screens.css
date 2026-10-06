@@ -2409,3 +2409,8 @@ button.inline-link {
   text-transform: uppercase;
   color: var(--text-2);
 }
+
+.account-detail-art {
+  margin: -4px auto 4px;
+  filter: drop-shadow(0 6px 8px rgba(8, 120, 150, 0.14));
+}

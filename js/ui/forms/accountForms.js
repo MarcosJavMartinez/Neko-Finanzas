@@ -5,7 +5,7 @@ import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
 import { toast } from "../toast.js";
-import { segmented, txRow } from "../components.js";
+import { art, segmented, txRow } from "../components.js";
 import { textField, emojiPicker, colorPicker, formActions, readForm, fieldError, clearErrors } from "./fields.js";
 import * as store from "../../core/store.js";
 import { todayISO, formatDate } from "../../core/dates.js";
@@ -278,6 +278,7 @@ export function openAccountDetail(accountId) {
   openSheet({
     title: accountLabel(account),
     body: html`<div class="account-detail">
+      ${card ? art("ilus-tarjeta", 96, "account-detail-art") : ""}
       <p class="account-detail-label">${ACCOUNT_KINDS[account.kind]?.label || "Cuenta"}${account.archived ? " · archivada" : ""}</p>
       ${card
         ? html`<p class="account-detail-balance ${card.debt > 0 ? "is-negative" : ""}">${card.debt > 0 ? formatMoney(card.debt, account.currency) : card.credit > 0 ? formatMoney(card.credit, account.currency) : "Sin deuda"}</p>
