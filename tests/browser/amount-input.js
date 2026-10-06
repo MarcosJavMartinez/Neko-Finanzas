@@ -114,6 +114,20 @@ return (async () => {
     w.localStorage.removeItem("nekoFinanzas.amountCents");
     sheet()?.querySelector("[data-sheet-close]")?.click(); await wait(500);
 
+    // Lo que se calcula mientras se escribe usa el monto ya acomodado
+    const card = store.saveAccount({ name: "Visa", kind: "credit", currency: "ARS", opening: 0, closingDay: 25, dueDay: 5, icon: "💳", color: "#7651e8" });
+    openTransactionForm({ type: "expense" }); await wait(600);
+    const txForm = sheet().querySelector("form");
+    txForm.elements.accountId.value = card.id;
+    txForm.elements.accountId.dispatchEvent(new w.Event("change", { bubbles: true }));
+    txForm.elements.installments.value = "3";
+    txForm.elements.installments.dispatchEvent(new w.Event("change", { bubbles: true }));
+    input = txForm.elements.amount;
+    input.focus(); input.value = ""; type("30000");
+    const hint = txForm.querySelector("[data-installments-hint]").textContent;
+    log(`cuotas en vivo: "${input.value}" → ${hint.slice(0, 22)}${input.value === "300,00" && /3 cuotas de ≈ \$\s?100\b/.test(hint) ? "" : " ✗ (" + hint + ")"}`);
+    sheet().querySelector("[data-sheet-close]").click(); await wait(500);
+
     // Cuenta en rojo: el signo no se tipea, se marca con un interruptor
     const { openAccountForm } = await w.eval('import("/js/ui/forms/accountForms.js")');
     openAccountForm(); await wait(500);

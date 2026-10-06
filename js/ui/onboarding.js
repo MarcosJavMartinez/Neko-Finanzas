@@ -3,7 +3,7 @@
 
 import { html } from "./dom.js";
 import { icon } from "./icons.js";
-import { openSheet } from "./sheet.js";
+import { confirmDialog, openSheet, whenHistorySettled } from "./sheet.js";
 import { toast } from "./toast.js";
 import { openSetupWizard } from "./forms/setupForm.js";
 import { markOnboardingSeen, markSetupOffered } from "../core/prefs.js";
@@ -33,6 +33,31 @@ const STEPS = [
     text: "Todo queda en este dispositivo: sin cuentas ni publicidad. Hacé un backup de vez en cuando desde Configuración.",
   },
 ];
+
+/**
+ * "Empezar con lo mío": los datos de ejemplo se van y arranca el cuestionario.
+ * Si el ejemplo ya fue tocado puede tener cosas cargadas por la persona, así
+ * que antes de borrarlo se pregunta.
+ */
+function startWithMine() {
+  const { isDemo, demoEdited } = store.getState().settings;
+  if (!isDemo) return openSetupWizard();
+  if (!demoEdited) {
+    store.startFresh();
+    return openSetupWizard();
+  }
+  whenHistorySettled(async () => {
+    const ok = await confirmDialog({
+      title: "¿Empezar con lo tuyo?",
+      text: "Se borran los datos de ejemplo, incluido lo que hayas cargado encima. Después te hacemos unas preguntas para cargar tu punto de partida.",
+      confirmLabel: "Empezar",
+      danger: true,
+    });
+    if (!ok) return;
+    store.startFresh();
+    whenHistorySettled(() => setTimeout(openSetupWizard, 250));
+  });
+}
 
 export function openOnboarding() {
   const state = store.getState();
@@ -89,11 +114,7 @@ export function openOnboarding() {
             toast("Datos de ejemplo cargados", { type: "info", actionLabel: "Deshacer", onAction: () => store.restore(backup) });
           }
           close();
-          if (what === "mine") {
-            // Los datos de ejemplo se van y arranca el asistente de inicio.
-            if (store.getState().settings.isDemo) store.startFresh();
-            openSetupWizard();
-          }
+          if (what === "mine") startWithMine();
           return;
         }
         show();

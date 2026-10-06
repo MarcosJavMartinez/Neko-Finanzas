@@ -16,7 +16,10 @@ return (async () => {
       // Aunque el ejemplo esté tocado, el último paso ofrece empezar con lo propio.
       for (let i = 0; i < 3; i++) { sheet().querySelector("[data-ob=next]").click(); await wait(250); }
       log("último paso: " + [...sheet().querySelectorAll("[data-ob]:not([hidden])")].map((b) => b.textContent.trim()).join(" / "));
-      sheet().querySelector("[data-ob=next]").click(); await wait(1500);
+      sheet().querySelector("[data-ob=next]").click(); await wait(900);
+      // Con el ejemplo ya tocado, antes de borrarlo se pregunta.
+      const confirm = [...(sheet()?.querySelectorAll("button") || [])].find((b) => b.textContent.trim() === "Empezar");
+      if (confirm) { log("pide confirmación antes de borrar: sí"); confirm.click(); await wait(1500); }
       log(`tras 'Empezar con lo mío': ${title()} · app vacía=${store.isEmptyState()}${sheet()?.querySelector("form.setup") && store.isEmptyState() ? "" : " ✗"}`);
     } else {
       log("es el cuestionario: " + (sheet()?.querySelector("form.setup") ? "sí" : "no ✗"));

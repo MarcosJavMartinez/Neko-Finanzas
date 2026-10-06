@@ -22,7 +22,7 @@ import {
 import * as store from "../../core/store.js";
 import { formatDate, todayISO } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
-import { formatMoney, convert } from "../../core/money.js";
+import { amountToInput, formatMoney, convert } from "../../core/money.js";
 import { balanceSummary, goalMonthlyNeeded, goalProgress } from "../../core/finance.js";
 
 const GOAL_ICONS = ["✈️", "🏖️", "🎮", "💻", "📱", "👕", "👟", "🛟", "🏠", "🚗", "🎓", "💍", "🎸", "📷", "🐱", "🎁", "🏋️", "🎯"];
@@ -141,7 +141,7 @@ export function openGoalMove(goalId, direction = "deposit") {
       form.addEventListener("click", (event) => {
         const quick = event.target.closest("[data-quick]");
         if (!quick) return;
-        form.elements.amount.value = quick.dataset.quick.replace(".", ",");
+        form.elements.amount.value = amountToInput(Number(quick.dataset.quick));
         checkWarning();
       });
       form.addEventListener("submit", (event) => {

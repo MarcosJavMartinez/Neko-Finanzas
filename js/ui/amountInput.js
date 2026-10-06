@@ -101,13 +101,20 @@ document.addEventListener("beforeinput", (event) => {
   if (event.target instanceof HTMLInputElement && event.target.matches(SELECTOR)) previous.set(event.target, event.target.value);
 });
 
-document.addEventListener("input", (event) => {
-  const input = event.target;
-  if (!(input instanceof HTMLInputElement) || !input.matches(SELECTOR) || event.isComposing) return;
-  if (!/^(insert|delete)/.test(event.inputType || "")) return;
-  format(input, event, previous.get(input) ?? input.value);
-  previous.set(input, input.value);
-});
+// En fase de captura: el campo queda acomodado antes de que lo lean los
+// formularios (la vista previa de las cuotas, la conversión de una
+// transferencia, el aviso al depositar en una meta).
+document.addEventListener(
+  "input",
+  (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || !input.matches(SELECTOR) || event.isComposing) return;
+    if (!/^(insert|delete)/.test(event.inputType || "")) return;
+    format(input, event, previous.get(input) ?? input.value);
+    previous.set(input, input.value);
+  },
+  true
+);
 
 // Los números entran por la derecha: al entrar al campo, el cursor va al final.
 document.addEventListener("focusin", (event) => {
