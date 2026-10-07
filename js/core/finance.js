@@ -242,9 +242,12 @@ export function upcomingBills(state, today = todayISO(), limit = 4) {
  */
 export function scheduledReserve(state, today = todayISO()) {
   const until = reserveHorizonEnd(state, today);
-  const items = state.transactions
-    .filter((tx) => tx.type === "expense" && tx.date > today && tx.date <= until)
-    .sort((a, b) => a.date.localeCompare(b.date));
+  // Los gastos que se repiten (gimnasio, colectivo) cuentan con su monto
+  // habitual desde que entran en el horizonte hasta que se registran u omiten.
+  const recurring = state.transactions
+    .filter((tx) => tx.type === "expense" && tx.recurrence && tx.recurrence.nextDate <= until)
+    .map((tx) => ({ ...tx, id: `${tx.id}:next`, amount: tx.recurrence.amount || tx.amount, date: tx.recurrence.nextDate, recurringOf: tx.id }));
+  const items = [...state.transactions.filter((tx) => tx.type === "expense" && tx.date > today && tx.date <= until), ...recurring].sort((a, b) => a.date.localeCompare(b.date));
   return { amount: sumMain(state, items), items, until };
 }
 
@@ -283,8 +286,8 @@ export function loanPlanStatus(state, loan, today = todayISO()) {
   const all = state.transactions.filter((t) => t.installment?.group === loan.plan.group).sort((a, b) => a.date.localeCompare(b.date));
   const pending = all.filter((t) => t.date > today);
   const left = Math.round(pending.reduce((s, t) => s + t.amount, 0) * 100) / 100;
-  const total = Math.round(loan.plan.count * loan.plan.amount * 100) / 100;
-  return { count: loan.plan.count, amount: loan.plan.amount, installments: all, remaining: pending.length, paid: all.length - pending.length, next: pending[0]?.date || "", left, total, interest: Math.round((total - loan.amount) * 100) / 100 };
+  const total = all.length ? Math.round(all.reduce((s, t) => s + t.amount, 0) * 100) / 100 : Math.round(loan.plan.count * loan.plan.amount * 100) / 100;
+  return { count: all.length || loan.plan.count, amount: pending[0]?.amount || loan.plan.amount, installments: all, remaining: pending.length, paid: all.length - pending.length, next: pending[0]?.date || "", left, total, interest: Math.round((total - loan.amount) * 100) / 100 };
 }
 
 /**
@@ -346,7 +349,7 @@ export function balanceSummary(state, today = todayISO()) {
 export function dailyAllowance(state, today = todayISO()) {
   const { available } = balanceSummary(state, today);
   const nextIncome = state.transactions
-    .filter((tx) => tx.recurrence && tx.recurrence.nextDate > today)
+    .filter((tx) => tx.type === "income" && tx.recurrence && tx.recurrence.nextDate > today)
     .map((tx) => tx.recurrence.nextDate)
     .sort()[0];
   const monthEnd = monthRange(monthKey(today)).end;
@@ -443,6 +446,16 @@ export function monthlyTotals(state, key) {
     saved: income - expense,
     savingsRate: percent(income - expense, income),
   };
+}
+
+/**
+ * Ingresos y gastos de un mes hasta cierto día. Sirve para comparar "lo que
+ * llevo este mes" contra "lo que llevaba el mes pasado a esta altura": comparar
+ * contra el mes entero daría siempre "menos".
+ */
+export function monthToDate(state, key, day) {
+  const txs = transactionsInMonth(state, key).filter((t) => Number(t.date.slice(8)) <= day);
+  return { income: sumMain(state, txs.filter((t) => t.type === "income")), expense: sumMain(state, txs.filter((t) => t.type === "expense")) };
 }
 
 export function expensesByCategory(state, key) {
@@ -625,8 +638,9 @@ export function budgetsOverview(state, key) {
 // ---------------------------------------------------------------------------
 
 /**
- * Ingresos recurrentes cuya próxima fecha ya llegó. La app NO los registra
- * sola: los muestra en el inicio para que el usuario confirme que cobró.
+ * Ingresos y gastos que se repiten y cuya próxima fecha ya llegó. La app NO
+ * los registra sola: los muestra en el inicio para que el usuario confirme
+ * que cobró o pagó.
  */
 export function pendingRecurringIncomes(state, today = todayISO()) {
   return state.transactions

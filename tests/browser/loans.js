@@ -115,6 +115,29 @@ return (async () => {
     log("en la lista: " + (row ? row.querySelector(".row-meta").textContent.replace(/\s+/g, " ").trim() : "no aparece ✗"));
     row.click(); await wait(600);
     log("detalle: " + sheet().querySelector(".sheet-title").textContent.trim() + " · " + sheet().querySelectorAll(".loan-payment").length + " cuotas listadas");
+    // Editar: pasan a ser 8 cuotas de 20.000
+    sheet().querySelector("[data-do=edit]").click(); await wait(900);
+    let ef = sheet().querySelector("form");
+    ef.elements.count.value = "8";
+    ef.elements.installment.value = "20.000,00";
+    ef.requestSubmit(); await wait(800);
+    let ep = F.loanPlanStatus(store.getState(), store.getState().loans.find((l) => l.id === mp.id));
+    log(`editado: ${ep.count} cuotas · faltan ${ep.remaining} · de ${ep.amount} · total a devolver ${ep.total}${ep.count === 8 && ep.amount === 20000 && ep.total === 160000 ? "" : " ✗"}`);
+    // Cancelarlo antes de tiempo con un pago de 120.000
+    w.location.hash = "#/inicio"; await wait(300); w.location.hash = "#/prestamos"; await wait(500);
+    [...d.querySelectorAll(".loan-row")].find((r) => r.textContent.includes("Mercado Pago")).click(); await wait(600);
+    sheet().querySelector("[data-do=payoff]").click(); await wait(900);
+    const pf = sheet().querySelector("form");
+    log("cancelar: propone " + pf.elements.amount.value);
+    pf.elements.amount.value = "120.000,00";
+    pf.requestSubmit(); await wait(800);
+    ep = F.loanPlanStatus(store.getState(), store.getState().loans.find((l) => l.id === mp.id));
+    const afterPay = Math.round(F.balanceSummary(store.getState()).total);
+    log(`cancelado: faltan ${ep.remaining} · pagado en total ${ep.total} · total ${afterPay}${ep.remaining === 0 && ep.total === 120000 && afterPay === mpBefore + 100000 - 120000 ? "" : " ✗"}`);
+    w.location.hash = "#/inicio"; await wait(300); w.location.hash = "#/prestamos"; await wait(500);
+    const doneRow = [...d.querySelectorAll(".loan-row")].find((r) => r.textContent.includes("Mercado Pago"));
+    log("en la lista, ya cancelado: " + doneRow.querySelector(".row-meta").textContent.trim());
+    doneRow.click(); await wait(600);
     sheet().querySelector("[data-do=delete]").click(); await wait(500);
     sheet().querySelector("[data-confirm]").click(); await wait(700);
     const total2 = Math.round(F.balanceSummary(store.getState()).total);

@@ -68,25 +68,27 @@ export default {
       ${appFooter()}
     `;
   },
-  actions: {
-    // El link apunta a la página de Neko Finanzas en Neko Tools (no directo a
-    // la app), como en Neko Lista: quien lo recibe conoce la marca primero.
-    async "share-app"() {
-      const data = { title: "Neko Finanzas", text: "Neko Finanzas: tus finanzas claras, gratis y privadas. Sin cuentas ni publicidad.", url: SHARE_URL };
-      if (navigator.share) {
-        try {
-          await navigator.share(data);
-          return;
-        } catch (error) {
-          if (error?.name === "AbortError") return;
-        }
-      }
-      try {
-        await navigator.clipboard.writeText(SHARE_URL);
-        toast("Link copiado. Pegalo donde quieras compartirlo");
-      } catch (error) {
-        window.prompt("Copiá este link para compartirlo:", SHARE_URL);
-      }
-    },
-  },
 };
+
+/**
+ * Compartir la app. El link apunta a la página de Neko Finanzas en Neko Tools
+ * (no directo a la app), como en Neko Lista: quien lo recibe conoce la marca
+ * primero.
+ */
+export async function shareApp() {
+  const data = { title: "Neko Finanzas", text: "Neko Finanzas: tus finanzas claras, gratis y privadas. Sin cuentas ni publicidad.", url: SHARE_URL };
+  if (navigator.share) {
+    try {
+      await navigator.share(data);
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(SHARE_URL);
+    toast("Link copiado. Pegalo donde quieras compartirlo");
+  } catch (error) {
+    window.prompt("Copiá este link para compartirlo:", SHARE_URL);
+  }
+}

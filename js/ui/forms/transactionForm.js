@@ -90,13 +90,13 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         </div>
       </div>
       ${textField({ name: "description", label: "Descripción", value: current.description, placeholder: current.type === "income" ? "Ej.: Sueldo de septiembre" : "Ej.: Súper del sábado" })}
-      <div class="recurrence-field" ${current.type === "income" ? "" : "hidden"}>
+      <div class="recurrence-field" ${bill || plan ? "hidden" : ""}>
         ${selectField({ name: "recurrence", label: "Repetir", options: RECURRENCE_OPTIONS, value: current.recurrence?.freq || "" })}
         <p class="field-hint">Te vamos a recordar registrarlo cuando llegue la fecha; nunca se suma solo.</p>
         <div class="field" data-usual ${current.recurrence ? "" : "hidden"}>
-          <label class="field-label" for="f-usualAmount">Monto habitual <span class="optional">(si este cobro fue parcial)</span></label>
+          <label class="field-label" for="f-usualAmount">Monto habitual <span class="optional">(si esta vez fue distinto)</span></label>
           <div class="amount-input"><input id="f-usualAmount" name="usualAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="Igual a este monto" value="${current.recurrence?.amount ? amountToInput(current.recurrence.amount) : ""}" /></div>
-          <p class="field-hint">Por ejemplo, si empezaste a mitad de mes y cobraste solo unos días: poné acá tu sueldo completo y el próximo recordatorio te va a proponer ese monto.</p>
+          <p class="field-hint">Si esta vez fue más o menos que lo normal (un sueldo por días trabajados, una cuota con descuento), poné acá el monto de siempre: el próximo recordatorio te va a proponer ese.</p>
           <p class="field-error" data-error-for="usualAmount"></p>
         </div>
       </div>
@@ -113,7 +113,6 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         selectedType = event.target.value;
         form.dataset.type = selectedType;
         form.querySelector(".field-amount").className = `field field-amount tone-${selectedType}`;
-        form.querySelector(".recurrence-field").hidden = selectedType !== "income";
         const extrasLink = form.querySelector("[data-extras-link]");
         if (extrasLink) extrasLink.hidden = selectedType !== "income";
         syncInstallments();
@@ -171,13 +170,13 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         setLastAccount(values.accountId);
         // Solo se guarda la subcategoría si pertenece a la categoría elegida.
         if (findSubcategory(findCategory(store.getState(), values.categoryId), data.subcategoryId)) values.subcategoryId = data.subcategoryId;
-        if (selectedType === "income" && data.recurrence) {
+        if (data.recurrence && !bill && !plan) {
           const keepNext = current.recurrence?.freq === data.recurrence && current.date === data.date;
           values.recurrence = {
             freq: data.recurrence,
             nextDate: keepNext ? current.recurrence.nextDate : FREQUENCIES[data.recurrence].next(data.date),
           };
-          // Monto habitual distinto de este cobro (cobro parcial).
+          // Monto habitual distinto del de esta vez (cobro parcial, descuento).
           if ((data.usualAmount || "").trim()) {
             const usual = parseAmount(data.usualAmount);
             if (!(usual > 0) || usual > MAX_AMOUNT) return fieldError(form, "usualAmount", "Ese monto no es válido.");

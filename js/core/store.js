@@ -454,6 +454,66 @@ export function deleteLoanPayment(loanId, paymentId) {
   });
 }
 
+/** Renumera las cuotas de un préstamo ("3 de 8") y actualiza su plan. */
+function renumberPlan(s, loan) {
+  const all = s.transactions.filter((t) => t.installment?.group === loan.plan.group).sort((a, b) => a.date.localeCompare(b.date));
+  all.forEach((t, i) => {
+    t.installment = { group: loan.plan.group, n: i + 1, of: all.length };
+    t.description = `Cuota préstamo ${loan.person}`.slice(0, 80);
+  });
+  loan.plan.count = all.length;
+  return all;
+}
+
+/**
+ * Editar un préstamo en cuotas: quién lo dio y, de las cuotas que faltan,
+ * cuántas son, de cuánto y cuándo vence la próxima. Las que ya pasaron no se
+ * tocan. `count` es el total (pagadas + por venir).
+ */
+export function updateCreditLoan(id, { lender, count, installment, nextDue }, today = todayISO()) {
+  commit((s) => {
+    const loan = find(s.loans, id);
+    if (!loan?.plan) return;
+    const group = loan.plan.group;
+    const all = s.transactions.filter((t) => t.installment?.group === group).sort((a, b) => a.date.localeCompare(b.date));
+    const paid = all.filter((t) => t.date <= today);
+    const pending = all.filter((t) => t.date > today);
+    const base = pending[0] || paid[paid.length - 1];
+    if (!base) return;
+    if ((lender || "").trim()) loan.person = lender.trim().slice(0, 40);
+    const each = installment > 0 ? Math.round(installment * 100) / 100 : loan.plan.amount;
+    const total = Math.max(paid.length, Math.min(60, Math.trunc(count) || all.length));
+    const start = nextDue && nextDue > today ? nextDue : pending[0]?.date || addMonths(base.date, 1);
+    const day = Number(start.slice(8));
+    s.transactions = s.transactions.filter((t) => !(t.installment?.group === group && t.date > today));
+    for (let k = 0; k < total - paid.length; k++) {
+      s.transactions.push({ ...base, id: uid("tx"), amount: each, date: addMonths(start, k, day), time: "", createdAt: new Date().toISOString() });
+    }
+    loan.plan.amount = each;
+    renumberPlan(s, loan);
+    const received = loan.txId && find(s.transactions, loan.txId);
+    if (received) received.description = loanText(loan, false);
+  });
+}
+
+/**
+ * Cancelar un préstamo en cuotas antes de tiempo: las cuotas que faltaban se
+ * reemplazan por un solo pago (lo que cobró el banco para cerrarlo).
+ */
+export function payOffCreditLoan(id, { amount, date = todayISO(), accountId }, today = todayISO()) {
+  commit((s) => {
+    const loan = find(s.loans, id);
+    if (!loan?.plan || !(amount > 0)) return;
+    const group = loan.plan.group;
+    const all = s.transactions.filter((t) => t.installment?.group === group).sort((a, b) => a.date.localeCompare(b.date));
+    const base = all.find((t) => t.date > today) || all[all.length - 1];
+    if (!base) return;
+    s.transactions = s.transactions.filter((t) => !(t.installment?.group === group && t.date > today));
+    s.transactions.push(withValidAccount(s, { ...base, id: uid("tx"), amount: Math.round(amount * 100) / 100, date: date > today ? today : date, time: "", accountId: accountId || base.accountId, createdAt: new Date().toISOString() }));
+    renumberPlan(s, loan);
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Compras en cuotas (tarjeta de crédito)
 // ---------------------------------------------------------------------------

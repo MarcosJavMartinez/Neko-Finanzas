@@ -223,9 +223,11 @@ export function sanitizeState(input) {
     if (isObj(t.installment) && id(t.installment.group)) {
       const of = Math.trunc(finite(t.installment.of));
       const n = Math.trunc(finite(t.installment.n));
-      if (of >= 2 && of <= 60 && n >= 1 && n <= of) tx.installment = { group: t.installment.group, n, of };
+      if (of >= 1 && of <= 60 && n >= 1 && n <= of) tx.installment = { group: t.installment.group, n, of };
     }
-    if (isObj(t.recurrence) && FREQUENCIES[t.recurrence.freq] && isISODate(t.recurrence.nextDate) && type === "income") {
+    // Se repite (sueldo, gimnasio…): un ingreso o un gasto suelto; nunca el
+    // pago de una factura ni una cuota, que ya tienen su propia fecha.
+    if (isObj(t.recurrence) && FREQUENCIES[t.recurrence.freq] && isISODate(t.recurrence.nextDate) && !tx.billId && !tx.installment) {
       tx.recurrence = { freq: t.recurrence.freq, nextDate: t.recurrence.nextDate };
       // Monto habitual, si el último cobro fue distinto (parcial, con descuento…).
       if (positive(t.recurrence.amount)) tx.recurrence.amount = positive(t.recurrence.amount);
@@ -323,7 +325,7 @@ export function sanitizeState(input) {
     // Préstamo en cuotas: cuántas son y de cuánto (las cuotas son gastos programados).
     if (isObj(l.plan) && id(l.plan.group) && l.direction === "borrowed") {
       const count = Math.trunc(finite(l.plan.count));
-      if (count >= 2 && count <= 60 && positive(l.plan.amount)) loan.plan = { group: l.plan.group, count, amount: positive(l.plan.amount) };
+      if (count >= 1 && count <= 60 && positive(l.plan.amount)) loan.plan = { group: l.plan.group, count, amount: positive(l.plan.amount) };
     }
     loans.push(loan);
   }

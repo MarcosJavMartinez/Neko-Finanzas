@@ -9,7 +9,7 @@ import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, t
 import { barChart, donutChart } from "../ui/charts.js";
 import { PALETTE } from "../data/defaults.js";
 import { formatMoney, CURRENCIES, isMasked } from "../core/money.js";
-import { daysBetween, formatDate, formatMonth, currentMonthKey, todayISO } from "../core/dates.js";
+import { daysBetween, formatDate, formatMonth, currentMonthKey, shiftMonthKey, todayISO } from "../core/dates.js";
 import { accountRow } from "./accounts.js";
 import { loanRow } from "./loans.js";
 import {
@@ -25,6 +25,7 @@ import {
   budgetsOverview,
   percent,
   monthlySeries,
+  monthToDate,
   expensesByCategory,
 } from "../core/finance.js";
 import { backupReminderDue, daysSinceBackup, getLastBackup, iosNoticeSnoozed } from "../core/prefs.js";
@@ -67,18 +68,32 @@ export default {
     const availablePct = summary.total > 0 ? Math.max(0, Math.min(100, percent(summary.available, summary.total))) : 0;
     const horizonLabel = state.settings.reserveHorizon === "month" ? "hasta fin de mes" : "próximos 30 días";
 
+    // Contra el mes pasado a esta misma altura (no contra el mes entero).
+    const dayOfMonth = Number(today.slice(8));
+    const prevKey = shiftMonthKey(currentMonthKey(), -1);
+    const prevName = formatMonth(prevKey, { short: true }).toLowerCase().replace(".", "");
+    const soFar = monthToDate(state, currentMonthKey(), dayOfMonth);
+    const before = monthToDate(state, prevKey, dayOfMonth);
+    const versus = (now, then) => {
+      if (!(then > 0) || !(now > 0)) return "";
+      const change = Math.round(((now - then) / then) * 100);
+      if (!change) return html`<span class="mini-vs" title="Igual que el mismo día de ${prevName}">= que en ${prevName}</span>`;
+      return html`<span class="mini-vs" title="Comparado con lo que llevabas el mismo día de ${prevName}">${change > 0 ? "+" : "−"}${Math.abs(change)}% vs. ${prevName}</span>`;
+    };
     const trio = html`<div class="trio" aria-label="Resumen del mes">
       <a class="mini mini-income" href="#/transacciones">
         <span class="mini-icon">${icon("arrowDown", 18)}</span>
         <span class="mini-label">Ingresos</span>
         <span class="mini-value" data-pulse="income">${m(month.income)}</span>
         <span class="mini-sub">este mes</span>
+        ${versus(soFar.income, before.income)}
       </a>
       <a class="mini mini-expense" href="#/transacciones">
         <span class="mini-icon">${icon("arrowUp", 18)}</span>
         <span class="mini-label">Gastos</span>
         <span class="mini-value" data-pulse="expense">${m(month.expense)}</span>
         <span class="mini-sub">este mes</span>
+        ${versus(soFar.expense, before.expense)}
       </a>
       <a class="mini mini-goal" href="#/metas">
         <span class="mini-icon">${icon("flag", 18)}</span>
@@ -195,9 +210,9 @@ export default {
 
     const pending = pendingIncomes.map(
       (tx) => html`<div class="card card-soft card-pending reveal">
-        <span class="mini-icon mini-icon-income">${icon("repeat", 18)}</span>
+        <span class="mini-icon ${tx.type === "expense" ? "mini-icon-expense" : "mini-icon-income"}">${icon("repeat", 18)}</span>
         <div class="row-main">
-          <span class="row-title">¿Ya cobraste “${tx.description || "tu ingreso"}”?</span>
+          <span class="row-title">${tx.type === "expense" ? `¿Ya pagaste “${tx.description || state.categories.find((c) => c.id === tx.categoryId)?.name || "tu gasto"}”?` : `¿Ya cobraste “${tx.description || "tu ingreso"}”?`}</span>
           <span class="row-meta">${formatMoney(tx.recurrence.amount || tx.amount, tx.currency)} · esperado el ${formatDate(tx.recurrence.nextDate)}</span>
         </div>
         <div class="card-pending-actions">
@@ -328,10 +343,10 @@ export default {
         ? html`<div class="demo-banner backup-banner reveal" role="status">
             <span class="demo-banner-icon">${icon("shield", 16)}</span>
             <span class="demo-banner-text"><strong>${getLastBackup() ? `Tu último backup fue hace ${daysSinceBackup(state)} días.` : "Todavía no hiciste ningún backup."}</strong>
-              Guardá una copia por si cambiás de celular o se borran los datos del navegador.</span>
+              Guardá una copia fuera de este dispositivo (Drive, iCloud, tu mail) por si cambiás de celular o se borran los datos del navegador.</span>
             <span class="backup-banner-actions">
               <button type="button" class="btn btn-sm btn-ghost" data-action="snooze-backup">Ahora no</button>
-              <button type="button" class="btn btn-sm btn-primary" data-action="export-data">Hacer backup</button>
+              <button type="button" class="btn btn-sm btn-primary" data-action="export-data">Guardar copia</button>
             </span>
           </div>`
         : ""}

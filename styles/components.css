@@ -2426,3 +2426,8 @@ details[open] > :not(summary) {
   gap: 16px;
   padding: 8px 0 4px;
 }
+
+.mini-icon-expense {
+  background: var(--expense-soft);
+  color: var(--expense);
+}

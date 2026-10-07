@@ -2492,3 +2492,24 @@ button.inline-link {
     grid-template-columns: 1fr;
   }
 }
+
+/* "+8% vs. sept" en Ingresos y Gastos del Inicio */
+.mini-vs {
+  grid-column: 1 / -1;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.search-scope {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Acciones del detalle (préstamo, cuenta): bajan de línea si no entran */
+.account-detail-actions {
+  flex-wrap: wrap;
+}

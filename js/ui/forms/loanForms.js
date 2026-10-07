@@ -4,14 +4,14 @@
 
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
-import { openSheet, confirmDialog } from "../sheet.js";
+import { openSheet, confirmDialog, whenHistorySettled } from "../sheet.js";
 import { toast } from "../toast.js";
 import { segmented, progressBar } from "../components.js";
 import { amountField, textField, dateField, formActions, readForm, readAmount, fieldError, clearErrors } from "./fields.js";
 import * as store from "../../core/store.js";
 import { addMonths, formatDate, formatDue, todayISO } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
-import { formatMoney, parseAmount } from "../../core/money.js";
+import { amountToInput, formatMoney, parseAmount } from "../../core/money.js";
 import { findAccount, loanOutstanding, loanPlanStatus, percent } from "../../core/finance.js";
 import { getLastAccount } from "../../core/prefs.js";
 
@@ -221,6 +221,92 @@ export function openCreditLoanForm() {
   });
 }
 
+/** Editar un préstamo en cuotas: quién lo dio y cómo siguen las cuotas que faltan. */
+function openCreditLoanEdit(loanId) {
+  const state = store.getState();
+  const loan = state.loans.find((l) => l.id === loanId);
+  if (!loan?.plan) return;
+  const today = todayISO();
+  const plan = loanPlanStatus(state, loan, today);
+  const minCount = Math.max(1, plan.paid);
+  const counts = Array.from({ length: 60 - minCount + 1 }, (_, i) => i + minCount);
+  openSheet({
+    title: "Editar préstamo",
+    body: html`<form class="form" novalidate>
+      <p class="notice notice-info">${icon("info", 16)}<span>${plan.paid ? `Las ${plan.paid} cuota${plan.paid === 1 ? "" : "s"} que ya pasaron no cambian.` : "Todavía no venció ninguna cuota."} Lo que edites acá se aplica a las que faltan.</span></p>
+      ${textField({ name: "person", label: "¿Quién te lo dio?", value: loan.person, required: true, maxlength: 40 })}
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="f-count">Cuotas en total</label>
+          <select id="f-count" name="count">${counts.map((n) => html`<option value="${n}" ${n === plan.count ? "selected" : ""}>${n} cuota${n === 1 ? "" : "s"}</option>`)}</select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="f-installment">Valor de las que faltan</label>
+          <div class="amount-input"><input id="f-installment" name="installment" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${amountToInput(plan.amount)}" /></div>
+          <p class="field-error" data-error-for="installment"></p>
+        </div>
+      </div>
+      ${dateField({ name: "nextDue", label: "La próxima cuota vence el", value: plan.next || addMonths(today, 1) })}
+      ${formActions({ submitLabel: "Guardar cambios" })}
+    </form>`,
+    onMount(panel, close) {
+      const form = panel.querySelector("form");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearErrors(form);
+        const data = readForm(form);
+        const each = parseAmount(data.installment);
+        if (!data.person.trim()) return fieldError(form, "person", "¿Quién te dio el préstamo?");
+        if (!(each > 0)) return fieldError(form, "installment", "Ingresá el valor de la cuota.");
+        if (!isISODate(data.nextDue) || data.nextDue <= today) return fieldError(form, "nextDue", "La próxima cuota tiene que vencer después de hoy.");
+        const backup = store.snapshot();
+        store.updateCreditLoan(loan.id, { lender: data.person, count: Number(data.count), installment: each, nextDue: data.nextDue });
+        close();
+        toast("Préstamo actualizado", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+      });
+    },
+  });
+}
+
+/** Cancelar antes de tiempo: un solo pago reemplaza las cuotas que faltan. */
+function openCreditLoanPayOff(loanId) {
+  const state = store.getState();
+  const loan = state.loans.find((l) => l.id === loanId);
+  if (!loan?.plan) return;
+  const today = todayISO();
+  const plan = loanPlanStatus(state, loan, today);
+  const accountOfLoan = plan.installments[0]?.accountId;
+  openSheet({
+    title: "Cancelar el préstamo",
+    body: html`<form class="form" novalidate>
+      <p class="sheet-text">Te faltan <strong>${plan.remaining} cuota${plan.remaining === 1 ? "" : "s"}</strong> por ${formatMoney(plan.left, loan.currency)}. Si lo pagaste todo de una vez, poné cuánto te cobraron: suele ser menos, porque se descuentan intereses.</p>
+      ${amountField({ value: plan.left, currency: loan.currency, label: "¿Cuánto pagaste para cancelarlo?", autofocus: false, tone: "tone-expense" })}
+      ${dateField({ name: "date", label: "Fecha del pago", value: today })}
+      <div class="field">
+        <label class="field-label" for="f-accountId">¿De qué cuenta salió?</label>
+        <select id="f-accountId" name="accountId">${state.accounts.filter((x) => !x.archived && x.kind !== "credit").map((x) => html`<option value="${x.id}" ${x.id === accountOfLoan ? "selected" : ""}>${x.icon} ${x.name}</option>`)}</select>
+      </div>
+      ${formActions({ submitLabel: "Registrar el pago" })}
+    </form>`,
+    onMount(panel, close) {
+      const form = panel.querySelector("form");
+      form.querySelectorAll("input[name=currency]").forEach((el) => (el.disabled = el.value !== loan.currency));
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearErrors(form);
+        const amount = readAmount(form);
+        if (!(amount > 0)) return fieldError(form, "amount", "Ingresá cuánto pagaste.");
+        const date = form.elements.date.value;
+        if (!isISODate(date) || date > today) return fieldError(form, "date", "Poné una fecha de hoy o anterior.");
+        const backup = store.snapshot();
+        store.payOffCreditLoan(loan.id, { amount, date, accountId: form.elements.accountId?.value });
+        close();
+        toast("¡Préstamo cancelado! 🎉", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+      });
+    },
+  });
+}
+
 /** Detalle de un préstamo en cuotas: lo que falta y cada cuota. */
 function openCreditLoanDetail(state, loan) {
   const today = todayISO();
@@ -246,12 +332,22 @@ function openCreditLoanDetail(state, loan) {
           </div>`
         )}
       </div>
-      <p class="fine-print">${icon("info", 14)} Cada cuota se descuenta de tu cuenta el día que vence. Si cambia una fecha o un monto, editá esa cuota desde Transacciones.</p>
+      <p class="fine-print">${icon("info", 14)} Cada cuota se descuenta de tu cuenta el día que vence. Con "Editar" cambiás las que faltan; una sola cuota se corrige desde Transacciones.</p>
       <div class="account-detail-actions">
-        <button type="button" class="btn btn-ghost btn-sm" data-do="delete">${icon("trash", 16)} Borrar préstamo</button>
+        ${done ? "" : html`<button type="button" class="btn btn-primary btn-sm" data-do="payoff">${icon("check", 16)} Lo cancelé antes</button>`}
+        <button type="button" class="btn btn-ghost btn-sm" data-do="edit">${icon("edit", 16)} Editar</button>
+        <button type="button" class="btn btn-ghost btn-sm" data-do="delete">${icon("trash", 16)} Borrar</button>
       </div>
     </div>`,
     onMount(panel, close) {
+      panel.querySelector("[data-do=edit]").addEventListener("click", () => {
+        close();
+        whenHistorySettled(() => openCreditLoanEdit(loan.id));
+      });
+      panel.querySelector("[data-do=payoff]")?.addEventListener("click", () => {
+        close();
+        whenHistorySettled(() => openCreditLoanPayOff(loan.id));
+      });
       panel.querySelector("[data-do=delete]").addEventListener("click", async () => {
         const ok = await confirmDialog({
           title: `¿Borrar el préstamo de ${loan.person}?`,

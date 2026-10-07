@@ -41,7 +41,7 @@ import { todayISO } from "./core/dates.js";
 import home from "./screens/home.js";
 import transactions from "./screens/transactions.js";
 import goals from "./screens/goals.js";
-import more from "./screens/more.js";
+import more, { shareApp } from "./screens/more.js";
 import accounts from "./screens/accounts.js";
 import loans from "./screens/loans.js";
 import bills from "./screens/bills.js";
@@ -91,6 +91,7 @@ function renderSidebar() {
       <div class="side-foot">
         ${link(["ajustes", "settings", "Configuración"])}
         <button type="button" class="side-link" data-action="show-onboarding" title="Cómo funciona">${icon("help", 20)}<span>Cómo funciona</span></button>
+        <button type="button" class="side-link" data-action="share-app" title="Compartir Neko Finanzas">${icon("share", 20)}<span>Compartir</span></button>
         <div class="side-neko" aria-hidden="true">
           <img src="img/neko-hola.webp" alt="" width="72" height="72" loading="lazy" />
           <p>Pequeños hábitos,<br />grandes logros</p>
@@ -193,6 +194,7 @@ const GLOBAL_ACTIONS = {
     toast(`Planilla descargada: ${state.transactions.length} movimiento${state.transactions.length === 1 ? "" : "s"}`);
   },
   "show-onboarding": () => openOnboarding(),
+  "share-app": () => shareApp(),
   "setup-wizard": () => openSetupWizard(),
   "install-help": () => openInstallHelp(),
   "snooze-ios-notice": () => {
@@ -277,6 +279,12 @@ function render({ animate = false } = {}) {
   const state = store.getState();
   if (!state) return; // todavía cargando los datos guardados
   currentScreen = ROUTES[routeId()];
+  // Con barra lateral (tablet y escritorio) la pantalla "Más" sobra: todo lo
+  // que lista ya está a la vista. Se vuelve al Inicio.
+  if (currentScreen.id === "mas" && window.matchMedia("(min-width: 768px)").matches) {
+    location.replace("#/inicio");
+    return;
+  }
   document.title = currentScreen.id === DEFAULT_ROUTE ? "Neko Finanzas — by Neko Tools" : `${currentScreen.title} · Neko Finanzas`;
   document.body.classList.toggle("is-wide", Boolean(currentScreen.wide));
   renderHeader();

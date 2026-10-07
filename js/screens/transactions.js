@@ -17,6 +17,9 @@ const FILTERS = [
   { value: "bill", label: "Facturas" },
 ];
 
+/** Tope de resultados al buscar en todos los meses (para no dibujar miles de filas). */
+const SEARCH_LIMIT = 200;
+
 // Estado de la pantalla (no se guarda: vuelve a "este mes / todas").
 const view = { month: currentMonthKey(), filter: "all", query: "", categoryId: "", accountId: "" };
 
@@ -115,9 +118,13 @@ export default {
     const totals = monthlyTotals(state, view.month);
     // Hasta qué mes se puede avanzar: este, o el último con algo programado.
     const lastMonth = state.transactions.reduce((max, t) => (t.date.slice(0, 7) > max ? t.date.slice(0, 7) : max), currentMonthKey());
-    const txs = applyFilter(state, transactionsInMonth(state, view.month)).sort(
+    // Con algo escrito en el buscador se mira en todos los meses, no solo en
+    // el que está abierto: "¿cuándo pagué tal cosa?" se responde de una.
+    const searching = Boolean(normalize(view.query));
+    const found = applyFilter(state, searching ? state.transactions : transactionsInMonth(state, view.month)).sort(
       (a, b) => b.date.localeCompare(a.date) || (b.time || "").localeCompare(a.time || "") || b.createdAt.localeCompare(a.createdAt)
     );
+    const txs = searching ? found.slice(0, SEARCH_LIMIT) : found;
     const groups = new Map();
     txs.forEach((tx) => groups.set(tx.date, [...(groups.get(tx.date) || []), tx]));
     const category = view.categoryId && findCategory(state, view.categoryId);
@@ -127,9 +134,11 @@ export default {
 
     return html`
       <button type="button" class="btn btn-primary btn-block btn-add reveal" data-action="add-any">${icon("plus", 20)}Agregar</button>
-      ${monthNav(view.month, "tx-month", lastMonth)}
+      ${searching
+        ? html`<p class="active-filter search-scope">${icon("search", 14)} <span><strong>${found.length} resultado${found.length === 1 ? "" : "s"}</strong> en todos los meses${found.length > SEARCH_LIMIT ? ` · se muestran los ${SEARCH_LIMIT} más recientes` : ""}</span> <button type="button" class="chip chip-action" data-action="tx-clear-search">${icon("close", 12)}Quitar búsqueda</button></p>`
+        : monthNav(view.month, "tx-month", lastMonth)}
       ${view.month > currentMonthKey() ? html`<p class="active-filter">${icon("calendar", 14)} Mes futuro: son movimientos programados, todavía no cuentan en tu saldo. <button type="button" class="chip chip-action" data-action="tx-today">Volver a este mes</button></p>` : ""}
-      <div class="month-totals">
+      <div class="month-totals" ${searching ? "hidden" : ""}>
         <span class="mt mt-income">${icon("arrowDown", 14)}${formatMoney(totals.income, main)}</span>
         <span class="mt mt-expense">${icon("arrowUp", 14)}${formatMoney(totals.expense, main)}</span>
       </div>
@@ -151,15 +160,15 @@ export default {
               // Las transferencias no suman ni restan: solo cambian de cuenta.
               const net = items.reduce((s, t) => s + (t.type === "transfer" || t.type === "loan" ? 0 : (t.type === "income" ? 1 : -1) * toMain(state, t.amount, t.currency)), 0);
               return html`<div class="day-group">
-                <h3 class="day-head"><span>${formatDayHeading(date)}</span><span class="day-net">${formatMoney(net, main, { sign: true })}</span></h3>
+                <h3 class="day-head"><span>${formatDayHeading(date)}${searching && date.slice(0, 4) !== currentMonthKey().slice(0, 4) ? ` de ${date.slice(0, 4)}` : ""}</span><span class="day-net">${formatMoney(net, main, { sign: true })}</span></h3>
                 <div class="tx-list">${items.map((tx) => txRow(state, tx))}</div>
               </div>`;
             })}
           </section>`
         : html`<div class="card">${emptyState({
             art: filtered ? "neko-buscando" : "neko-anotando",
-            title: filtered ? "No hay movimientos con estos filtros" : "Sin movimientos este mes",
-            text: filtered ? "Probá con otra búsqueda, otro filtro o cambiá de mes." : "Registrá un ingreso o un gasto y va a aparecer acá.",
+            title: searching ? "No encontramos nada con esa búsqueda" : filtered ? "No hay movimientos con estos filtros" : "Sin movimientos este mes",
+            text: searching ? "Buscamos en todos los meses. Probá con otra palabra o revisá los filtros." : filtered ? "Probá con otro filtro o cambiá de mes." : "Registrá un ingreso o un gasto y va a aparecer acá.",
             actionLabel: filtered ? "" : "Agregar transacción",
             action: "add-expense",
             mood: "sleepy",
@@ -170,6 +179,10 @@ export default {
     "tx-month"(el) {
       view.month = shiftMonthKey(view.month, Number(el.dataset.delta));
       return true;
+    },
+    "tx-clear-search"() {
+      view.query = "";
+      window.dispatchEvent(new Event("neko:rerender")); // también vacía el buscador de arriba
     },
     "tx-today"() {
       view.month = currentMonthKey();

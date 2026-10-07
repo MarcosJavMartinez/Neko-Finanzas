@@ -348,6 +348,22 @@ eq("desactivado: no reserva nada", [F.billCushion(store.getState()).amount, F.ba
 store.setBillCushion(true);
 eq("al activarlo no cuenta los pagos anteriores", F.billCushion(store.getState()).amount, 0);
 
+// Gastos que se repiten (gimnasio): recordatorio, reserva y registro
+store.restore(sanitizeState({ accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }], categories: buildDemoState().categories, settings: { reserveHorizon: "month" }, transactions: [
+  { id: "gym", type: "expense", amount: 20000, currency: "ARS", date: "2099-01-05", categoryId: "exp-salud", description: "Gimnasio", accountId: "a", recurrence: { freq: "monthly", nextDate: "2099-02-05" } },
+  { id: "pay", type: "income", amount: 500000, currency: "ARS", date: "2099-01-01", categoryId: "inc-sueldo", description: "Sueldo", accountId: "a", recurrence: { freq: "monthly", nextDate: "2099-02-01" } },
+  { id: "cuota", type: "expense", amount: 100, currency: "ARS", date: "2099-01-05", categoryId: "exp-otros", accountId: "a", installment: { group: "g", n: 1, of: 2 }, recurrence: { freq: "monthly", nextDate: "2099-02-05" } },
+] }));
+let rs = store.getState();
+eq("gasto que se repite: se conserva; en una cuota, no", [Boolean(rs.transactions.find((t) => t.id === "gym").recurrence), Boolean(rs.transactions.find((t) => t.id === "cuota").recurrence)], [true, false]);
+eq("gasto que se repite: pendiente cuando llega la fecha", F.pendingRecurringIncomes(rs, "2099-02-05").map((t) => t.id).sort(), ["gym", "pay"]);
+eq("gasto que se repite: reservado desde que entra en el horizonte", [F.scheduledReserve(rs, "2099-01-20").amount, F.scheduledReserve(rs, "2099-02-02").amount], [0, 20000]);
+eq("el día de cobro sale solo de los ingresos que se repiten", F.dailyAllowance(rs, "2099-01-20").until, "2099-02-01");
+const gymPaid = store.confirmRecurring("gym", { amount: 22000, date: "2099-02-05" });
+rs = store.getState();
+eq("gasto que se repite: al registrarlo queda como gasto y sigue el mes próximo", [gymPaid.type, gymPaid.amount, gymPaid.recurrence.nextDate, gymPaid.recurrence.amount, rs.transactions.filter((t) => t.description === "Gimnasio").length], ["expense", 22000, "2099-03-05", 20000, 2]);
+eq("gasto que se repite: ya no está reservado después de pagarlo", F.scheduledReserve(rs, "2099-02-06").amount, 0);
+
 // Préstamo en cuotas (banco o billetera): entra lo recibido y las cuotas quedan programadas
 store.restore(sanitizeState({ accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }], categories: buildDemoState().categories, settings: { reserveHorizon: "month" } }));
 const credit = store.addCreditLoan({ lender: "Mercado Pago", received: 100000, count: 6, installment: 25000, firstDue: "2099-02-10", currency: "ARS", accountId: "a", date: "2099-01-10" });
@@ -363,8 +379,20 @@ eq("préstamo en cuotas: las cuotas vencidas bajan la plata y la deuda", [cp.pai
 eq("préstamo en cuotas: al terminar no se debe nada", [F.loanPlanStatus(cs, cs.loans[0], "2099-08-01").remaining, F.loansSummary(cs, "2099-08-01").borrowed], [0, 0]);
 const csBack = sanitizeState(JSON.parse(JSON.stringify(cs)));
 eq("préstamo en cuotas: sobrevive a un backup", [csBack.loans[0].plan.count, csBack.loans[0].plan.amount, csBack.transactions.filter((t) => t.installment?.group === csBack.loans[0].plan.group).length], [6, 25000, 6]);
-eq("préstamo en cuotas: un plan inválido se descarta", sanitizeState({ ...JSON.parse(JSON.stringify(cs)), loans: [{ ...cs.loans[0], plan: { group: "x", count: 1, amount: 5 } }] }).loans[0].plan, undefined);
+eq("préstamo en cuotas: un plan inválido se descarta", sanitizeState({ ...JSON.parse(JSON.stringify(cs)), loans: [{ ...cs.loans[0], plan: { group: "x", count: 0, amount: 5 } }] }).loans[0].plan, undefined);
 eq("préstamo en cuotas: la cuota que vence hoy no cuenta como gasto del día", F.dailyAllowance(cs, "2099-02-10").spentToday, 0);
+// Editar: después de 2 cuotas pagadas, pasan a ser 8 en total de 20.000 y vencen los días 15
+store.updateCreditLoan(credit.id, { lender: "Mercado Pago", count: 8, installment: 20000, nextDue: "2099-04-15" }, "2099-03-15");
+cs = store.getState();
+cp = F.loanPlanStatus(cs, cs.loans[0], "2099-03-15");
+eq("editar préstamo: las pagadas no cambian, las que faltan sí", [cp.paid, cp.remaining, cp.next, cp.left, cp.total, cp.installments.map((t) => t.installment.n + "/" + t.installment.of).join(" ")], [2, 6, "2099-04-15", 120000, 170000, "1/8 2/8 3/8 4/8 5/8 6/8 7/8 8/8"]);
+eq("editar préstamo: la plata ya pagada no se mueve", F.balanceSummary(cs, "2099-03-15").total, 150000);
+// Cancelarlo antes: un pago de 100.000 reemplaza las 6 cuotas que faltaban
+store.payOffCreditLoan(credit.id, { amount: 100000, date: "2099-03-20", accountId: "a" }, "2099-03-20");
+cs = store.getState();
+cp = F.loanPlanStatus(cs, cs.loans[0], "2099-03-20");
+eq("cancelar antes: no queda nada por pagar y el total es lo realmente pagado", [cp.remaining, cp.left, cp.count, cp.total, cp.interest, F.balanceSummary(cs, "2099-03-20").total], [0, 0, 3, 150000, 50000, 50000]);
+eq("cancelar antes: sobrevive a un backup", sanitizeState(JSON.parse(JSON.stringify(cs))).loans[0].plan.count, 3);
 store.deleteLoan(credit.id);
 eq("préstamo en cuotas: borrarlo se lleva la plata y las cuotas", [store.getState().loans.length, store.getState().transactions.length], [0, 0]);
 
