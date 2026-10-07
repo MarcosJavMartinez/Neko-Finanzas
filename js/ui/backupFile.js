@@ -4,9 +4,9 @@
 // - Computadora con Chrome o Edge: se elige una vez dónde guardarlo y cada
 //   backup pisa ese archivo (el navegador recuerda el permiso; a veces lo
 //   vuelve a pedir).
-// - Celular: los navegadores no dejan que una web reemplace archivos. Se abre
+// - Teléfono: los navegadores no dejan que una web reemplace archivos. Se abre
 //   el menú de compartir para guardarlo donde quieras (Archivos, Drive…); si
-//   elegís el mismo nombre, el sistema ofrece reemplazarlo.
+//   eliges el mismo nombre, el sistema ofrece reemplazarlo.
 // - Si nada de eso está disponible, se descarga con un nombre fijo.
 
 import { withStore } from "../core/db.js";

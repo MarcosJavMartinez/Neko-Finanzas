@@ -90,7 +90,7 @@ export function billsToICS(state, now = new Date()) {
       `DTSTART;VALUE=DATE:${ymd(start)}`,
       `DTEND;VALUE=DATE:${ymd(endISO)}`,
       `SUMMARY:${text(title)}`,
-      `DESCRIPTION:${text(`Factura de ${amount}${start < today ? " (vencida)" : ""}. Registrá el pago en Neko Finanzas para que deje de estar reservada.`)}`,
+      `DESCRIPTION:${text(`Factura de ${amount}${start < today ? " (vencida)" : ""}. Registra el pago en Neko Finanzas para que deje de estar reservada.`)}`,
       "TRANSP:TRANSPARENT",
       ...(bill.recurring ? [`RRULE:${rule(bill)}`] : []),
       "BEGIN:VALARM",

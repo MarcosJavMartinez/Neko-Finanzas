@@ -1,5 +1,5 @@
 // Asistente de inicio: un cuestionario corto, paso a paso, que pregunta por
-// todo lo que la app maneja (cuentas, tarjeta y cuotas, facturas, súper y
+// todo lo que la app maneja (cuentas, tarjeta y cuotas, facturas, supermercado y
 // gustos, préstamos, metas) y explica en cada paso para qué sirve. Recién al final carga todo
 // junto, así la persona entiende cómo funciona antes de empezar a usarla.
 // Lo que no tenga se deja vacío; todo se puede cambiar después.
@@ -20,11 +20,11 @@ const MAX_ROWS = 6;
 
 const BILL_PRESETS = [
   { name: "Alquiler", icon: "🏠", categoryId: "exp-hogar", subcategoryId: "exp-hogar.alquiler" },
-  { name: "Expensas", icon: "🏢", categoryId: "exp-hogar", subcategoryId: "exp-hogar.expensas" },
+  { name: "Gastos comunes", icon: "🏢", categoryId: "exp-hogar", subcategoryId: "exp-hogar.expensas" },
   { name: "Luz", icon: "💡", categoryId: "exp-servicios", subcategoryId: "exp-servicios.luz" },
   { name: "Gas", icon: "🔥", categoryId: "exp-servicios", subcategoryId: "exp-servicios.gas" },
   { name: "Internet", icon: "🌐", categoryId: "exp-servicios", subcategoryId: "exp-servicios.internet" },
-  { name: "Celular", icon: "📱", categoryId: "exp-servicios", subcategoryId: "exp-servicios.telefono" },
+  { name: "Teléfono", icon: "📱", categoryId: "exp-servicios", subcategoryId: "exp-servicios.telefono" },
   { name: "Streaming", icon: "📺", categoryId: "exp-suscripciones", subcategoryId: "" },
 ];
 
@@ -91,38 +91,38 @@ const addButton = (what, label, count) =>
 const RENDER = {
   basics: (a, additive) => html`
     <h3 class="setup-title">Empecemos por lo básico</h3>
-    <p class="sheet-text">Son unas preguntas cortas sobre tu plata. Lo que no tengas, dejalo vacío y seguí. Al final cargo todo junto${additive ? " y se suma a lo que ya tenés" : ""}, y después lo podés cambiar cuando quieras.</p>
+    <p class="sheet-text">Son unas preguntas cortas sobre tu dinero. Lo que no tengas, déjalo vacío y sigue. Al final registro todo junto${additive ? " y se suma a lo que ya tienes" : ""}, y después lo puedes cambiar cuando quieras.</p>
     <div class="field">
-      <span class="field-label">¿En qué moneda manejás tu plata?</span>
+      <span class="field-label">¿En qué moneda manejas tu dinero?</span>
       ${segmented("currency", currencyTiles(CURRENCY_CODES), a.currency, { size: "segmented-wrap" })}
       <p class="field-hint">Los totales se van a mostrar en esta moneda.</p>
     </div>
-    ${moneyField("salary", "¿Cuánto cobrás por mes? (opcional)", a.salary, a.currency)}
-    <p class="field-hint">Sirve para armar presupuestos en % de tus ingresos. No se suma a tu plata: eso lo cargás en el paso siguiente.</p>`,
+    ${moneyField("salary", "¿Cuánto cobras por mes? (opcional)", a.salary, a.currency)}
+    <p class="field-hint">Sirve para crear presupuestos en % de tus ingresos. No se suma a tu dinero: eso lo indicas en el paso siguiente.</p>`,
 
   accounts: (a) => html`
-    <h3 class="setup-title">¿Dónde tenés tu plata hoy?</h3>
-    <p class="sheet-text">Cada lugar es una <strong>cuenta</strong>. La suma de todas es tu dinero total, y cuando cargues un gasto vas a elegir de cuál salió.</p>
+    <h3 class="setup-title">¿Dónde tienes tu dinero hoy?</h3>
+    <p class="sheet-text">Cada lugar es una <strong>cuenta</strong>. La suma de todas es tu dinero total, y cuando registres un gasto vas a elegir de cuál salió.</p>
     <div class="setup-list">
       ${a.accounts.map(
         (acc, i) => html`<div class="setup-item">
           <label class="setup-check"><input type="checkbox" class="switch" name="acc-on-${i}" ${acc.on ? "checked" : ""} /><span>${acc.icon} ${acc.name}</span></label>
-          ${money(`acc-amount-${i}`, acc.amount, acc.usd ? "USD" : a.currency, `Cuánto tenés en ${acc.name}`)}
+          ${money(`acc-amount-${i}`, acc.amount, acc.usd ? "USD" : a.currency, `Cuánto tienes en ${acc.name}`)}
         </div>`
       )}
     </div>
-    <p class="field-hint">Escribí cuánto hay en cada una (se marca sola). Después podés agregar más cuentas o cambiarles el nombre en Más → Cuentas.</p>`,
+    <p class="field-hint">Escribe cuánto hay en cada una (se marca sola). Después puedes agregar más cuentas o cambiarles el nombre en Más → Cuentas.</p>`,
 
   card: (a) => html`
-    <h3 class="setup-title">¿Usás tarjeta de crédito?</h3>
-    <p class="sheet-text">Lo que comprás con tarjeta queda como <strong>deuda</strong> hasta que pagás el resumen. Las compras en cuotas se cargan una por mes, y las que se acercan se descuentan de tu disponible.</p>
+    <h3 class="setup-title">¿Usas tarjeta de crédito?</h3>
+    <p class="sheet-text">Lo que compras con tarjeta queda como <strong>deuda</strong> hasta que pagas el resumen. Las compras en cuotas se registran una por mes, y las que se acercan se descuentan de tu disponible.</p>
     <label class="toggle-field">
       <span><span class="toggle-label">Sí, tengo tarjeta</span></span>
       <input type="checkbox" class="switch" name="card-on" ${a.card.on ? "checked" : ""} />
     </label>
     <div data-card-box ${a.card.on ? "" : "hidden"}>
       ${textInput("card-name", "Nombre", a.card.name, "Ej.: Visa del banco")}
-      ${moneyField("card-debt", "¿Cuánto debés hoy? (sin las cuotas que todavía no llegaron)", a.card.debt, a.currency)}
+      ${moneyField("card-debt", "¿Cuánto debes hoy? (sin las cuotas que todavía no llegaron)", a.card.debt, a.currency)}
       <div class="field-row">
         ${daySelect("card-closing", "Cierra el día", a.card.closingDay)}
         ${daySelect("card-due", "Vence el día", a.card.dueDay)}
@@ -130,7 +130,7 @@ const RENDER = {
       <p class="setup-subtitle">¿Estás pagando algo en cuotas?</p>
       ${a.card.purchases.map(
         (p, i) => html`<div class="setup-group">
-          ${textInput(`pur-what-${i}`, "Qué compraste", p.what, "Ej.: Heladera")}
+          ${textInput(`pur-what-${i}`, "Qué compraste", p.what, "Ej.: Refrigerador")}
           <div class="field-row">
             ${moneyField(`pur-per-${i}`, "Cada cuota", p.per, a.currency)}
             <label class="field"><span class="field-label">Cuotas que faltan</span><input name="pur-left-${i}" type="text" inputmode="numeric" value="${p.left}" placeholder="${zeroAmount()}" autocomplete="off" /></label>
@@ -141,8 +141,8 @@ const RENDER = {
     </div>`,
 
   bills: (a) => html`
-    <h3 class="setup-title">¿Qué pagás todos los meses?</h3>
-    <p class="sheet-text">Son tus <strong>facturas</strong>. La app reserva la plata de las que vencen pronto, así tu disponible ya las tiene descontadas, y te avisa cuándo vencen.</p>
+    <h3 class="setup-title">¿Qué pagas todos los meses?</h3>
+    <p class="sheet-text">Son tus <strong>facturas</strong>. La app reserva el dinero de las que vencen pronto, así tu disponible ya las tiene descontadas, y te avisa cuándo vencen.</p>
     <div class="setup-list">
       ${a.bills.map(
         (b, i) => html`<div class="setup-item setup-item-bill">
@@ -152,18 +152,18 @@ const RENDER = {
         </div>`
       )}
     </div>
-    <p class="field-hint">Poné el monto aproximado y el día del mes en que vence. Después podés sumar otras en Facturas.</p>`,
+    <p class="field-hint">Escribe el monto aproximado y el día del mes en que vence. Después puedes sumar otras en Facturas.</p>`,
 
   spending: (a) => html`
-    <h3 class="setup-title">El súper y los gustos</h3>
-    <p class="sheet-text">Hay gastos que no son facturas pero igual los tenés todos los meses. La app puede <strong>reservar</strong> esa plata para que no la cuentes como libre. Lo que no gastes a fin de mes, te ofrece pasarlo a tus ahorros.</p>
-    ${moneyField("groceries", "¿Cuánto gastás por mes en el supermercado? (aprox.)", a.groceries, a.currency)}
-    ${moneyField("treats", "¿Cuánto querés para gustos por día? (un café, un alfajor)", a.treats, a.currency)}
-    <p class="field-hint">Los gustos se acumulan: si un día no gastás, al otro tenés el doble. Cuentan los gastos de Comida y Entretenimiento; lo podés cambiar en Presupuestos.</p>`,
+    <h3 class="setup-title">El supermercado y los gustos</h3>
+    <p class="sheet-text">Hay gastos que no son facturas pero igual los tienes todos los meses. La app puede <strong>reservar</strong> ese dinero para que no lo cuentes como libre. Lo que no gastes a fin de mes, te ofrece pasarlo a tus ahorros.</p>
+    ${moneyField("groceries", "¿Cuánto gastas por mes en el supermercado? (aprox.)", a.groceries, a.currency)}
+    ${moneyField("treats", "¿Cuánto quieres para gustos por día? (un café, un helado)", a.treats, a.currency)}
+    <p class="field-hint">Los gustos se acumulan: si un día no gastas, al otro tienes el doble. Cuentan los gastos de Comida y Entretenimiento; lo puedes cambiar en Presupuestos.</p>`,
 
   loans: (a) => html`
-    <h3 class="setup-title">¿Le debés plata a alguien, o te deben?</h3>
-    <p class="sheet-text">Los <strong>préstamos</strong> no son gastos ni ingresos: la app lleva la cuenta de cuánto falta. Lo que debés con fecha se reserva de tu disponible cuando se acerca.</p>
+    <h3 class="setup-title">¿Le debes dinero a alguien, o te deben?</h3>
+    <p class="sheet-text">Los <strong>préstamos</strong> no son gastos ni ingresos: la app lleva la cuenta de cuánto falta. Lo que debes con fecha se reserva de tu disponible cuando se acerca.</p>
     ${a.loans.map(
       (l, i) => html`<div class="setup-group">
         ${segmented(`loan-dir-${i}`, [{ value: "lent", label: "Me deben" }, { value: "borrowed", label: "Debo" }], l.direction)}
@@ -178,28 +178,28 @@ const RENDER = {
 
   goals: (a) => html`
     <h3 class="setup-title">¿Estás ahorrando para algo?</h3>
-    <p class="sheet-text">Una <strong>meta</strong> es plata que apartás para algo. Sigue siendo tuya, pero deja de contar como disponible para que no la gastes sin querer.</p>
+    <p class="sheet-text">Una <strong>meta</strong> es dinero que apartas para algo. Sigue siendo tuyo, pero deja de contar como disponible para que no lo gastes sin querer.</p>
     ${a.goals.map(
       (g, i) => html`<div class="setup-group">
         ${textInput(`goal-name-${i}`, "¿Para qué?", g.name, "Ej.: Vacaciones")}
         <div class="field-row">
-          ${moneyField(`goal-target-${i}`, "¿Cuánto querés juntar?", g.target, a.currency)}
-          ${moneyField(`goal-saved-${i}`, "¿Cuánto ya tenés?", g.saved, a.currency)}
+          ${moneyField(`goal-target-${i}`, "¿Cuánto quieres reunir?", g.target, a.currency)}
+          ${moneyField(`goal-saved-${i}`, "¿Cuánto ya tienes?", g.saved, a.currency)}
         </div>
       </div>`
     )}
     ${addButton("add-goal", "Otra meta", a.goals.length)}
-    <p class="field-hint">Lo que ya tenés ahorrado tiene que estar dentro de la plata que cargaste en tus cuentas.</p>`,
+    <p class="field-hint">Lo que ya tienes ahorrado tiene que estar dentro del dinero que indicaste en tus cuentas.</p>`,
 
   summary: (a, additive, state) => {
     const lines = summaryLines(a, state);
     return html`
-      <h3 class="setup-title">Listo, esto es lo que voy a cargar</h3>
+      <h3 class="setup-title">Listo, esto es lo que voy a registrar</h3>
       ${lines.length
         ? html`<ul class="setup-summary">${lines.map(([emoji, text]) => html`<li><span aria-hidden="true">${emoji}</span><span>${text}</span></li>`)}</ul>`
-        : html`<p class="notice notice-info">${icon("info", 16)}No cargaste nada todavía. Podés volver atrás, o empezar con la app vacía e ir sumando de a poco.</p>`}
-      <p class="sheet-text">Con eso, el Inicio te va a mostrar tu <strong>saldo disponible</strong>: tu plata total, menos lo reservado (facturas, cuotas, deudas, súper y gustos), menos lo apartado en metas.</p>
-      <p class="field-hint">Después seguís con normalidad: cargás cada gasto e ingreso con «Agregar transacción».</p>`;
+        : html`<p class="notice notice-info">${icon("info", 16)}No ingresaste nada todavía. Puedes volver atrás, o empezar con la app vacía e ir sumando poco a poco.</p>`}
+      <p class="sheet-text">Con eso, el Inicio te va a mostrar tu <strong>saldo disponible</strong>: tu dinero total, menos lo reservado (facturas, cuotas, deudas, supermercado y gustos), menos lo apartado en metas.</p>
+      <p class="field-hint">Después sigues con normalidad: registras cada gasto e ingreso con «Agregar transacción».</p>`;
   },
 };
 
@@ -223,7 +223,7 @@ function summaryLines(a, state) {
   const loans = validLoans(a);
   const lent = loans.filter((l) => l.direction === "lent").reduce((s, l) => s + num(l.amount), 0);
   const borrowed = loans.filter((l) => l.direction === "borrowed").reduce((s, l) => s + num(l.amount), 0);
-  if (loans.length) lines.push(["🤝", [lent > 0 && `Te deben ${m(lent)}`, borrowed > 0 && `debés ${m(borrowed)}`].filter(Boolean).join(" · ")]);
+  if (loans.length) lines.push(["🤝", [lent > 0 && `Te deben ${m(lent)}`, borrowed > 0 && `debes ${m(borrowed)}`].filter(Boolean).join(" · ")]);
   const goals = validGoals(a);
   if (goals.length) lines.push(["🎯", `${goals.length} meta${goals.length === 1 ? "" : "s"}: ${goals.map((g) => g.name.trim()).join(", ")} · ${m(goals.reduce((s, g) => s + (num(g.saved) || 0), 0))} ya apartados`]);
   return lines;
@@ -265,39 +265,39 @@ function collect(step, form, a) {
 function validate(step, a) {
   const bad = (text) => Number.isNaN(num(text));
   if (step === "basics" && bad(a.salary)) return "El sueldo no es un monto válido.";
-  if (step === "accounts" && a.accounts.some((x) => x.on && bad(x.amount))) return "Revisá los montos de tus cuentas: alguno no es válido.";
+  if (step === "accounts" && a.accounts.some((x) => x.on && bad(x.amount))) return "Revisa los montos de tus cuentas: alguno no es válido.";
   if (step === "card" && a.card.on) {
     if (bad(a.card.debt)) return "La deuda de la tarjeta no es un monto válido.";
     for (const p of a.card.purchases) {
       if (!filled(p.what, p.per, p.left)) continue;
       const left = Number(p.left);
-      if (!(num(p.per) > 0)) return "Poné cuánto pagás por cada cuota.";
-      if (!Number.isInteger(left) || left < 1 || left > 60) return "Poné cuántas cuotas faltan (un número entre 1 y 60).";
+      if (!(num(p.per) > 0)) return "Escribe cuánto pagas por cada cuota.";
+      if (!Number.isInteger(left) || left < 1 || left > 60) return "Escribe cuántas cuotas faltan (un número entre 1 y 60).";
     }
   }
-  if (step === "bills" && a.bills.some((b) => b.on && !(num(b.amount) > 0))) return "Poné el monto de las facturas que marcaste (o desmarcalas).";
-  if (step === "spending" && (bad(a.groceries) || bad(a.treats))) return "Revisá los montos: alguno no es válido.";
+  if (step === "bills" && a.bills.some((b) => b.on && !(num(b.amount) > 0))) return "Escribe el monto de las facturas que marcaste (o desmárcalas).";
+  if (step === "spending" && (bad(a.groceries) || bad(a.treats))) return "Revisa los montos: alguno no es válido.";
   if (step === "loans") {
     for (const l of a.loans) {
       if (!filled(l.person, l.amount, l.due)) continue;
-      if (!l.person.trim()) return "Poné el nombre de la persona.";
-      if (!(num(l.amount) > 0)) return "Poné cuánto falta devolver.";
+      if (!l.person.trim()) return "Escribe el nombre de la persona.";
+      if (!(num(l.amount) > 0)) return "Escribe cuánto falta devolver.";
       if (l.due && !isISODate(l.due)) return "La fecha para devolver no es válida.";
     }
   }
   if (step === "goals") {
     for (const g of a.goals) {
       if (!filled(g.name, g.target, g.saved)) continue;
-      if (!g.name.trim()) return "Poné un nombre para la meta.";
-      if (!(num(g.target) > 0)) return "Poné cuánto querés juntar.";
-      if (bad(g.saved)) return "Lo que ya tenés ahorrado no es un monto válido.";
+      if (!g.name.trim()) return "Escribe un nombre para la meta.";
+      if (!(num(g.target) > 0)) return "Escribe cuánto quieres reunir.";
+      if (bad(g.saved)) return "Lo que ya tienes ahorrado no es un monto válido.";
     }
   }
   return "";
 }
 
 // ---------------------------------------------------------------------------
-// Cargar todo
+// Guardar todo
 // ---------------------------------------------------------------------------
 
 /** Próxima fecha (hoy incluido) que cae ese día del mes. */
@@ -306,7 +306,7 @@ function nextDayOfMonth(day, today) {
   return thisMonth >= today ? thisMonth : addMonths(thisMonth, 1, day);
 }
 
-/** Crea todo lo respondido. Si la app estaba vacía, la primera cuenta reemplaza a "Mi plata". */
+/** Crea todo lo respondido. Si la app estaba vacía, la primera cuenta reemplaza a "Mi dinero". */
 export function applySetup(a) {
   const today = todayISO();
   const wasEmpty = store.isEmptyState();
@@ -342,7 +342,7 @@ export function applySetup(a) {
     store.addBill({ name: b.name, icon: b.icon, amount: num(b.amount), currency: a.currency, dueDate: nextDayOfMonth(day, today), dueDay: day, frequency: "monthly", recurring: true, categoryId: b.categoryId, subcategoryId: b.subcategoryId });
   }
 
-  // Súper reservado por mes y gustos por día (presupuestos con la plata reservada)
+  // Supermercado reservado por mes y gustos por día (presupuestos con el dinero reservado)
   if (num(a.groceries) > 0) {
     store.saveBudget({ name: "Supermercado", icon: "🛒", color: "#2ba66a", mode: "fixed", value: num(a.groceries), currency: a.currency, target: { kind: "categories", categoryIds: ["exp-super"] }, reserve: true });
   }
@@ -350,7 +350,7 @@ export function applySetup(a) {
     store.saveBudget({ name: "Gustos", icon: "☕", color: "#d99a2b", mode: "daily", value: num(a.treats), currency: a.currency, target: { kind: "categories", categoryIds: ["exp-comida", "exp-entretenimiento"] }, reserve: true });
   }
 
-  // Préstamos: solo se anotan (esa plata ya está reflejada en lo que cargaste en tus cuentas)
+  // Préstamos: solo se anotan (ese dinero ya está reflejada en lo que cargaste en tus cuentas)
   for (const l of validLoans(a)) {
     store.addLoan({ person: l.person, direction: l.direction, amount: num(l.amount), currency: a.currency, date: today, dueDate: isISODate(l.due) ? l.due : "", accountId: "" });
   }
@@ -399,7 +399,7 @@ export function openSetupWizard() {
         );
         errorBox.hidden = true;
         form.querySelector("[data-setup=back]").textContent = index === 0 ? "Después" : "Atrás";
-        form.querySelector("[data-setup-next]").textContent = last ? "Cargar todo" : "Siguiente";
+        form.querySelector("[data-setup-next]").textContent = last ? "Guardar todo" : "Siguiente";
         panel.querySelector(".sheet-body").scrollTop = 0;
       };
 
@@ -443,7 +443,7 @@ export function openSetupWizard() {
         const backup = store.snapshot();
         applySetup(answers);
         close();
-        toast("¡Listo! Ya está todo cargado. Ahora sumá tus gastos con «Agregar transacción»", { duration: 7000, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast("¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar transacción»", { duration: 7000, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
         whenHistorySettled(() => (location.hash = "#/inicio"));
       });
 

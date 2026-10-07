@@ -60,7 +60,7 @@ const headerEl = $("#app-header");
 const sidebarEl = $("#app-sidebar");
 
 // Barra lateral (tablet y escritorio): todas las secciones a un clic. En
-// celular no se ve: ahí siguen las cuatro pestañas de abajo.
+// teléfono no se ve: ahí siguen las cuatro pestañas de abajo.
 const SIDE_NAV = [
   ["inicio", "home", "Inicio"],
   ["transacciones", "swap", "Transacciones"],
@@ -118,7 +118,7 @@ const GLOBAL_ACTIONS = {
     const card = store.getState().accounts.find((a) => a.kind === "credit" && !a.archived);
     if (card) return openTransactionForm({ type: "expense", accountId: card.id });
     openAccountForm({ kind: "credit" });
-    toast("Primero cargá tu tarjeta. Después anotás cada compra desde acá", { type: "info" });
+    toast("Primero agrega tu tarjeta. Después anotas cada compra desde aquí", { type: "info" });
   },
   "add-extras": () => openIncomeExtras(),
   "add-bill": () => openBillForm(),
@@ -154,7 +154,7 @@ const GLOBAL_ACTIONS = {
   "start-fresh": async () => {
     const ok = await confirmDialog({
       title: "¿Empezar de cero?",
-      text: "Se borran movimientos, facturas, metas y presupuestos. Tus categorías y tipos de cambio se mantienen. Después te hacemos unas preguntas para cargar tu punto de partida.",
+      text: "Se borran movimientos, facturas, metas y presupuestos. Tus categorías y tipos de cambio se mantienen. Después te hacemos unas preguntas para registrar tu punto de partida.",
       confirmLabel: "Empezar de cero",
       danger: true,
     });
@@ -179,7 +179,7 @@ const GLOBAL_ACTIONS = {
           ? `Backup guardado en “${result.name}”. Los próximos van a reemplazar ese mismo archivo.`
           : `Backup actualizado en “${result.name}”`
         : result.how === "shared"
-          ? "Backup listo. Guardalo con el mismo nombre para reemplazar el anterior."
+          ? "Backup listo. Guárdalo con el mismo nombre para reemplazar el anterior."
           : "Backup descargado"
     );
     render();
@@ -300,7 +300,7 @@ function render({ animate = false } = {}) {
       viewEl,
       html`<section class="card render-error">
         <h2 class="section-title">Algo no salió bien en esta pantalla</h2>
-        <p class="section-sub">Tus datos siguen guardados. Probá volver al inicio; si se repite, exportá un backup desde Configuración.</p>
+        <p class="section-sub">Tus datos siguen guardados. Prueba volver al inicio; si se repite, exporta un backup desde Configuración.</p>
         <div class="form-actions">
           <a class="btn btn-ghost" href="#/ajustes">Configuración</a>
           <a class="btn btn-primary btn-grow" href="#/inicio">Volver al inicio</a>
@@ -428,7 +428,7 @@ window.addEventListener("hashchange", () => {
 
 // Guardado fallido (almacenamiento lleno o bloqueado): se avisa siempre.
 store.onSaveError(() => {
-  toast("No se pudo guardar en este dispositivo. Liberá espacio o exportá un backup para no perder datos.", {
+  toast("No se pudo guardar en este dispositivo. Libera espacio o exporta un backup para no perder datos.", {
     type: "error",
     duration: 8000,
     sticky: true,
@@ -454,7 +454,7 @@ window.addEventListener("storage", (event) => {
   reloadFromOtherTab();
 });
 
-// Otra pestaña con la app abierta guardó cambios: se recargan acá para que
+// Otra pestaña con la app abierta guardó cambios: se recargan aquí para que
 // ninguna de las dos pise los datos de la otra.
 async function reloadFromOtherTab() {
   if (await store.reloadFromStorage()) toast("Se actualizaron los datos desde otra pestaña", { type: "info" });
@@ -535,7 +535,7 @@ async function start() {
       viewEl,
       html`<section class="card render-error">
         <h2 class="section-title">No se pudieron abrir tus datos</h2>
-        <p class="section-sub">No se borró nada. Cerrá las otras pestañas de Neko Finanzas y recargá la página. Si sigue igual, probá reiniciar el navegador.</p>
+        <p class="section-sub">No se borró nada. Cierra las otras pestañas de Neko Finanzas y recarga la página. Si sigue igual, prueba reiniciar el navegador.</p>
         <div class="form-actions"><button type="button" class="btn btn-primary btn-grow" data-reload>Recargar</button></div>
       </section>`
     );

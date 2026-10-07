@@ -74,10 +74,10 @@ export function buildDemoState(today = todayISO()) {
     const day = (d) => `${key}-${String(d).padStart(2, "0")}`;
     const isCurrent = key === currentMonthKey();
 
-    // Plata que se mueve entre cuentas (no es gasto ni ingreso).
+    // Dinero que se mueve entre cuentas (no es gasto ni ingreso).
     transfer(130000, day(2), BANK, CASH, "Retiro de efectivo");
-    transfer(150000, day(4), BANK, WALLET, "Carga de la billetera");
-    transfer(between(140000, 170000, 10000), day(16), BANK, WALLET, "Carga de la billetera");
+    transfer(150000, day(4), BANK, WALLET, "Recarga de la billetera");
+    transfer(between(140000, 170000, 10000), day(16), BANK, WALLET, "Recarga de la billetera");
     if (index === 2) transfer(210000, day(16), BANK, USD, "Compra de dólares", 150, ["ARS", "USD"]);
 
     const salary = tx("income", 800000, day(1), "inc-sueldo", "Sueldo", { subcategoryId: "inc-sueldo.mensual" });
@@ -85,7 +85,7 @@ export function buildDemoState(today = todayISO()) {
     tx("income", 400000 + (index % 2 ? -20000 : 0), day(15), "inc-independiente", "Trabajo extra", { subcategoryId: "inc-independiente.proyectos" });
     if (index % 2 === 0) tx("income", between(18000, 32000), day(22), "inc-propinas", "Propinas");
 
-    // Súper repartido en subcategorías (la descripción queda vacía: se muestra la subcategoría).
+    // Supermercado repartido en subcategorías (la descripción queda vacía: se muestra la subcategoría).
     [[3, "almacen", 42000, 68000], [10, "carniceria", 28000, 45000], [14, "verduleria", 12000, 20000], [17, "almacen", 42000, 68000], [21, "limpieza", 15000, 26000], [24, "dietetica", 9000, 16000]].forEach(
       ([d, sub, min, max]) => tx("expense", between(min, max), day(d), "exp-super", "", { subcategoryId: `exp-super.${sub}` })
     );
@@ -110,7 +110,7 @@ export function buildDemoState(today = todayISO()) {
     }
   };
   cuotas("Pasajes a Bariloche", 95000, 6, `${months[1]}-15`, "exp-entretenimiento");
-  cuotas("Heladera", 120000, 6, `${months[2]}-10`, "exp-hogar");
+  cuotas("Refrigerador", 120000, 6, `${months[2]}-10`, "exp-hogar");
   cuotas("Notebook", 75000, 12, `${months[3]}-03`, "exp-compras", "exp-compras.tecnologia");
   cuotas("Zapatillas", 30000, 3, `${months[3]}-22`, "exp-ropa", "exp-ropa.calzado");
   // Cada mes se paga lo que se gastó con la tarjeta el mes anterior.
@@ -125,7 +125,7 @@ export function buildDemoState(today = todayISO()) {
   // Caro: le prestaste y ya devolvió una parte. Papá: te prestó y hay que
   // devolverle en unos días (se reserva). Tu hermana: le prestaste, sin
   // devolver todavía. Juan: te prestó y ya le devolviste todo (saldado).
-  // Lu: solo anotado, sin mover plata de tus cuentas.
+  // Lu: solo anotado, sin mover dinero de tus cuentas.
   const loanMove = (loan, flow, amount, accountId, date, description) => {
     const t = { id: uid("tx"), type: "loan", loanId: loan.id, flow, amount, currency: "ARS", accountId, date, time: "", description, createdAt: date };
     state.transactions.push(t);
@@ -152,7 +152,7 @@ export function buildDemoState(today = todayISO()) {
     { name: "Luz", icon: "💡", amount: 38500, offset: 13, categoryId: "exp-servicios", subcategoryId: "exp-servicios.luz" },
     { name: "Gas", icon: "🔥", amount: 21000, offset: -2, categoryId: "exp-servicios", subcategoryId: "exp-servicios.gas" },
     { name: "Internet", icon: "🌐", amount: 27000, offset: 2, categoryId: "exp-servicios", subcategoryId: "exp-servicios.internet" },
-    { name: "Expensas", icon: "🏠", amount: 95000, offset: 8, categoryId: "exp-hogar", subcategoryId: "exp-hogar.expensas" },
+    { name: "Gastos comunes", icon: "🏠", amount: 95000, offset: 8, categoryId: "exp-hogar", subcategoryId: "exp-hogar.expensas" },
     { name: "ChatGPT", icon: "🤖", amount: 20, currency: "USD", offset: 1, categoryId: "exp-suscripciones", subcategoryId: "exp-suscripciones.chatgpt" },
     { name: "Netflix", icon: "📺", amount: 11000, offset: 18, categoryId: "exp-suscripciones", subcategoryId: "exp-suscripciones.netflix" },
     { name: "Spotify", icon: "🎵", amount: 4500, offset: 5, categoryId: "exp-suscripciones", subcategoryId: "exp-suscripciones.spotify" },

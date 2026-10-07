@@ -168,7 +168,7 @@ export default {
         : html`<div class="card">${emptyState({
             art: filtered ? "neko-buscando" : "neko-anotando",
             title: searching ? "No encontramos nada con esa búsqueda" : filtered ? "No hay movimientos con estos filtros" : "Sin movimientos este mes",
-            text: searching ? "Buscamos en todos los meses. Probá con otra palabra o revisá los filtros." : filtered ? "Probá con otro filtro o cambiá de mes." : "Registrá un ingreso o un gasto y va a aparecer acá.",
+            text: searching ? "Buscamos en todos los meses. Prueba con otra palabra o revisa los filtros." : filtered ? "Prueba con otro filtro o cambia de mes." : "Registra un ingreso o un gasto y va a aparecer aquí.",
             actionLabel: filtered ? "" : "Agregar transacción",
             action: "add-expense",
             mood: "sleepy",

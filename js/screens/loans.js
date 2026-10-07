@@ -1,4 +1,4 @@
-// Préstamos: lo que te deben y lo que debés, con cuánto falta de cada uno.
+// Préstamos: lo que te deben y lo que debes, con cuánto falta de cada uno.
 
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
@@ -67,7 +67,7 @@ export default {
       return html`<div class="card">${emptyState({
         art: "ilus-prestamo",
         title: "Sin préstamos anotados",
-        text: "Anotá la plata que prestás o te prestan, y los préstamos en cuotas de un banco o una billetera. La app lleva la cuenta de cuánto falta.",
+        text: "Anota el dinero que prestas o te prestan, y los préstamos en cuotas de un banco o una billetera. La app lleva la cuenta de cuánto falta.",
         mood: "sleepy",
       })}</div>
       ${actions}`;
@@ -80,16 +80,16 @@ export default {
           <span class="loan-total-value">${formatMoney(summary.lent, main)}</span>
         </div>
         <div class="loan-total loan-total-borrowed">
-          <span class="loan-total-label">${icon("arrowUp", 15)} Debés</span>
+          <span class="loan-total-label">${icon("arrowUp", 15)} Debes</span>
           <span class="loan-total-value">${formatMoney(summary.borrowed, main)}</span>
         </div>
       </section>
       ${actions}
       <div class="loan-cols">
         ${lent.length ? html`<div class="loan-col"><h2 class="section-title section-title-spaced">Te deben</h2><section class="card card-flush rows reveal">${lent.map((i) => loanRow(i, today))}</section></div>` : ""}
-        ${borrowed.length ? html`<div class="loan-col"><h2 class="section-title section-title-spaced">Debés</h2><section class="card card-flush rows reveal">${borrowed.map((i) => loanRow(i, today))}</section></div>` : ""}
+        ${borrowed.length ? html`<div class="loan-col"><h2 class="section-title section-title-spaced">Debes</h2><section class="card card-flush rows reveal">${borrowed.map((i) => loanRow(i, today))}</section></div>` : ""}
       </div>
-      <p class="fine-print center">${icon("info", 14)} Prestar o devolver plata no es un gasto ni un ingreso. Lo que debés con fecha de devolución se reserva de tu disponible cuando se acerca. En un préstamo en cuotas, cada cuota sí es un gasto y se reserva antes de que venza.</p>
+      <p class="fine-print center">${icon("info", 14)} Prestar o devolver dinero no es un gasto ni un ingreso. Lo que debes con fecha de devolución se reserva de tu disponible cuando se acerca. En un préstamo en cuotas, cada cuota sí es un gasto y se reserva antes de que venza.</p>
     `;
   },
 };

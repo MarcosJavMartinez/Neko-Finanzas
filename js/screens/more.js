@@ -13,8 +13,8 @@ const SHARE_URL = "https://nekotools.site/finanzas.html";
 function loanSub(state) {
   const l = loansSummary(state);
   const main = state.settings.mainCurrency;
-  if (!l.open) return "Lo que te deben y lo que debés";
-  return [l.lent > 0 && `Te deben ${formatMoney(l.lent, main)}`, l.borrowed > 0 && `debés ${formatMoney(l.borrowed, main)}`].filter(Boolean).join(" · ");
+  if (!l.open) return "Lo que te deben y lo que debes";
+  return [l.lent > 0 && `Te deben ${formatMoney(l.lent, main)}`, l.borrowed > 0 && `debes ${formatMoney(l.borrowed, main)}`].filter(Boolean).join(" · ");
 }
 
 export default {
@@ -28,9 +28,9 @@ export default {
     const alerts = budgets.items.filter((b) => b.level === "near" || b.level === "over").length;
     const activeAccounts = state.accounts.filter((a) => !a.archived).length;
     const groups = [
-      { title: "Tu plata", items: [
+      { title: "Tu dinero", items: [
       { href: "#/cuentas", icon: "wallet", title: "Cuentas", sub: activeAccounts > 1 ? `${activeAccounts} cuentas · efectivo, banco, billeteras` : "Efectivo, banco, billeteras virtuales" },
-      { href: "#/presupuestos", icon: "pie", title: "Presupuestos", sub: state.budgets.length ? `${state.budgets.length} activos${alerts ? ` · ${alerts} para mirar` : ""}` : "Repartí tus ingresos" },
+      { href: "#/presupuestos", icon: "pie", title: "Presupuestos", sub: state.budgets.length ? `${state.budgets.length} activos${alerts ? ` · ${alerts} para revisar` : ""}` : "Reparte tus ingresos" },
       { href: "#/prestamos", icon: "swap", title: "Préstamos", sub: loanSub(state) },
       { href: "#/facturas", icon: "receipt", title: "Facturas y servicios", sub: state.bills.length ? `${formatMoney(reserve.amount, main)} a reservar` : "Luz, internet, suscripciones…" },
       { href: "#/reportes", icon: "chart", title: "Reportes", sub: "Tu mes de un vistazo" },
@@ -42,7 +42,7 @@ export default {
       ] },
       { title: "Ayuda", items: [
       { action: "show-onboarding", icon: "help", title: "Cómo funciona", sub: "Un repaso rápido en 4 pasos" },
-      { action: "share-app", icon: "share", title: "Compartir Neko Finanzas", sub: "Pasale la app a alguien" },
+      { action: "share-app", icon: "share", title: "Compartir Neko Finanzas", sub: "Pásale la app a alguien" },
       ] },
     ];
     return html`
@@ -87,8 +87,8 @@ export async function shareApp() {
   }
   try {
     await navigator.clipboard.writeText(SHARE_URL);
-    toast("Link copiado. Pegalo donde quieras compartirlo");
+    toast("Link copiado. Pégalo donde quieras compartirlo");
   } catch (error) {
-    window.prompt("Copiá este link para compartirlo:", SHARE_URL);
+    window.prompt("Copia este link para compartirlo:", SHARE_URL);
   }
 }

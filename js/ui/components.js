@@ -124,7 +124,7 @@ export function txRow(state, tx, { withDate = false, hideAccount = false } = {})
   // "Hogar · Alquiler", salvo que el título ya sea el nombre de la subcategoría.
   const where = sub && title !== sub.name ? `${category.name} · ${sub.name}` : category?.name;
   const when = withDate ? [shortDay(tx.date), tx.time].filter(Boolean).join(" ") : tx.time;
-  // Con más de una cuenta, se ve de dónde salió o a dónde entró la plata.
+  // Con más de una cuenta, se ve de dónde salió o a dónde entró el dinero.
   const account = state.accounts.length > 1 && !hideAccount ? state.accounts.find((a) => a.id === tx.accountId) : null;
   const meta = [where, account && `${account.icon} ${account.name}`, when].filter(Boolean).join(" · ");
   // Recién cargado: entra con la animación de "producto nuevo" de Neko Lista.
@@ -157,7 +157,7 @@ const accountOf = (state, id) => {
 
 /**
  * Celdas que solo se ven en la tabla de Transacciones en escritorio (fecha,
- * categoría, cuenta y monto en columnas). En celular quedan ocultas y la fila
+ * categoría, cuenta y monto en columnas). En teléfono quedan ocultas y la fila
  * se lee como siempre.
  */
 function tableCells({ date, category, account, amount }) {
@@ -193,7 +193,7 @@ function transferRow(state, tx, { withDate }) {
   </button>`;
 }
 
-/** Plata de un préstamo: entra o sale de la cuenta, pero no es ingreso ni gasto. */
+/** Dinero de un préstamo: entra o sale de la cuenta, pero no es ingreso ni gasto. */
 function loanRow(state, tx, { withDate, hideAccount }) {
   const account = state.accounts.length > 1 && !hideAccount ? state.accounts.find((a) => a.id === tx.accountId) : null;
   const when = withDate ? [shortDay(tx.date), tx.time].filter(Boolean).join(" ") : tx.time;

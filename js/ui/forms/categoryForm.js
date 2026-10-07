@@ -126,7 +126,7 @@ export function openCategoryForm({ category, type = "expense", onSaved } = {}) {
         clearErrors(form);
         const data = readForm(form);
         const name = data.name.trim();
-        if (!name) return fieldError(form, "name", "Poné un nombre para la categoría.");
+        if (!name) return fieldError(form, "name", "Escribe un nombre para la categoría.");
         // Lo que quedó escrito sin tocar "Agregar" también se guarda.
         if (data.newSub?.trim()) addSub();
         const saved = store.saveCategory({
@@ -181,7 +181,7 @@ export function openSubcategoryForm({ sub, parentName = "", onSubmit }) {
         clearErrors(form);
         const data = readForm(form);
         const name = data.name.trim();
-        if (!name) return fieldError(form, "name", "Poné un nombre para la subcategoría.");
+        if (!name) return fieldError(form, "name", "Escribe un nombre para la subcategoría.");
         onSubmit({ name, icon: data.icon || sub?.icon || "" });
         close();
       });

@@ -126,7 +126,7 @@ export async function showCustomImage() {
     const blob = await withAssets("readonly", (store) => store.get(IMAGE_ID));
     if (!(blob instanceof Blob) || !blob.type.startsWith("image/")) throw new Error("sin imagen");
     currentUrl = URL.createObjectURL(blob);
-    // blob: generado acá mismo; nada que venga de afuera entra al url().
+    // blob: generado aquí mismo; nada que venga de afuera entra al url().
     root.style.setProperty("--custom-bg", `url("${currentUrl}")`);
   } catch (error) {
     // Imagen perdida (datos del navegador borrados): se vuelve al patrón.
@@ -164,7 +164,7 @@ async function normalizeImage(file) {
 /** Guarda una foto elegida por el usuario como fondo. */
 export async function setCustomImage(file) {
   if (!file || !/^image\/(png|jpeg|webp|gif|avif|heic|heif|bmp)$/i.test(file.type)) {
-    throw new Error("Elegí una imagen (JPG, PNG o WebP).");
+    throw new Error("Elige una imagen (JPG, PNG o WebP).");
   }
   if (file.size > MAX_FILE_BYTES) throw new Error("La imagen es demasiado pesada (máximo 25 MB).");
   const blob = await normalizeImage(file);
@@ -176,7 +176,7 @@ export async function setCustomImage(file) {
   await setBackground("custom");
 }
 
-/** Borra la imagen propia (al elegir otro fondo no se borra, por si volvés). */
+/** Borra la imagen propia (al elegir otro fondo no se borra, por si vuelves). */
 export async function removeCustomImage() {
   try {
     await withAssets("readwrite", (store) => store.delete(IMAGE_ID));

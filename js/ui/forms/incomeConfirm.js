@@ -29,9 +29,9 @@ export function openIncomeConfirm(templateId) {
     title: isExpense ? `¿Pagaste “${name}”?` : `¿Cobraste “${name}”?`,
     body: html`<form class="form" novalidate>
       ${amountField({ value: usual, currency: template.currency, label: isExpense ? "¿Cuánto pagaste?" : "¿Cuánto te depositaron?", autofocus: false, tone: isExpense ? "tone-expense" : "tone-income" })}
-      <p class="field-hint">${isExpense ? "Si esta vez fue otro monto, poné el real." : "Si fue menos (días trabajados, descuentos) o más, poné el monto real."} Lo habitual son ${formatMoney(usual, template.currency)}.</p>
+      <p class="field-hint">${isExpense ? "Si esta vez fue otro monto, escribe el real." : "Si fue menos (días trabajados, descuentos) o más, escribe el monto real."} Lo habitual son ${formatMoney(usual, template.currency)}.</p>
       <label class="toggle-field">
-        <span><span class="toggle-label">${isExpense ? "Desde ahora pago este monto" : "Desde ahora cobro este monto"}</span><span class="field-hint">${isExpense ? "Marcalo si te cambió el precio." : "Marcalo si te cambió el sueldo."} Si no, el próximo recordatorio sigue con lo habitual.</span></span>
+        <span><span class="toggle-label">${isExpense ? "Desde ahora pago este monto" : "Desde ahora cobro este monto"}</span><span class="field-hint">${isExpense ? "Márcalo si te cambió el precio." : "Márcalo si te cambió el sueldo."} Si no, el próximo recordatorio sigue con lo habitual.</span></span>
         <input type="checkbox" name="keepAsUsual" class="switch" />
       </label>
       ${dateField({ name: "date", label: isExpense ? "Fecha de pago" : "Fecha de cobro", value: todayISO() })}
@@ -39,7 +39,7 @@ export function openIncomeConfirm(templateId) {
       ${isExpense
         ? ""
         : html`<label class="toggle-field">
-            <span><span class="toggle-label">También tuve extras este mes</span><span class="field-hint">Aguinaldo, horas extra, comisión, propinas… Se cargan aparte, después de registrar el sueldo.</span></span>
+            <span><span class="toggle-label">También tuve extras este mes</span><span class="field-hint">Paga extra o aguinaldo, horas extra, comisión, propinas… Se registran aparte, después de registrar el sueldo.</span></span>
             <input type="checkbox" name="withExtras" class="switch" />
           </label>`}
       ${formActions({ submitLabel: "Registrar" })}
@@ -50,8 +50,8 @@ export function openIncomeConfirm(templateId) {
         event.preventDefault();
         clearErrors(form);
         const amount = readAmount(form);
-        if (!(amount > 0)) return fieldError(form, "amount", isExpense ? "Ingresá el monto que pagaste." : "Ingresá el monto que cobraste.");
-        if (!isISODate(form.elements.date.value)) return fieldError(form, "date", "Elegí una fecha válida.");
+        if (!(amount > 0)) return fieldError(form, "amount", isExpense ? "Ingresa el monto que pagaste." : "Ingresa el monto que cobraste.");
+        if (!isISODate(form.elements.date.value)) return fieldError(form, "date", "Elige una fecha válida.");
         const backup = store.snapshot();
         const tx = store.confirmRecurring(templateId, {
           amount,

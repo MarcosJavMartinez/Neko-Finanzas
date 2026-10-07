@@ -1,7 +1,7 @@
 // Validación y limpieza de los datos guardados o importados.
 //
 // Todo lo que entra al estado (lo que había en el dispositivo, un backup
-// importado) pasa por acá: se corrigen tipos, se descartan registros
+// importado) pasa por aquí: se corrigen tipos, se descartan registros
 // inválidos y se reparan referencias rotas. Así un archivo dañado o
 // manipulado no puede romper la app ni inyectar estilos: por ejemplo, los
 // colores solo pueden ser "#rrggbb" porque se usan dentro de atributos style.
@@ -183,7 +183,7 @@ export function sanitizeState(input) {
       });
       continue;
     }
-    // Plata de un préstamo (prestada, recibida o devuelta): ni ingreso ni gasto.
+    // Dinero de un préstamo (prestada, recibida o devuelta): ni ingreso ni gasto.
     if (t.type === "loan") {
       const amount = positive(t.amount);
       const day = date(t.date);

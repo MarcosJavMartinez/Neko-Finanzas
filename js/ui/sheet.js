@@ -1,6 +1,6 @@
 // Hoja inferior (bottom sheet) para formularios y detalles. En pantallas
 // anchas se muestra como diálogo centrado. Maneja foco, Escape, cierre
-// tocando el fondo y el botón "atrás" del celular.
+// tocando el fondo y el botón "atrás" del teléfono.
 
 import { html, setHTML } from "./dom.js";
 import { icon } from "./icons.js";
@@ -10,7 +10,7 @@ let sheetSeq = 0;
 
 // ---------------------------------------------------------------------------
 // Botón "atrás": cada hoja abierta agrega una entrada al historial, así el
-// "atrás" del celular (o del navegador) cierra la hoja en vez de cambiar de
+// "atrás" del teléfono (o del navegador) cierra la hoja en vez de cambiar de
 // pantalla por debajo.
 //
 // Al cerrar una hoja desde la interfaz se saca su entrada con history.back().
@@ -128,7 +128,7 @@ export function openSheet({ title, body, onMount, onClose, wide = false }) {
 
   onMount?.(panel, close);
   const autofocus = panel.querySelector("[data-autofocus]");
-  // En celulares no forzamos el foco en inputs (abriría el teclado encima de la hoja).
+  // En teléfonos no forzamos el foco en inputs (abriría el teclado encima de la hoja).
   if (autofocus && window.matchMedia("(pointer: fine)").matches) {
     autofocus.focus();
   } else {

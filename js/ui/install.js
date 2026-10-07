@@ -57,15 +57,15 @@ export function installPlatform() {
 
 /** Pasos a mano para cada plataforma sin aviso de instalación. */
 export const INSTALL_STEPS = {
-  "ios-safari": ["Tocá el botón Compartir (el cuadrado con la flecha)", "Tocá «Ver más»", "Tocá «Añadir a pantalla de inicio»", "Tocá «Añadir»"],
-  "ios-chrome": ["Tocá el botón Compartir", "Tocá «Más»", "Tocá «Agregar a pantalla de inicio»", "Tocá «Agregar»"],
-  "mac-safari": ["Hacé clic en Compartir, en la barra de Safari", "Elegí «Añadir al Dock»", "Confirmá con «Añadir»"],
+  "ios-safari": ["Toca el botón Compartir (el cuadrado con la flecha)", "Toca «Ver más»", "Toca «Añadir a pantalla de inicio»", "Toca «Añadir»"],
+  "ios-chrome": ["Toca el botón Compartir", "Toca «Más»", "Toca «Agregar a pantalla de inicio»", "Toca «Agregar»"],
+  "mac-safari": ["Haz clic en Compartir, en la barra de Safari", "Elige «Añadir al Dock»", "Confirma con «Añadir»"],
 };
 
 export const INSTALL_MESSAGES = {
-  "ios-other": "Para instalar, abrí este link en Safari.",
-  android: "Tocá el menú ⋮ del navegador y elegí «Instalar app» o «Agregar a la pantalla principal».",
-  desktop: "Este navegador no permite instalar apps. Abrí este link con Chrome o Edge.",
+  "ios-other": "Para instalar, abre este enlace en Safari.",
+  android: "Toca el menú ⋮ del navegador y elige «Instalar app» o «Agregar a la pantalla principal».",
+  desktop: "Este navegador no permite instalar apps. Abre este enlace con Chrome o Edge.",
 };
 
 /**
@@ -83,7 +83,7 @@ export function openInstallHelp() {
   openSheet({
     title: "Instalar Neko Finanzas",
     body: html`${platform.startsWith("ios")
-        ? html`<p class="sheet-text"><strong>Importante en iPhone:</strong> si no abrís la app en 7 días, Safari puede borrar tus datos. Instalada en la pantalla de inicio, eso no pasa.</p>`
+        ? html`<p class="sheet-text"><strong>Importante en iPhone:</strong> si no abres la app en 7 días, Safari puede borrar tus datos. Instalada en la pantalla de inicio, eso no pasa.</p>`
         : ""}
       ${steps
         ? html`<ol class="install-steps">${steps.map((step) => html`<li>${step}</li>`)}</ol>`

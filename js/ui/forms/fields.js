@@ -115,7 +115,7 @@ export function subcategoryPicker(category, selectedId = "") {
           )}
           <button type="button" class="sub-chip sub-chip-new" data-new-subcategory="${category.id}">${icon("plus", 14)}Nueva</button>
         </div>`
-      : html`<p class="field-hint">Elegí una categoría para ver sus subcategorías.</p>`}
+      : html`<p class="field-hint">Elige una categoría para ver sus subcategorías.</p>`}
   </div>`;
 }
 

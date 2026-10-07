@@ -75,7 +75,7 @@ const CHROME =
   ].find((p) => existsSync(p));
 
 if (!CHROME) {
-  record("Navegador", false, "No encontré Chrome. Indicalo con CHROME=/ruta/a/chrome");
+  record("Navegador", false, "No encontré Chrome. Indícalo con CHROME=/ruta/a/chrome");
   finish();
 }
 
@@ -145,7 +145,7 @@ for (const [name, file, opts] of [
     { offer: true, query: "?vacia", pre: 'localStorage.setItem("nekoFinanzas.data.v1",JSON.stringify({transactions:[],categories:[],settings:{createdAt:"2026-08-01T00:00:00Z"}}));' },
   ],
   ["Ingresos: cobro parcial y extras", "income.js"],
-  ["Sobres: súper reservado y gustos por día", "envelopes.js"],
+  ["Sobres: supermercado reservado y gustos por día", "envelopes.js"],
   [
     "Datos: IndexedDB, copias automáticas, iPhone, pestañas",
     "storage.js",

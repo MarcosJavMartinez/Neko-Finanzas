@@ -157,14 +157,14 @@ async function draw(state, key) {
     ctx.fillText(fit(ctx, m(t.value), tileW - 56), tx + 28, tileY + 112);
   });
 
-  // En qué se fue la plata (top 5)
+  // En qué se fue el dinero (top 5)
   const listY = tileY + 190;
   ctx.fillStyle = C.surface;
   roundRect(ctx, PAD, listY, W - PAD * 2, H - listY - 150, 44);
   ctx.fill();
   ctx.fillStyle = C.text;
   ctx.font = `800 36px ${DISPLAY}`;
-  ctx.fillText("¿En qué se fue la plata?", PAD + 48, listY + 72);
+  ctx.fillText("¿En qué se fue el dinero?", PAD + 48, listY + 72);
 
   if (!cats.length) {
     ctx.fillStyle = C.muted;
@@ -214,7 +214,7 @@ async function draw(state, key) {
   return canvas;
 }
 
-/** Genera la imagen y la comparte (celular) o la descarga (computadora). */
+/** Genera la imagen y la comparte (teléfono) o la descarga (computadora). */
 export async function shareMonthSummary(state, key) {
   const canvas = await draw(state, key);
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));

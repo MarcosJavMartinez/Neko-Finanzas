@@ -1,4 +1,4 @@
-// Reportes: el mes de un vistazo, en qué se fue la plata y cómo viene
+// Reportes: el mes de un vistazo, en qué se fue el dinero y cómo viene
 // evolucionando. Pocos gráficos, fáciles de leer.
 
 import { html } from "../ui/dom.js";
@@ -74,7 +74,7 @@ export default {
       </section>
 
       <section class="card report-donut reveal">
-        <h2 class="section-title section-title-art">${art("ilus-grafico", 48)}¿En qué se fue la plata?</h2>
+        <h2 class="section-title section-title-art">${art("ilus-grafico", 48)}¿En qué se fue el dinero?</h2>
         ${slices.length
           ? html`<div class="donut-wrap">
               ${donutChart(slices, { currency: main, centerLabel: "Gastos", centerValue: formatMoney(totals.expense, main) })}

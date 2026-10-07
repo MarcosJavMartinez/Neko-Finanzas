@@ -73,7 +73,7 @@ export function startingCurrencies(region) {
 }
 
 // La región y las monedas en uso vienen de los datos (settings): el store
-// avisa acá cada vez que cambian.
+// avisa aquí cada vez que cambian.
 let region = DEFAULT_REGION;
 let active = ["ARS", "USD", "EUR"];
 let seps = null;

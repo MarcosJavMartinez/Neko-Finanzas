@@ -84,9 +84,9 @@ export function openBillForm({ bill } = {}) {
         clearErrors(form);
         const data = readForm(form);
         const amount = readAmount(form);
-        if (!data.name.trim()) return fieldError(form, "name", "Poné un nombre, por ejemplo “Internet”.");
-        if (!(amount > 0)) return fieldError(form, "amount", "Ingresá un monto mayor a cero.");
-        if (!isISODate(data.dueDate)) return fieldError(form, "dueDate", "Elegí una fecha de vencimiento válida.");
+        if (!data.name.trim()) return fieldError(form, "name", "Escribe un nombre, por ejemplo “Internet”.");
+        if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
+        if (!isISODate(data.dueDate)) return fieldError(form, "dueDate", "Elige una fecha de vencimiento válida.");
         const values = {
           name: data.name.trim(),
           icon: data.icon || current.icon,
@@ -150,7 +150,7 @@ export function openPayBill(billId) {
         event.preventDefault();
         clearErrors(form);
         const amount = readAmount(form);
-        if (!(amount > 0)) return fieldError(form, "amount", "Ingresá el monto que pagaste.");
+        if (!(amount > 0)) return fieldError(form, "amount", "Ingresa el monto que pagaste.");
         const date = isISODate(form.elements.date.value) ? form.elements.date.value : todayISO();
         const currency = form.elements.currency.value;
         const accountId = form.elements.accountId?.value;
@@ -241,7 +241,7 @@ function categoryLabel(state, item) {
 
 /** "Vence todos los meses el día 29" · "Vence cada semana, los miércoles" … */
 function repeatText(dueDate, recurring, frequency) {
-  if (!dueDate) return "Elegí la fecha de vencimiento.";
+  if (!dueDate) return "Elige la fecha de vencimiento.";
   const d = parseISO(dueDate);
   const day = d.getDate();
   const first = `La primera vez vence el ${formatDate(dueDate, { withYear: true })}.`;

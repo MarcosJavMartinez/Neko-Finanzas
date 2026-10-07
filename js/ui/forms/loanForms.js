@@ -1,5 +1,5 @@
-// Préstamos: "le presté a Caro" / "me prestó Juan". Prestar o devolver plata
-// no es un gasto ni un ingreso: la plata entra o sale de una cuenta, y la
+// Préstamos: "le presté a Caro" / "me prestó Juan". Prestar o devolver dinero
+// no es un gasto ni un ingreso: el dinero entra o sale de una cuenta, y la
 // app lleva la cuenta de cuánto falta.
 
 import { html } from "../dom.js";
@@ -15,7 +15,7 @@ import { amountToInput, formatMoney, parseAmount, zeroAmount } from "../../core/
 import { findAccount, loanOutstanding, loanPlanStatus, percent } from "../../core/finance.js";
 import { getLastAccount } from "../../core/prefs.js";
 
-/** Cuenta por la que pasó la plata, o "no pasó por mis cuentas". */
+/** Cuenta por la que pasó el dinero, o "no pasó por mis cuentas". */
 function accountChoice(state, value, label) {
   const options = state.accounts.filter((a) => !a.archived || a.id === value);
   return html`<div class="field">
@@ -51,7 +51,7 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         ${dateField({ name: "dueDate", label: "Devolver antes del", value: current.dueDate, required: false })}
       </div>
       ${textField({ name: "note", label: "Nota", value: current.note, maxlength: 120, placeholder: "Ej.: para el auto, en 3 partes" })}
-      <p class="field-hint" data-loan-hint>${current.direction === "lent" ? "No es un gasto: la plata vuelve cuando te la devuelvan." : "No es un ingreso: si ponés fecha para devolverla, la app la reserva de tu disponible cuando se acerque."}</p>
+      <p class="field-hint" data-loan-hint>${current.direction === "lent" ? "No es un gasto: el dinero vuelve cuando te lo devuelvan." : "No es un ingreso: si pones fecha para devolverlo, la app lo reserva de tu disponible cuando se acerque."}</p>
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Guardar préstamo", deletable: isEdit })}
     </form>`,
     onMount(panel, close) {
@@ -63,8 +63,8 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         const lent = event.target.value === "lent";
         form.querySelector('label[for$="accountId"]').textContent = lent ? "¿De qué cuenta salió?" : "¿A qué cuenta entró?";
         form.querySelector("[data-loan-hint]").textContent = lent
-          ? "No es un gasto: la plata vuelve cuando te la devuelvan."
-          : "No es un ingreso: si ponés fecha para devolverla, la app la reserva de tu disponible cuando se acerque.";
+          ? "No es un gasto: el dinero vuelve cuando te lo devuelvan."
+          : "No es un ingreso: si pones fecha para devolverlo, la app lo reserva de tu disponible cuando se acerque.";
       });
       form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -72,23 +72,23 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         const data = readForm(form);
         const amount = readAmount(form);
         if (!data.person.trim()) return fieldError(form, "person", "¿A quién le prestaste o quién te prestó?");
-        if (!(amount > 0)) return fieldError(form, "amount", "Ingresá un monto mayor a cero.");
-        if (!isISODate(data.date)) return fieldError(form, "date", "Elegí una fecha válida.");
-        if (data.dueDate && !isISODate(data.dueDate)) return fieldError(form, "dueDate", "Elegí una fecha válida.");
+        if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
+        if (!isISODate(data.date)) return fieldError(form, "date", "Elige una fecha válida.");
+        if (data.dueDate && !isISODate(data.dueDate)) return fieldError(form, "dueDate", "Elige una fecha válida.");
         const values = { person: data.person, amount, currency: data.currency, date: data.date, dueDate: data.dueDate || "", note: data.note, accountId: data.accountId };
         if (isEdit) {
           store.updateLoan(loan.id, values);
           toast("Préstamo actualizado");
         } else {
           const saved = store.addLoan({ ...values, direction: data.direction });
-          toast(saved.direction === "lent" ? `Anotado: ${saved.person} te debe ${formatMoney(amount, values.currency)}` : `Anotado: le debés ${formatMoney(amount, values.currency)} a ${saved.person}`);
+          toast(saved.direction === "lent" ? `Anotado: ${saved.person} te debe ${formatMoney(amount, values.currency)}` : `Anotado: le debes ${formatMoney(amount, values.currency)} a ${saved.person}`);
         }
         close();
       });
       form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
         const ok = await confirmDialog({
           title: `¿Borrar el préstamo con ${loan.person}?`,
-          text: "Se borra también la plata que se registró en tus cuentas por este préstamo.",
+          text: "Se borra también el dinero que se registró en tus cuentas por este préstamo.",
           confirmLabel: "Borrar",
           danger: true,
         });
@@ -112,7 +112,7 @@ export function openLoanPayment(loanId) {
   openSheet({
     title: lent ? `${loan.person} te devolvió` : `Le devolviste a ${loan.person}`,
     body: html`<form class="form" novalidate>
-      <p class="sheet-text">Falta${outstanding === 1 ? "" : "n"} <strong>${formatMoney(outstanding, loan.currency)}</strong>. Podés registrar una parte o todo.</p>
+      <p class="sheet-text">Falta${outstanding === 1 ? "" : "n"} <strong>${formatMoney(outstanding, loan.currency)}</strong>. Puedes registrar una parte o todo.</p>
       ${amountField({ value: outstanding, currency: loan.currency, label: "Monto", autofocus: false, tone: "tone-goal" })}
       ${dateField({ name: "date", label: "Fecha", value: todayISO() })}
       ${accountChoice(state, state.accounts.find((a) => a.id === getLastAccount() && !a.archived)?.id || store.defaultAccountId(), lent ? "¿A qué cuenta entró?" : "¿De qué cuenta salió?")}
@@ -126,7 +126,7 @@ export function openLoanPayment(loanId) {
         event.preventDefault();
         clearErrors(form);
         const amount = readAmount(form);
-        if (!(amount > 0)) return fieldError(form, "amount", "Ingresá un monto mayor a cero.");
+        if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
         if (amount > outstanding + 0.005) return fieldError(form, "amount", `Es más de lo que falta (${formatMoney(outstanding, loan.currency)}).`);
         const date = isISODate(form.elements.date.value) ? form.elements.date.value : todayISO();
         const backup = store.snapshot();
@@ -154,8 +154,8 @@ export function openCreditLoanForm() {
   openSheet({
     title: "Préstamo en cuotas",
     body: html`<form class="form" novalidate>
-      <p class="sheet-text">Para un préstamo de un banco o una billetera que devolvés en cuotas fijas. Si te prestó una persona, usá "Me prestaron".</p>
-      ${textField({ name: "person", label: "¿Quién te lo dio?", value: "", required: true, maxlength: 40, placeholder: "Ej.: Mercado Pago, Banco Nación" })}
+      <p class="sheet-text">Para un préstamo de un banco o una billetera que devuelves en cuotas fijas. Si te prestó una persona, usa "Me prestaron".</p>
+      ${textField({ name: "person", label: "¿Quién te lo dio?", value: "", required: true, maxlength: 40, placeholder: "Ej.: tu banco o tu billetera digital" })}
       ${amountField({ value: null, currency: state.settings.mainCurrency, label: "¿Cuánto recibiste?", autofocus: false, tone: "tone-goal" })}
       <div class="field">
         <label class="field-label" for="f-accountId">¿A qué cuenta entró?</label>
@@ -177,7 +177,7 @@ export function openCreditLoanForm() {
       </div>
       ${dateField({ name: "firstDue", label: "La primera cuota vence el", value: addMonths(today, 1) })}
       <p class="notice notice-info" data-loan-total hidden>${icon("info", 16)}<span></span></p>
-      <p class="field-hint">Lo que recibís no cuenta como ingreso. Cada cuota queda programada como gasto en su mes y se reserva de tu disponible cuando se acerca.</p>
+      <p class="field-hint">Lo que recibes no cuenta como ingreso. Cada cuota queda programada como gasto en su mes y se reserva de tu disponible cuando se acerca.</p>
       ${formActions({ submitLabel: "Guardar préstamo" })}
     </form>`,
     onMount(panel, close) {
@@ -196,8 +196,8 @@ export function openCreditLoanForm() {
         const extra = Math.round((total - received) * 100) / 100;
         totalBox.querySelector("span").textContent =
           extra > 0
-            ? `En total devolvés ${formatMoney(total, currency(), { reveal: true })}: ${formatMoney(extra, currency(), { reveal: true })} más de lo que recibiste.`
-            : `En total devolvés ${formatMoney(total, currency(), { reveal: true })}.`;
+            ? `En total devuelves ${formatMoney(total, currency(), { reveal: true })}: ${formatMoney(extra, currency(), { reveal: true })} más de lo que recibiste.`
+            : `En total devuelves ${formatMoney(total, currency(), { reveal: true })}.`;
       };
       form.addEventListener("input", sync);
       form.addEventListener("change", sync);
@@ -209,9 +209,9 @@ export function openCreditLoanForm() {
         const each = parseAmount(data.installment);
         const count = Number(data.count);
         if (!data.person.trim()) return fieldError(form, "person", "¿Quién te dio el préstamo?");
-        if (!(received > 0)) return fieldError(form, "amount", "Ingresá cuánto recibiste.");
-        if (!(each > 0)) return fieldError(form, "installment", "Ingresá el valor de la cuota.");
-        if (!isISODate(data.firstDue)) return fieldError(form, "firstDue", "Elegí una fecha válida.");
+        if (!(received > 0)) return fieldError(form, "amount", "Ingresa cuánto recibiste.");
+        if (!(each > 0)) return fieldError(form, "installment", "Ingresa el valor de la cuota.");
+        if (!isISODate(data.firstDue)) return fieldError(form, "firstDue", "Elige una fecha válida.");
         if (data.firstDue < today) return fieldError(form, "firstDue", "La primera cuota tiene que vencer de hoy en adelante.");
         const saved = store.addCreditLoan({ lender: data.person, received, count, installment: each, firstDue: data.firstDue, currency: data.currency, accountId: data.accountId });
         close();
@@ -233,7 +233,7 @@ function openCreditLoanEdit(loanId) {
   openSheet({
     title: "Editar préstamo",
     body: html`<form class="form" novalidate>
-      <p class="notice notice-info">${icon("info", 16)}<span>${plan.paid ? `Las ${plan.paid} cuota${plan.paid === 1 ? "" : "s"} que ya pasaron no cambian.` : "Todavía no venció ninguna cuota."} Lo que edites acá se aplica a las que faltan.</span></p>
+      <p class="notice notice-info">${icon("info", 16)}<span>${plan.paid ? `Las ${plan.paid} cuota${plan.paid === 1 ? "" : "s"} que ya pasaron no cambian.` : "Todavía no venció ninguna cuota."} Lo que edites aquí se aplica a las que faltan.</span></p>
       ${textField({ name: "person", label: "¿Quién te lo dio?", value: loan.person, required: true, maxlength: 40 })}
       <div class="field-row">
         <div class="field">
@@ -257,7 +257,7 @@ function openCreditLoanEdit(loanId) {
         const data = readForm(form);
         const each = parseAmount(data.installment);
         if (!data.person.trim()) return fieldError(form, "person", "¿Quién te dio el préstamo?");
-        if (!(each > 0)) return fieldError(form, "installment", "Ingresá el valor de la cuota.");
+        if (!(each > 0)) return fieldError(form, "installment", "Ingresa el valor de la cuota.");
         if (!isISODate(data.nextDue) || data.nextDue <= today) return fieldError(form, "nextDue", "La próxima cuota tiene que vencer después de hoy.");
         const backup = store.snapshot();
         store.updateCreditLoan(loan.id, { lender: data.person, count: Number(data.count), installment: each, nextDue: data.nextDue });
@@ -279,7 +279,7 @@ function openCreditLoanPayOff(loanId) {
   openSheet({
     title: "Cancelar el préstamo",
     body: html`<form class="form" novalidate>
-      <p class="sheet-text">Te faltan <strong>${plan.remaining} cuota${plan.remaining === 1 ? "" : "s"}</strong> por ${formatMoney(plan.left, loan.currency)}. Si lo pagaste todo de una vez, poné cuánto te cobraron: suele ser menos, porque se descuentan intereses.</p>
+      <p class="sheet-text">Te faltan <strong>${plan.remaining} cuota${plan.remaining === 1 ? "" : "s"}</strong> por ${formatMoney(plan.left, loan.currency)}. Si lo pagaste todo de una vez, escribe cuánto te cobraron: suele ser menos, porque se descuentan intereses.</p>
       ${amountField({ value: plan.left, currency: loan.currency, label: "¿Cuánto pagaste para cancelarlo?", autofocus: false, tone: "tone-expense" })}
       ${dateField({ name: "date", label: "Fecha del pago", value: today })}
       <div class="field">
@@ -295,9 +295,9 @@ function openCreditLoanPayOff(loanId) {
         event.preventDefault();
         clearErrors(form);
         const amount = readAmount(form);
-        if (!(amount > 0)) return fieldError(form, "amount", "Ingresá cuánto pagaste.");
+        if (!(amount > 0)) return fieldError(form, "amount", "Ingresa cuánto pagaste.");
         const date = form.elements.date.value;
-        if (!isISODate(date) || date > today) return fieldError(form, "date", "Poné una fecha de hoy o anterior.");
+        if (!isISODate(date) || date > today) return fieldError(form, "date", "Elige una fecha de hoy o anterior.");
         const backup = store.snapshot();
         store.payOffCreditLoan(loan.id, { amount, date, accountId: form.elements.accountId?.value });
         close();
@@ -319,7 +319,7 @@ function openCreditLoanDetail(state, loan) {
       <p class="account-detail-balance">${done ? "Terminado de pagar" : formatMoney(plan.left, loan.currency)}</p>
       <p class="fine-print">${done ? `${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)}` : `Faltan ${plan.remaining} de ${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)} · la próxima vence el ${formatDate(plan.next)}`}</p>
       ${progressBar(percent(plan.paid, plan.count), { color: "var(--goal)", label: "Cuotas pagadas" })}
-      <p class="sheet-text">En total devolvés ${formatMoney(plan.total, loan.currency)}${plan.interest > 0 ? html`: <strong>${formatMoney(plan.interest, loan.currency)}</strong> de interés` : ""}.</p>
+      <p class="sheet-text">En total devuelves ${formatMoney(plan.total, loan.currency)}${plan.interest > 0 ? html`: <strong>${formatMoney(plan.interest, loan.currency)}</strong> de interés` : ""}.</p>
       <h3 class="section-title section-title-spaced">Cuotas</h3>
       <div class="rows rows-plain">
         ${plan.installments.map(
@@ -332,7 +332,7 @@ function openCreditLoanDetail(state, loan) {
           </div>`
         )}
       </div>
-      <p class="fine-print">${icon("info", 14)} Cada cuota se descuenta de tu cuenta el día que vence. Con "Editar" cambiás las que faltan; una sola cuota se corrige desde Transacciones.</p>
+      <p class="fine-print">${icon("info", 14)} Cada cuota se descuenta de tu cuenta el día que vence. Con "Editar" cambias las que faltan; una sola cuota se corrige desde Transacciones.</p>
       <div class="account-detail-actions">
         ${done ? "" : html`<button type="button" class="btn btn-primary btn-sm" data-do="payoff">${icon("check", 16)} Lo cancelé antes</button>`}
         <button type="button" class="btn btn-ghost btn-sm" data-do="edit">${icon("edit", 16)} Editar</button>
@@ -351,7 +351,7 @@ function openCreditLoanDetail(state, loan) {
       panel.querySelector("[data-do=delete]").addEventListener("click", async () => {
         const ok = await confirmDialog({
           title: `¿Borrar el préstamo de ${loan.person}?`,
-          text: "Se borran la plata recibida y todas sus cuotas, pagadas y por venir.",
+          text: "Se borran el dinero recibido y todas sus cuotas, pagadas y por venir.",
           confirmLabel: "Borrar",
           danger: true,
         });
@@ -396,7 +396,7 @@ export function openLoanDetail(loanId) {
               return html`<div class="row loan-payment">
                 <span class="row-main">
                   <span class="row-title">${formatMoney(p.amount, loan.currency)}</span>
-                  <span class="row-meta">${formatDate(p.date, { withYear: true })}${acc ? ` · ${acc.icon} ${acc.name}` : " · sin mover plata"}</span>
+                  <span class="row-meta">${formatDate(p.date, { withYear: true })}${acc ? ` · ${acc.icon} ${acc.name}` : " · sin mover dinero"}</span>
                 </span>
                 <button type="button" class="icon-btn" data-remove-payment="${p.id}" aria-label="Borrar esta devolución">${icon("trash", 18)}</button>
               </div>`;

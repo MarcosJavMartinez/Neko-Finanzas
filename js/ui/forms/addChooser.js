@@ -18,15 +18,15 @@ function options(state) {
         { action: "add-expense", icon: "arrowUp", tone: "expense", title: "Gasto", sub: "Algo que pagaste" },
         { action: "add-income", icon: "arrowDown", tone: "income", title: "Ingreso", sub: "Sueldo, un trabajo, una venta" },
         { action: "add-card-purchase", icon: "card", title: "Compra con tarjeta", sub: "En un pago o en cuotas" },
-        { href: "#/facturas", icon: "receipt", tone: "bill", title: "Pago de una factura", sub: pendingBills ? "Elegí cuál pagaste" : "Luz, internet, alquiler, suscripciones" },
+        { href: "#/facturas", icon: "receipt", tone: "bill", title: "Pago de una factura", sub: pendingBills ? "Elige cuál pagaste" : "Luz, internet, alquiler, suscripciones" },
       ],
     },
     {
-      title: "Plata que se mueve",
+      title: "Dinero que se mueve",
       items: [
-        ...(accounts.length > 1 ? [{ action: "add-transfer", icon: "swap", title: "Pasar plata entre cuentas", sub: "Del banco al efectivo, a la billetera…" }] : []),
-        { href: "#/metas", icon: "target", tone: "goal", title: "Guardar en una meta", sub: state.goals.length ? "Elegí la meta y cuánto" : "Creá tu primera meta" },
-        { action: "add-extras", icon: "sparkle", title: "Extras del mes", sub: "Aguinaldo, horas extra, comisión, propinas" },
+        ...(accounts.length > 1 ? [{ action: "add-transfer", icon: "swap", title: "Pasar dinero entre cuentas", sub: "Del banco al efectivo, a la billetera…" }] : []),
+        { href: "#/metas", icon: "target", tone: "goal", title: "Guardar en una meta", sub: state.goals.length ? "Elige la meta y cuánto" : "Crea tu primera meta" },
+        { action: "add-extras", icon: "sparkle", title: "Extras del mes", sub: "Paga extra o aguinaldo, horas extra, comisión, propinas" },
       ],
     },
     {
@@ -42,12 +42,12 @@ function options(state) {
 
 /**
  * `run(action, dataset)` ejecuta una de las acciones globales de la app (las
- * mismas de los botones sueltos): acá no se duplica ningún formulario.
+ * mismas de los botones sueltos): aquí no se duplica ningún formulario.
  */
 export function openAddChooser(run) {
   const groups = options(store.getState());
   openSheet({
-    title: "¿Qué querés anotar?",
+    title: "¿Qué quieres anotar?",
     body: html`<div class="chooser">
       ${groups.map(
         (group) => html`<h3 class="more-heading">${group.title}</h3>

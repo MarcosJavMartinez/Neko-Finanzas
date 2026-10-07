@@ -115,8 +115,8 @@ export default {
     const showExtras = !isEmpty && (extrasTotal > 0 || nearPayday);
     const extrasLine = html`<p class="extras-line reveal">
       ${icon("sparkle", 15)}
-      <span>${extrasTotal > 0 ? html`Extras de este mes: <strong>${m(extrasTotal)}</strong>` : "¿Tuviste aguinaldo, horas extra, comisión o propinas?"}</span>
-      <button type="button" class="chip chip-action" data-action="add-extras">${icon("plus", 12)}Cargar extras</button>
+      <span>${extrasTotal > 0 ? html`Extras de este mes: <strong>${m(extrasTotal)}</strong>` : "¿Tuviste paga extra (aguinaldo), horas extra, comisión o propinas?"}</span>
+      <button type="button" class="chip chip-action" data-action="add-extras">${icon("plus", 12)}Agregar extras</button>
     </p>`;
 
     const savings = html`${month.income || month.expense
@@ -140,9 +140,9 @@ export default {
         <img class="hero-art ${negative ? "hero-art-neko" : ""}" src="img/${negative ? "neko-preocupado" : "hero-wallet"}.webp" alt="" width="120" height="${negative ? 120 : 129}" />
       </div>
       ${negative
-        ? html`<p class="hero-alert">${icon("alert", 15)} Lo apartado y reservado supera lo que tenés. Revisá metas, facturas, cuotas o deudas.</p>`
+        ? html`<p class="hero-alert">${icon("alert", 15)} Lo apartado y reservado supera lo que tienes. Revisa metas, facturas, cuotas o deudas.</p>`
         : isEmpty
-          ? html`<p class="hero-alert hero-alert-info">Para empezar, <button type="button" class="inline-link" data-action="setup-wizard">cargá todo con el asistente</button> o registrá un ingreso.</p>`
+          ? html`<p class="hero-alert hero-alert-info">Para empezar, <button type="button" class="inline-link" data-action="setup-wizard">completa todo con el asistente</button> o registra un ingreso.</p>`
           : html`<div class="avail">
               <div class="avail-bar">
                 ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}
@@ -154,7 +154,7 @@ export default {
       ${savings}
     </section>`;
 
-    // Para los gustos del día (un café, un alfajor). Con un presupuesto "por
+    // Para los gustos del día (un café, un helado). Con un presupuesto "por
     // día" se muestra lo acumulado; si no, el disponible repartido por día.
     const treats = treatAllowance(state, today);
     const daily = dailyAllowance(state, today);
@@ -166,10 +166,10 @@ export default {
             <span class="daily-icon" aria-hidden="true">${treats.budget.icon}</span>
             <div class="daily-text">
               ${treats.accumulated >= 0
-                ? html`<p class="daily-main">Para gustos tenés <strong data-pulse="daily">${m(treats.accumulated)}</strong></p>`
+                ? html`<p class="daily-main">Para gustos tienes <strong data-pulse="daily">${m(treats.accumulated)}</strong></p>`
                 : html`<p class="daily-main">En gustos te pasaste por <strong data-pulse="daily">${m(-treats.accumulated)}</strong></p>`}
-              <p class="daily-sub">${m(treats.perDay)} por día${treats.spentToday > 0 ? ` · hoy llevás ${m(treats.spentToday)}` : ""}</p>
-              <p class="daily-note">${treats.accumulated >= 0 ? "Lo que no gastás hoy se acumula para mañana." : "Se va recuperando con los días que no gastes."} Cuenta: ${treats.budget.name}.</p>
+              <p class="daily-sub">${m(treats.perDay)} por día${treats.spentToday > 0 ? ` · hoy llevas ${m(treats.spentToday)}` : ""}</p>
+              <p class="daily-note">${treats.accumulated >= 0 ? "Lo que no gastas hoy se acumula para mañana." : "Se va recuperando con los días que no gastes."} Cuenta: ${treats.budget.name}.</p>
             </div>
           </section>`
         : daily.available > 0
@@ -177,12 +177,12 @@ export default {
               <span class="daily-icon" aria-hidden="true">☕</span>
               <div class="daily-text">
                 ${daily.leftToday >= 0
-                  ? html`<p class="daily-main">Hoy podés gastar <strong data-pulse="daily">${m(daily.leftToday)}</strong></p>`
+                  ? html`<p class="daily-main">Hoy puedes gastar <strong data-pulse="daily">${m(daily.leftToday)}</strong></p>`
                   : html`<p class="daily-main">Hoy ya te pasaste por <strong data-pulse="daily">${m(-daily.leftToday)}</strong></p>`}
-                <p class="daily-sub">${m(daily.perDay)} por día ${untilText}${daily.spentToday > 0 ? ` · hoy llevás ${m(daily.spentToday)}` : ""}</p>
+                <p class="daily-sub">${m(daily.perDay)} por día ${untilText}${daily.spentToday > 0 ? ` · hoy llevas ${m(daily.spentToday)}` : ""}</p>
                 <p class="daily-note">${daily.days === 1
-                  ? `Es todo tu disponible: ${daily.reason === "income" ? "mañana cobrás" : "hoy termina el mes"}. La comida`
-                  : `Es tu disponible repartido en los ${daily.days} días que faltan ${daily.reason === "income" ? "para tu próximo cobro" : "para terminar el mes"}, contando hoy: la comida`} y el transporte también salen de acá. <button type="button" class="inline-link" data-action="add-treats">Ponete un límite de gustos por día</button> y lo que no gastes se acumula.</p>
+                  ? `Es todo tu disponible: ${daily.reason === "income" ? "mañana cobras" : "hoy termina el mes"}. La comida`
+                  : `Es tu disponible repartido en los ${daily.days} días que faltan ${daily.reason === "income" ? "para tu próximo cobro" : "para terminar el mes"}, contando hoy: la comida`} y el transporte también salen de aquí. <button type="button" class="inline-link" data-action="add-treats">Ponte un límite de gustos por día</button> y lo que no gastes se acumula.</p>
               </div>
             </section>`
           : "";
@@ -193,7 +193,7 @@ export default {
         <span class="mini-icon mini-icon-income">${icon("sparkle", 18)}</span>
         <div class="row-main">
           <span class="row-title">Te sobraron ${m(l.amount)} de ${l.budget.name}</span>
-          <span class="row-meta">De ${formatMonth(l.month).toLowerCase()}. ¿Lo pasás a tus ahorros?</span>
+          <span class="row-meta">De ${formatMonth(l.month).toLowerCase()}. ¿Lo pasas a tus ahorros?</span>
         </div>
         <div class="card-pending-actions">
           <button type="button" class="btn btn-sm btn-ghost" data-action="leftover-keep" data-id="${l.budget.id}" data-month="${l.month}">Dejarlo disponible</button>
@@ -227,7 +227,7 @@ export default {
       ${sectionHeader("Recientes", { href: "#/transacciones", linkText: "Ver todos" })}
       ${recent.length
         ? html`<div class="tx-list">${recent.map((tx) => txRow(state, tx, { withDate: true }))}</div>`
-        : emptyState({ art: "neko-anotando", title: "Todavía no hay movimientos", text: "Registrá tu primer ingreso o gasto y va a aparecer acá.", actionLabel: "Agregar transacción", action: "add-expense", compact: true, mood: "sleepy" })}
+        : emptyState({ art: "neko-anotando", title: "Todavía no hay movimientos", text: "Registra tu primer ingreso o gasto y va a aparecer aquí.", actionLabel: "Agregar transacción", action: "add-expense", compact: true, mood: "sleepy" })}
     </section>`;
 
     // Con más de una cuenta: cuánto hay en cada una.
@@ -236,11 +236,11 @@ export default {
       ? html`<section class="card home-accounts reveal">
           ${sectionHeader("Tus cuentas", { href: "#/cuentas", linkText: "Ver todas" })}
           <div class="rows rows-plain">${activeAccounts.slice(0, 6).map((e) => accountRow(state, e))}</div>
-          <button type="button" class="btn btn-soft btn-sm btn-block" data-action="add-transfer">${icon("swap", 16)} Mover plata entre cuentas</button>
+          <button type="button" class="btn btn-soft btn-sm btn-block" data-action="add-transfer">${icon("swap", 16)} Mover dinero entre cuentas</button>
         </section>`
       : "";
 
-    // Préstamos abiertos: quién te debe y a quién le debés.
+    // Préstamos abiertos: quién te debe y a quién le debes.
     const openLoans = loansSummary(state).items.filter((i) => i.outstanding > 0);
     const loansCard = openLoans.length
       ? html`<section class="card home-loans reveal">
@@ -253,7 +253,7 @@ export default {
       ${sectionHeader("Próximas facturas", { href: "#/facturas", linkText: "Ver todas" })}
       ${bills.length
         ? html`<div class="rows">${bills.map((b) => billRow(state, b, { today, compact: true }))}</div>`
-        : emptyState({ art: "neko-durmiendo", title: "Sin facturas cargadas", text: "Sumá luz, internet o suscripciones y te decimos cuánto reservar.", actionLabel: "Agregar factura", action: "add-bill", compact: true, mood: "sleepy" })}
+        : emptyState({ art: "neko-durmiendo", title: "Sin facturas registradas", text: "Suma luz, internet o suscripciones y te decimos cuánto reservar.", actionLabel: "Agregar factura", action: "add-bill", compact: true, mood: "sleepy" })}
     </section>`;
 
     const budgetsCard = budgetAlerts.length
@@ -273,7 +273,7 @@ export default {
       ${sectionHeader("Metas de ahorro", { href: "#/metas", linkText: "Ver todas" })}
       ${state.goals.length
         ? html`<div class="goal-list">${state.goals.slice(0, 3).map((g) => goalCard(state, g, { compact: true }))}</div>`
-        : emptyState({ art: "neko-ahorrando", title: "Todavía no tenés metas", text: "Creá una y empezá a separar dinero para eso que querés.", actionLabel: "Crear meta", action: "add-goal", compact: true })}
+        : emptyState({ art: "neko-ahorrando", title: "Todavía no tienes metas", text: "Crea una y empieza a separar dinero para eso que quieres.", actionLabel: "Crear meta", action: "add-goal", compact: true })}
     </section>`;
 
     const usesOtherCurrency = [...state.accounts, ...state.transactions, ...state.bills, ...state.goals, ...(state.loans || [])].some((x) => x.currency && x.currency !== main);
@@ -290,11 +290,11 @@ export default {
             </a>`;
           })}
       </div>
-      <p class="fine-print">${icon("info", 14)} Valores que cargaste vos. Se usan para convertir montos a ${main}.</p>
+      <p class="fine-print">${icon("info", 14)} Valores que ingresaste tú. Se usan para convertir montos a ${main}.</p>
     </section>`;
 
     // En escritorio el Inicio es un tablero: suma el resumen de los últimos
-    // meses y en qué se fue la plata este mes (los mismos datos de Reportes).
+    // meses y en qué se fue el dinero este mes (los mismos datos de Reportes).
     const series = monthlySeries(state, 6, currentMonthKey());
     const byCategory = expensesByCategory(state, currentMonthKey());
     const topCats = byCategory.slice(0, 5);
@@ -320,21 +320,21 @@ export default {
             <ul class="cat-breakdown">
               ${slices.map((s) => html`<li class="cb-row"><span class="legend-swatch" style="--c:${s.color}"></span><span class="cb-name">${s.label}</span><span class="cb-pct">${Math.round(percent(s.value, month.expense))}%</span><span class="cb-amount">${m(s.value)}</span></li>`)}
             </ul>`
-        : html`<p class="muted-text">Cuando registres gastos este mes, vas a ver acá cómo se reparten.</p>`}
+        : html`<p class="muted-text">Cuando registres gastos este mes, vas a ver aquí cómo se reparten.</p>`}
     </section>`;
 
     return html`
       ${state.settings.isDemo
         ? html`<div class="demo-banner reveal">
             <span class="demo-banner-icon">${icon("sparkle", 16)}</span>
-            <span class="demo-banner-text"><strong>Datos de ejemplo.</strong> Explorá tranquilo; cuando quieras, empezá con los tuyos.</span>
+            <span class="demo-banner-text"><strong>Datos de ejemplo.</strong> Explora con calma; cuando quieras, empieza con los tuyos.</span>
             <button type="button" class="btn btn-sm btn-soft" data-action="start-fresh">Empezar con lo mío</button>
           </div>`
         : ""}
       ${needsIosInstall() && !iosNoticeSnoozed()
         ? html`<div class="demo-banner backup-banner ios-banner reveal" role="status">
             <span class="demo-banner-icon">${icon("phone", 16)}</span>
-            <span class="demo-banner-text"><strong>Instalá la app en tu iPhone.</strong> Si no la abrís en 7 días, Safari puede borrar tus datos. Instalada en la pantalla de inicio, no pasa.</span>
+            <span class="demo-banner-text"><strong>Instala la app en tu iPhone.</strong> Si no la abres en 7 días, Safari puede borrar tus datos. Instalada en la pantalla de inicio, no pasa.</span>
             <span class="backup-banner-actions">
               <button type="button" class="btn btn-sm btn-ghost" data-action="snooze-ios-notice">Ahora no</button>
               <button type="button" class="btn btn-sm btn-primary" data-action="install-help">Cómo instalar</button>
@@ -345,7 +345,7 @@ export default {
         ? html`<div class="demo-banner backup-banner reveal" role="status">
             <span class="demo-banner-icon">${icon("shield", 16)}</span>
             <span class="demo-banner-text"><strong>${getLastBackup() ? `Tu último backup fue hace ${daysSinceBackup(state)} días.` : "Todavía no hiciste ningún backup."}</strong>
-              Guardá una copia fuera de este dispositivo (Drive, iCloud, tu mail) por si cambiás de celular o se borran los datos del navegador.</span>
+              Guarda una copia fuera de este dispositivo (Drive, iCloud, tu correo) por si cambias de teléfono o se borran los datos del navegador.</span>
             <span class="backup-banner-actions">
               <button type="button" class="btn btn-sm btn-ghost" data-action="snooze-backup">Ahora no</button>
               <button type="button" class="btn btn-sm btn-primary" data-action="export-data">Guardar copia</button>

@@ -44,13 +44,13 @@ return (async () => {
     type("card-name", "Visa");
     type("card-debt", "80.000");
     form().elements["card-due"].value = "10";
-    type("pur-what-0", "Heladera"); type("pur-per-0", "30.000"); type("pur-left-0", "abc");
+    type("pur-what-0", "Refrigerador"); type("pur-per-0", "30.000"); type("pur-left-0", "abc");
     await next();
     log("cuotas inválidas: " + (error() || "sin error ✗"));
     type("pur-left-0", "4");
     form().querySelector("[data-setup=add-purchase]").click(); await wait(250);
-    log("al agregar otra compra se conserva lo escrito: " + (form().elements["pur-what-0"].value === "Heladera" && form().elements["card-name"].value === "Visa"));
-    type("pur-what-1", "Celular"); type("pur-per-1", "20.000"); type("pur-left-1", "1");
+    log("al agregar otra compra se conserva lo escrito: " + (form().elements["pur-what-0"].value === "Refrigerador" && form().elements["card-name"].value === "Visa"));
+    type("pur-what-1", "Teléfono"); type("pur-per-1", "20.000"); type("pur-left-1", "1");
     await next();
 
     // 4) Facturas
@@ -62,7 +62,7 @@ return (async () => {
     type("bill-amount-4", "27.000"); form().elements["bill-day-4"].value = "31";
     await next();
 
-    // 4b) Súper y gustos
+    // 4b) Supermercado y gustos
     log("paso " + step());
     type("groceries", "x"); await next();
     log("monto inválido: " + (error() || "sin error ✗"));
@@ -99,13 +99,13 @@ return (async () => {
     const sum = F.balanceSummary(s);
     log("hoja cerrada=" + !sheet() + " · pantalla=" + d.querySelector("#view").dataset.screen + " · aviso: " + ([...d.querySelectorAll(".toast")].pop()?.textContent.trim().split("\n")[0] || "ninguno ✗"));
     log("cuentas: " + s.accounts.map((a) => `${a.name} ${a.currency} ${a.opening}`).join(" · "));
-    log("la primera cuenta reemplazó a «Mi plata»: " + (s.accounts.length === 4 && !s.accounts.some((a) => a.name === "Mi plata") ? "sí" : "NO ✗"));
+    log("la primera cuenta reemplazó a «Mi dinero»: " + (s.accounts.length === 4 && !s.accounts.some((a) => a.name === "Mi dinero") ? "sí" : "NO ✗"));
     const card = s.accounts.find((a) => a.kind === "credit");
     const st = F.cardStatus(s, card, today);
     log(`tarjeta: ${card.name} deuda=${st.debt} vence día ${card.dueDay} · por venir=${st.upcomingTotal} en ${st.upcoming.map((g) => `${g.title} ${g.remaining}/${g.of}`).join(", ")}${st.debt === 80000 && st.upcomingTotal === 140000 ? "" : " ✗"}`);
     log("facturas: " + s.bills.map((b) => `${b.name} ${b.amount} vence ${b.dueDate} (día ${b.dueDay})`).join(" · ") + (s.bills.every((b) => b.dueDate >= today && b.recurring) && s.bills.length === 2 ? "" : " ✗"));
     const loans = F.loansSummary(s);
-    log(`préstamos: te deben ${loans.lent} · debés ${loans.borrowed} · movieron plata=${s.transactions.some((t) => t.type === "loan")}${loans.lent === 10000 && loans.borrowed === 60000 ? "" : " ✗"}`);
+    log(`préstamos: te deben ${loans.lent} · debes ${loans.borrowed} · movieron dinero=${s.transactions.some((t) => t.type === "loan")}${loans.lent === 10000 && loans.borrowed === 60000 ? "" : " ✗"}`);
     log("meta: " + s.goals.map((g) => `${g.name} ${F.goalSaved(g)}/${g.target}`).join(", ") + (F.goalSaved(s.goals[0]) === 40000 ? "" : " ✗"));
     const env = F.balanceSummary(s).envelopes;
     log("presupuestos: " + s.budgets.map((b) => `${b.name} ${b.mode} ${b.value} reservado=${b.reserve}`).join(" · ") + ` · reservado por sobres=${Math.round(env.amount)}${s.budgets.length === 2 && env.amount > 0 ? "" : " ✗"}`);
@@ -132,7 +132,7 @@ return (async () => {
     const before = store.getState().accounts.length;
     w.location.hash = "#/ajustes"; await wait(400);
     d.querySelector("#view [data-action=setup-wizard]").click(); await wait(500);
-    log("desde Configuración: " + (form() ? "abre · " + (/se suma a lo que ya tenés/.test(form().innerText) ? "avisa que se suma" : "sin aviso ✗") : "NO ✗"));
+    log("desde Configuración: " + (form() ? "abre · " + (/se suma a lo que ya tienes/.test(form().innerText) ? "avisa que se suma" : "sin aviso ✗") : "NO ✗"));
     await next();
     type("acc-amount-2", "1.000");
     await toSummary();

@@ -67,7 +67,7 @@ export function openBudgetForm({ budget, preset } = {}) {
           ? html`<div class="field"><label class="field-label" for="f-goal">Meta</label><select id="f-goal" name="goalId">
               ${state.goals.map((g) => html`<option value="${g.id}" ${g.id === current.target.goalId ? "selected" : ""}>${g.icon} ${g.name}</option>`)}
             </select><p class="field-hint">Cuenta lo que deposites en la meta durante el mes.</p><p class="field-error" data-error-for="goalId"></p></div>`
-          : html`<p class="notice notice-info">Primero creá una meta para poder asignarle un presupuesto.</p>`}
+          : html`<p class="notice notice-info">Primero crea una meta para poder asignarle un presupuesto.</p>`}
       </div>
       <div data-kind-panel="rest" ${current.target.kind === "rest" ? "" : "hidden"}>
         <p class="field-hint">Incluye todos los gastos cuyas categorías no estén en otro presupuesto.</p>
@@ -76,9 +76,9 @@ export function openBudgetForm({ budget, preset } = {}) {
         <summary>${icon("settings", 16)} Más opciones</summary>
         <div class="more-options-body">
           <div class="field">
-            <span class="field-label">¿Cómo lo querés definir?</span>
+            <span class="field-label">¿Cómo lo quieres definir?</span>
             ${segmented("mode", [{ value: "fixed", label: "Por mes" }, { value: "percent", label: "% de ingresos" }, { value: "daily", label: "Por día" }], current.mode)}
-            <p class="field-hint" data-daily-only ${current.mode === "daily" ? "" : "hidden"}>Para gustos (un café, un alfajor): un monto por día. Lo que no gastás un día se acumula para los siguientes.</p>
+            <p class="field-hint" data-daily-only ${current.mode === "daily" ? "" : "hidden"}>Para gustos (un café, un helado): un monto por día. Lo que no gastas un día se acumula para los siguientes.</p>
           </div>
           <div class="field">
             <span class="field-label">Se aplica a</span>
@@ -93,7 +93,7 @@ export function openBudgetForm({ budget, preset } = {}) {
             )}
           </div>
           <label class="toggle-field" data-reserve-box ${current.target.kind === "goal" ? "hidden" : ""}>
-            <span><span class="toggle-label">Reservar esta plata</span><span class="field-hint">Lo que te falta gastar este mes se descuenta de tu disponible. Si a fin de mes sobra, te ofrecemos pasarlo a una meta. Usalo para gastos que no son facturas (súper, nafta, gustos).</span></span>
+            <span><span class="toggle-label">Reservar este dinero</span><span class="field-hint">Lo que te falta gastar este mes se descuenta de tu disponible. Si a fin de mes sobra, te ofrecemos pasarlo a una meta. Úsalo para gastos que no son facturas (supermercado, combustible, gustos).</span></span>
             <input type="checkbox" name="reserve" class="switch" ${current.reserve ? "checked" : ""} />
           </label>
           ${emojiPicker(current.icon, { choices: current.icon && !BUDGET_ICONS.includes(current.icon) ? [current.icon, ...BUDGET_ICONS] : BUDGET_ICONS })}
@@ -117,7 +117,7 @@ export function openBudgetForm({ budget, preset } = {}) {
           const typed = parseAmount(field.value);
           if (fixed === field.hasAttribute("data-plain") && typed > 0) field.value = fixed ? amountToInput(typed) : String(typed).replace(".", ",");
           field.toggleAttribute("data-plain", !fixed);
-          // Los gustos por día vienen con la plata reservada.
+          // Los gustos por día vienen con el dinero reservado.
           if (event.target.value === "daily") form.elements.reserve.checked = true;
         }
         if (event.target.name === "kind") {
@@ -130,21 +130,21 @@ export function openBudgetForm({ budget, preset } = {}) {
         clearErrors(form);
         const data = readForm(form);
         const value = readAmount(form, "value");
-        if (!data.name.trim()) return fieldError(form, "name", "Poné un nombre para el presupuesto.");
-        if (!(value > 0)) return fieldError(form, "value", "Ingresá un valor mayor a cero.");
+        if (!data.name.trim()) return fieldError(form, "name", "Escribe un nombre para el presupuesto.");
+        if (!(value > 0)) return fieldError(form, "value", "Ingresa un valor mayor a cero.");
         if (data.mode === "percent" && value > 100) return fieldError(form, "value", "El porcentaje no puede superar 100%.");
         let target;
         // "Por día" es para gastos chicos del día a día: no aplica a una meta.
         if (data.kind === "goal" && data.mode === "daily") return toast("Los presupuestos por día se aplican a categorías de gasto, no a una meta", { type: "error" });
         if (data.kind === "goal") {
           // Sin metas no hay a qué asignarlo: se avisa (el campo ni siquiera existe).
-          if (!data.goalId) return store.getState().goals.length ? fieldError(form, "goalId", "Elegí una meta.") : toast("Primero creá una meta para asignarle un presupuesto", { type: "error" });
+          if (!data.goalId) return store.getState().goals.length ? fieldError(form, "goalId", "Elige una meta.") : toast("Primero crea una meta para asignarle un presupuesto", { type: "error" });
           target = { kind: "goal", goalId: data.goalId };
         } else if (data.kind === "rest") {
           target = { kind: "rest" };
         } else {
           const ids = [].concat(data.categoryIds || []);
-          if (!ids.length) return fieldError(form, "categoryIds", "Elegí al menos una categoría.");
+          if (!ids.length) return fieldError(form, "categoryIds", "Elige al menos una categoría.");
           target = { kind: "categories", categoryIds: ids };
         }
         store.saveBudget({

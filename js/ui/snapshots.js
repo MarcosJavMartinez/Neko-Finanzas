@@ -25,14 +25,14 @@ export function openSnapshots() {
     async onMount(panel, close) {
       const box = panel.querySelector("[data-snapshots]");
       if (storageMode() !== "idb") {
-        setHTML(box, html`<p class="notice notice-warn">${icon("alert", 16)} Este navegador no permite guardar copias automáticas. Exportá un backup de vez en cuando.</p>`);
+        setHTML(box, html`<p class="notice notice-warn">${icon("alert", 16)} Este navegador no permite guardar copias automáticas. Exporta un backup de vez en cuando.</p>`);
         return;
       }
       const list = await store.listSnapshots();
       const bytes = await snapshotsSize();
       const size = bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
       if (!list.length) {
-        setHTML(box, html`<p class="muted-text">Todavía no hay copias. La primera se hace sola cuando tengas datos propios cargados.</p>`);
+        setHTML(box, html`<p class="muted-text">Todavía no hay copias. La primera se hace sola cuando tengas datos propios.</p>`);
         return;
       }
       setHTML(
@@ -56,7 +56,7 @@ export function openSnapshots() {
         if (!button) return;
         const ok = await confirmDialog({
           title: "¿Volver a esta copia?",
-          text: "Tus datos actuales se reemplazan por los de la copia. Antes se guarda una copia de lo que tenés ahora, así podés volver.",
+          text: "Tus datos actuales se reemplazan por los de la copia. Antes se guarda una copia de lo que tienes ahora, así puedes volver.",
           confirmLabel: "Restaurar",
         });
         if (!ok) return;

@@ -58,7 +58,7 @@ return (async () => {
     await submit();
     set(form().elements["acc-amount-0"], "500.000");
     for (let i = 0; i < 12 && sheet()?.querySelector("form.setup"); i++) await submit();
-    await check("asistente (plata hoy 500.000, sueldo 800.000)");
+    await check("asistente (dinero hoy 500.000, sueldo 800.000)");
 
     // 1) Ingreso que se repite
     forms.tx.openTransactionForm({ type: "income" }); await wait(400);

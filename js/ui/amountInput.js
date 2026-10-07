@@ -7,7 +7,7 @@
 // Los campos marcados `data-plain` (un porcentaje) no usan centavos: ahí se
 // escribe el número tal cual, con un único separador decimal.
 //
-// Con "Cargar montos con centavos" apagado (Configuración), o en una región
+// Con "Escribir montos con centavos" apagado (Configuración), o en una región
 // cuya moneda no tiene centavos (yenes), se escriben enteros: 1-5-0-0 es
 // 1.500. Un monto que ya traía centavos se sigue editando con centavos, para
 // no perderlos.

@@ -2,7 +2,7 @@
 // toca los datos directamente: llaman a estas acciones, que guardan en el
 // dispositivo y avisan a los suscriptores para que se vuelva a dibujar.
 //
-// Regla: ninguna acción mueve plata "por su cuenta". Pagar una factura
+// Regla: ninguna acción mueve dinero "por su cuenta". Pagar una factura
 // registra un gasto visible; depositar en una meta queda en su historial;
 // un ingreso recurrente solo se registra cuando el usuario lo confirma.
 
@@ -223,10 +223,10 @@ export function updateTransaction(id, data) {
 function transferValues(s, data) {
   const from = find(s.accounts, data.fromId);
   const to = find(s.accounts, data.toId);
-  if (!from || !to || from.id === to.id) throw new Error("Elegí dos cuentas distintas");
-  if (!(data.amount > 0)) throw new Error("Ingresá un monto mayor a cero");
+  if (!from || !to || from.id === to.id) throw new Error("Elige dos cuentas distintas");
+  if (!(data.amount > 0)) throw new Error("Ingresa un monto mayor a cero");
   const toAmount = from.currency === to.currency ? data.amount : data.toAmount;
-  if (!(toAmount > 0)) throw new Error("Ingresá cuánto llega a la otra cuenta");
+  if (!(toAmount > 0)) throw new Error("Ingresa cuánto llega a la otra cuenta");
   return {
     type: "transfer",
     amount: data.amount,
@@ -298,7 +298,7 @@ export function saveAccount(data) {
 /** Solo se borra una cuenta sin movimientos (si tiene, se puede archivar). */
 export function deleteAccount(id) {
   if (state.accounts.length <= 1) throw new Error("Tiene que quedar al menos una cuenta");
-  if (countAccountUsage(id)) throw new Error("Esta cuenta tiene movimientos: podés archivarla");
+  if (countAccountUsage(id)) throw new Error("Esta cuenta tiene movimientos: puedes archivarla");
   commit((s) => {
     s.accounts = without(s.accounts, id);
     if (!s.accounts.some((a) => !a.archived)) s.accounts[0].archived = false;
@@ -332,7 +332,7 @@ function loanMovement(s, loan, { amount, accountId, date, isPayment }) {
 }
 
 function loanValues(data) {
-  if (!(data.amount > 0)) throw new Error("Ingresá un monto mayor a cero");
+  if (!(data.amount > 0)) throw new Error("Ingresa un monto mayor a cero");
   return {
     person: (data.person || "").trim().slice(0, 40) || "Alguien",
     amount: Math.round(data.amount * 100) / 100,
@@ -344,7 +344,7 @@ function loanValues(data) {
 }
 
 /**
- * Nuevo préstamo. Si se indica una cuenta, la plata sale de ella (le
+ * Nuevo préstamo. Si se indica una cuenta, el dinero sale de ella (le
  * prestaste) o entra (te prestaron); si no, solo queda anotado.
  */
 export function addLoan(data) {
@@ -386,7 +386,7 @@ export function updateLoan(id, data) {
   });
 }
 
-/** Borra el préstamo y la plata que movió (con "deshacer" desde la UI). */
+/** Borra el préstamo y el dinero que movió (con "deshacer" desde la UI). */
 export function deleteLoan(id) {
   commit((s) => {
     const group = find(s.loans, id)?.plan?.group;
@@ -407,7 +407,7 @@ export function addCreditLoan({ lender, received, count, installment, firstDue, 
   const n = Math.max(2, Math.min(60, Math.trunc(count)));
   const amount = Math.round(received * 100) / 100;
   const each = Math.round(installment * 100) / 100;
-  if (!(amount > 0) || !(each > 0)) throw new Error("Ingresá montos mayores a cero");
+  if (!(amount > 0) || !(each > 0)) throw new Error("Ingresa montos mayores a cero");
   return commit((s) => {
     const group = uid("cuotas");
     const loan = {
@@ -582,7 +582,7 @@ export function deleteTransaction(id) {
     s.transactions = without(s.transactions, id);
     // Si era el pago de una factura, la factura vuelve a quedar pendiente.
     if (tx.billId) revertBillPayment(s, tx.billId, id);
-    // Plata de un préstamo: el préstamo sigue, sin ese movimiento (y un pago se borra).
+    // Dinero de un préstamo: el préstamo sigue, sin ese movimiento (y un pago se borra).
     if (tx.type === "loan") {
       const loan = find(s.loans, tx.loanId);
       if (loan?.txId === id) delete loan.txId;
@@ -808,7 +808,7 @@ export function saveBudget(data) {
     const existing = data.id && find(s.budgets, data.id);
     const values = { ...data, reserve: Boolean(data.reserve) && data.target?.kind !== "goal" };
     // Desde cuándo cuenta: hace falta para los "por día" y para saber si hubo
-    // un mes anterior del que pueda haber sobrado plata.
+    // un mes anterior del que pueda haber sobrado dinero.
     const tracked = values.reserve || values.mode === "daily";
     if (existing) {
       Object.assign(existing, values);
@@ -1012,7 +1012,7 @@ export function releaseBillCushion(amount) {
   });
 }
 
-/** Pasa plata del fondo de facturas a una meta (amount en la moneda principal). */
+/** Pasa dinero del fondo de facturas a una meta (amount en la moneda principal). */
 export function moveCushionToGoal(goalId, amount) {
   commit((s) => {
     const goal = find(s.goals, goalId);
@@ -1061,7 +1061,7 @@ export function startFresh({ keepSetup = true } = {}) {
   });
 }
 
-/** Borra todo, copias automáticas incluidas (por ejemplo, antes de regalar el celular). */
+/** Borra todo, copias automáticas incluidas (por ejemplo, antes de regalar el teléfono). */
 export async function resetEverything() {
   await clearData();
   commit(() => {

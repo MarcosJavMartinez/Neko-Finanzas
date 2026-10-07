@@ -1,4 +1,4 @@
-// Cuentas: dónde está tu plata (efectivo, banco, billetera virtual, ahorro)
+// Cuentas: dónde está tu dinero (efectivo, banco, billetera virtual, ahorro)
 // y las transferencias entre ellas. La suma de todas es tu dinero total.
 
 import { html } from "../ui/dom.js";
@@ -13,7 +13,7 @@ export function accountRow(state, entry) {
   const { account, balance, balanceMain } = entry;
   const main = state.settings.mainCurrency;
   if (account.kind === "credit") {
-    // Tarjeta: se muestra lo que debés (en rojo), no un saldo negativo.
+    // Tarjeta: se muestra lo que debes (en rojo), no un saldo negativo.
     const card = cardStatus(state, account);
     return html`<button type="button" class="row account-row" data-action="account-detail" data-id="${account.id}">
       <span class="cat-bubble cat-bubble-md" style="--c:${account.color}" aria-hidden="true">${account.icon}</span>
@@ -60,13 +60,13 @@ export default {
       <section class="summary-card summary-accounts has-art reveal">
         ${art("ilus-cuentas", 84, "summary-art")}
         <div class="summary-text">
-          <p class="summary-label">Tu plata, sumando todas las cuentas</p>
+          <p class="summary-label">Tu dinero, sumando todas las cuentas</p>
           <p class="summary-amount" data-pulse="accounts-total">${formatMoney(total, main)}</p>
           <p class="summary-sub">${active.length} cuenta${active.length === 1 ? "" : "s"} activa${active.length === 1 ? "" : "s"}${archived.length ? ` · ${archived.length} archivada${archived.length === 1 ? "" : "s"}` : ""}</p>
         </div>
       </section>
       <div class="accounts-actions reveal">
-        <button type="button" class="btn btn-primary btn-grow" data-action="add-transfer">${icon("swap", 18)} Mover plata</button>
+        <button type="button" class="btn btn-primary btn-grow" data-action="add-transfer">${icon("swap", 18)} Mover dinero</button>
         <button type="button" class="btn btn-soft" data-action="add-account">${icon("plus", 18)} Nueva cuenta</button>
       </div>
       <section class="card card-flush rows reveal">${active.map((e) => accountRow(state, e))}</section>
@@ -80,7 +80,7 @@ export default {
             <div class="tx-list">${transfers.map((t) => txRow(state, t, { withDate: true }))}</div>
           </section>`
         : ""}
-      <p class="fine-print center">${icon("info", 14)} Mover plata entre cuentas no es un gasto: tu total no cambia.</p>
+      <p class="fine-print center">${icon("info", 14)} Mover dinero entre cuentas no es un gasto: tu total no cambia.</p>
     `;
   },
 };

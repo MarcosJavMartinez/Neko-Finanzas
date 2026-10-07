@@ -29,7 +29,7 @@ function title(kind, name, diff) {
   const when = diff > 1 ? `En ${diff} días` : diff === 1 ? "Mañana" : diff === 0 ? "Hoy" : null;
   const ago = diff === -1 ? "ayer" : `hace ${-diff} días`;
   if (kind === "card") return when ? `${when} vence el resumen de ${name}` : `El resumen de ${name} venció ${ago}`;
-  if (kind === "debt") return when ? `${when} le tenés que devolver a ${name}` : `Tenías que devolverle a ${name} ${ago}`;
+  if (kind === "debt") return when ? `${when} le tienes que devolver a ${name}` : `Tenías que devolverle a ${name} ${ago}`;
   if (kind === "lent") return when ? `${when} ${name} te tiene que devolver` : `${name} te tenía que devolver ${ago}`;
   return when ? `${when} vence ${name}` : `${name} venció ${ago}`;
 }
@@ -44,7 +44,7 @@ export function buildPlan(state, today = todayISO(), daysBefore = getReminderDay
   const items = [];
   const add = (id, due, name, amount, kind) => {
     if (!due || due < addDays(today, -AFTER_DAYS)) return;
-    const body = hide || !amount ? "Tocá para abrir Neko Finanzas" : `${amount} · Tocá para abrir Neko Finanzas`;
+    const body = hide || !amount ? "Toca para abrir Neko Finanzas" : `${amount} · Toca para abrir Neko Finanzas`;
     const stage = (tag, from, until) => {
       const titles = {};
       for (let day = from; day <= until; day = addDays(day, 1)) titles[day] = title(kind, name, daysBetween(day, due));

@@ -1,4 +1,4 @@
-// Captura de pantalla de la app en un celular simulado (390 px de ancho).
+// Captura de pantalla de la app en un teléfono simulado (390 px de ancho).
 //
 //   node tests/shot.mjs inicio salida.png [alto] [js-antes]
 //
@@ -45,7 +45,7 @@ try {
   await send("Page.addScriptToEvaluateOnNewDocument", { source: `try{Object.defineProperty(Navigator.prototype,"language",{get:()=>"${process.env.REGION || "es-AR"}"});Object.defineProperty(Navigator.prototype,"languages",{get:()=>["${process.env.REGION || "es-AR"}"]});}catch(e){}` });
   // Las descargas van a la carpeta temporal, no a Descargas.
   await send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: profile });
-  // Ancho del celular simulado: 390 px, o el que diga ANCHO (por ejemplo ANCHO=320).
+  // Ancho del teléfono simulado: 390 px, o el que diga ANCHO (por ejemplo ANCHO=320).
   await send("Emulation.setDeviceMetricsOverride", { width: Number(process.env.ANCHO) || 390, height: Number(height), deviceScaleFactor: 1, mobile: true });
   // Primera carga: sin splash ni tutorial, tema claro (salvo que el js-antes diga otra cosa).
   await send("Page.navigate", { url: `http://localhost:${PORT}/` });

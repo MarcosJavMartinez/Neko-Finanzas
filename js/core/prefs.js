@@ -1,6 +1,6 @@
 // Preferencias de este dispositivo: tema, vibración y recordatorio de backup.
 // Viven aparte de los datos financieros (no viajan en el backup): son del
-// celular o navegador, no de tus finanzas.
+// teléfono o navegador, no de tus finanzas.
 
 const KEYS = {
   theme: "nekoFinanzas.theme",
@@ -73,7 +73,7 @@ export const setAmountsHidden = (on) => write(KEYS.hideAmounts, on ? "1" : null)
 export const onboardingSeen = () => read(KEYS.onboardingSeen) === "1";
 
 /**
- * Cargar montos con centavos (los números entran desde los centavos) o sin
+ * Escribir montos con centavos (los números entran desde los centavos) o sin
  * ellos (se escribe el número entero: 1500 es $ 1.500).
  */
 export const amountCents = () => read(KEYS.amountCents) !== "off";
@@ -94,7 +94,7 @@ export const setReminderDays = (n) => write(KEYS.reminderDays, REMINDER_DAYS.inc
 export const getLastAccount = () => read(KEYS.lastAccount) || "";
 export const setLastAccount = (id) => write(KEYS.lastAccount, id || null);
 
-/** Aviso de iPhone ("instalala para que no se borren tus datos") pospuesto. */
+/** Aviso de iPhone ("instálala para que no se borren tus datos") pospuesto. */
 export function iosNoticeSnoozed(now = Date.now()) {
   const until = readTime(KEYS.iosNoticeSnooze);
   return !!until && until > now;

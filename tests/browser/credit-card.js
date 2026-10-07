@@ -36,10 +36,10 @@ return (async () => {
     form.elements.amount.value = "60.000"; form.elements.amount.dispatchEvent(new Event("input", { bubbles: true }));
     form.elements.installments.value = "6"; form.elements.installments.dispatchEvent(new Event("change", { bubbles: true }));
     log("aviso: " + box.querySelector("[data-installments-hint]").textContent);
-    form.elements.description.value = "Celular";
+    form.elements.description.value = "Teléfono";
     const totalBefore = F.totalBalance(store.getState());
     form.requestSubmit(); await wait(500);
-    const cuotas = store.getState().transactions.filter((t) => t.description === "Celular").sort((a, b) => a.installment.n - b.installment.n);
+    const cuotas = store.getState().transactions.filter((t) => t.description === "Teléfono").sort((a, b) => a.installment.n - b.installment.n);
     log(`cuotas: ${cuotas.length} · montos=${cuotas.map((c) => c.amount).join("+")}=${cuotas.reduce((s, c) => s + c.amount, 0)} · fechas=${cuotas.map((c) => c.date.slice(5)).join(",")}`);
     log(`la primera baja el total hoy: ${Math.round(totalBefore - F.totalBalance(store.getState()))} · las demás programadas=${cuotas.filter((c) => c.date > today).length}`);
 
@@ -48,8 +48,8 @@ return (async () => {
     const next = d.querySelector("[data-action=tx-month][data-delta='1']");
     const enabled = !next.disabled;
     next.click(); await wait(300);
-    const future = [...d.querySelectorAll("#view .tx-row")].filter((r) => r.textContent.includes("Celular"));
-    log(`mes siguiente: botón habilitado=${enabled} · cuota del Celular visible=${future.length === 1} · etiqueta=${future[0]?.querySelector(".tag-installment")?.textContent} · aviso=${!!d.querySelector("[data-action=tx-today]")}${enabled && future.length === 1 ? "" : " ✗"}`);
+    const future = [...d.querySelectorAll("#view .tx-row")].filter((r) => r.textContent.includes("Teléfono"));
+    log(`mes siguiente: botón habilitado=${enabled} · cuota del Teléfono visible=${future.length === 1} · etiqueta=${future[0]?.querySelector(".tag-installment")?.textContent} · aviso=${!!d.querySelector("[data-action=tx-today]")}${enabled && future.length === 1 ? "" : " ✗"}`);
     d.querySelector("[data-action=tx-today]")?.click(); await wait(300);
     log("volver a este mes: " + (d.querySelector("[data-action=tx-month][data-delta='1']").disabled === false ? "sigue pudiendo avanzar" : "bloqueado"));
 
@@ -79,7 +79,7 @@ return (async () => {
     log("editar cuota: " + (sheet().querySelector(".notice")?.textContent.trim() || "sin aviso ✗"));
     sheet().querySelector("[data-form-delete]").click(); await wait(500);
     sheet().querySelector("[data-confirm]").click(); await wait(600);
-    log("borrar compra: quedan " + store.getState().transactions.filter((t) => t.description === "Celular").length + " cuotas");
+    log("borrar compra: quedan " + store.getState().transactions.filter((t) => t.description === "Teléfono").length + " cuotas");
 
     // 7) Nueva tarjeta desde el formulario
     openAccountForm(); await wait(500);

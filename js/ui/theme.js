@@ -1,5 +1,5 @@
 // Tema claro / oscuro / automático, color principal y fondo. boot.js tiene
-// el motor (NekoAppearance.apply) y lo corre antes de pintar; acá se vuelve
+// el motor (NekoAppearance.apply) y lo corre antes de pintar; aquí se vuelve
 // a aplicar en vivo cuando cambia alguna preferencia o el modo del sistema.
 
 import { getThemePref, setThemePref } from "../core/prefs.js";

@@ -20,7 +20,7 @@ function remindersBlock() {
   if (!remindersSupported()) {
     return html`<div class="setting">
       <span class="setting-label">${icon("calendar", 16)} Avisos de vencimientos</span>
-      <span class="field-hint">${installPlatform().startsWith("ios") ? "En iPhone, instalá la app en la pantalla de inicio para poder activar los avisos." : "Este navegador no permite mostrar avisos."} Mientras tanto, podés llevar los vencimientos a tu calendario desde Facturas.</span>
+      <span class="field-hint">${installPlatform().startsWith("ios") ? "En iPhone, instala la app en la pantalla de inicio para poder activar los avisos." : "Este navegador no permite mostrar avisos."} Mientras tanto, puedes llevar los vencimientos a tu calendario desde Facturas.</span>
     </div>`;
   }
   const blocked = reminderPermission() === "denied";
@@ -30,7 +30,7 @@ function remindersBlock() {
       <span><span class="toggle-label">Avisos de vencimientos</span><span class="field-hint">Una notificación cuando se acerca el vencimiento de una factura, de la tarjeta o de un préstamo.</span></span>
       <input type="checkbox" class="switch" ${on ? "checked" : ""} data-change="set-reminders" />
     </label>
-    ${blocked ? html`<p class="notice notice-warn">${icon("alert", 16)} Los avisos están bloqueados para esta app en el navegador. Habilitalos desde el candado de la barra de direcciones (o en los ajustes del sitio) y volvé a prenderlos.</p>` : ""}
+    ${blocked ? html`<p class="notice notice-warn">${icon("alert", 16)} Los avisos están bloqueados para esta app en el navegador. Habilítalos desde el candado de la barra de direcciones (o en los ajustes del sitio) y vuelve a prenderlos.</p>` : ""}
     ${on
       ? html`<span class="setting-label">Avisarme</span>
           ${segmented(
@@ -43,7 +43,7 @@ function remindersBlock() {
             String(getReminderDays()),
             { action: "set-reminder-days" }
           )}
-          <span class="field-hint">Los avisos salen cuando abrís la app. En Android con la app instalada también pueden llegar con la app cerrada (lo decide el navegador). Si tenés los montos ocultos, el aviso no muestra el monto.</span>
+          <span class="field-hint">Los avisos salen cuando abres la app. En Android con la app instalada también pueden llegar con la app cerrada (lo decide el navegador). Si tienes los montos ocultos, el aviso no muestra el monto.</span>
           <button type="button" class="btn btn-soft btn-sm" data-action="test-reminder">${icon("check", 16)} Probar un aviso</button>`
       : ""}
   </div>`;
@@ -98,7 +98,7 @@ function installBlock() {
   const platform = installPlatform();
   const steps = INSTALL_STEPS[platform];
   const iosWarning = platform.startsWith("ios")
-    ? html`<p class="notice notice-warn">${icon("alert", 16)} En iPhone, si no abrís la app en 7 días, Safari puede borrar tus datos. Instalada, eso no pasa.</p>`
+    ? html`<p class="notice notice-warn">${icon("alert", 16)} En iPhone, si no abres la app en 7 días, Safari puede borrar tus datos. Instalada, eso no pasa.</p>`
     : "";
   return steps
     ? html`${iosWarning}<span class="field-hint">Queda en tu pantalla de inicio como una app más y funciona sin conexión:</span>
@@ -126,7 +126,7 @@ const handlers = {
       whenHistorySettled(() => (location.hash = "#/inicio"));
     },
     async "test-reminder"() {
-      toast((await testReminder()) ? "Aviso enviado: fijate en las notificaciones" : "No se pudo mostrar el aviso", { type: "info" });
+      toast((await testReminder()) ? "Aviso enviado: revisa las notificaciones" : "No se pudo mostrar el aviso", { type: "info" });
     },
     "open-snapshots"() {
       openSnapshots();
@@ -202,7 +202,7 @@ const handlers = {
     },
     "set-amount-cents"(el) {
       setAmountCents(el.checked);
-      toast(el.checked ? "Los montos se cargan con centavos" : "Los montos se cargan sin centavos", { type: "info" });
+      toast(el.checked ? "Los montos se escriben con centavos" : "Los montos se escriben sin centavos", { type: "info" });
     },
     "set-vibration"(el) {
       setVibration(el.checked);
@@ -280,7 +280,7 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
 
         <div class="setting">
           <span class="setting-label">Saldos iniciales</span>
-          <span class="field-hint">Cada cuenta tiene el suyo: lo que tenía antes de que empezaras a cargar movimientos.</span>
+          <span class="field-hint">Cada cuenta tiene el suyo: lo que tenía antes de que empezaras a registrar movimientos.</span>
           <a class="btn btn-soft btn-sm" href="#/cuentas">${icon("wallet", 16)} Ir a Cuentas</a>
         </div>
 
@@ -293,7 +293,7 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
 
         <label class="setting">
           <span class="setting-label">Ingreso de referencia <span class="optional">(opcional)</span></span>
-          <span class="field-hint">Se usa para los presupuestos en % mientras el mes no tenga ingresos cargados.</span>
+          <span class="field-hint">Se usa para los presupuestos en % mientras el mes no tenga ingresos registrados.</span>
           <span class="amount-input">
             <span class="amount-currency amount-currency-static">${symbolOf(s.mainCurrency)}</span>
             <input type="text" inputmode="decimal" value="${s.budgetReference ? amountToInput(s.budgetReference) : ""}" placeholder="${zeroAmount()}" data-change="set-reference" aria-label="Ingreso de referencia" />
@@ -310,7 +310,7 @@ export const settingsLook = sub("ajustes-apariencia", "Apariencia", () => {
   return html`
       <section class="card reveal">
         <h2 class="section-title">Apariencia</h2>
-        <p class="section-sub">Como en Neko Lista: elegí tema, color y fondo. Los colores de ingresos, gastos, facturas y metas no cambian, así siempre significan lo mismo.</p>
+        <p class="section-sub">Como en Neko Lista: elige tema, color y fondo. Los colores de ingresos, gastos, facturas y metas no cambian, así siempre significan lo mismo.</p>
 
         <div class="setting">
           <span class="setting-label">Tema</span>
@@ -335,8 +335,8 @@ export const settingsLook = sub("ajustes-apariencia", "Apariencia", () => {
                 <input type="radio" name="palette" value="${p.id}" ${palette === p.id ? "checked" : ""} data-change="set-palette" aria-label="${p.label}" />
               </label>`
             )}
-            <label class="palette-swatch palette-swatch-custom ${palette === "custom" ? "is-checked" : ""}" title="Elegí tu color" ${palette === "custom" ? html`style="--c:${getCustomColor()}"` : ""}>
-              <input type="color" value="${getCustomColor()}" data-input="preview-custom-color" data-change="set-custom-color" aria-label="Elegí tu propio color" />
+            <label class="palette-swatch palette-swatch-custom ${palette === "custom" ? "is-checked" : ""}" title="Elige tu color" ${palette === "custom" ? html`style="--c:${getCustomColor()}"` : ""}>
+              <input type="color" value="${getCustomColor()}" data-input="preview-custom-color" data-change="set-custom-color" aria-label="Elige tu propio color" />
             </label>
           </div>
           <span class="field-hint">Cambia el color de la barra, los botones y lo seleccionado.</span>
@@ -357,7 +357,7 @@ export const settingsLook = sub("ajustes-apariencia", "Apariencia", () => {
             </label>
             ${bgColor ? html`<button type="button" class="btn btn-ghost btn-sm" data-action="reset-bg-color">Restablecer</button>` : ""}
           </div>
-          <span class="field-hint">Tu imagen queda solo en este dispositivo. Elegir un color de fondo saca la imagen, porque la taparía.</span>
+          <span class="field-hint">Tu imagen queda solo en este dispositivo. Elegir un color de fondo quita la imagen, porque la taparía.</span>
         </div>
       </section>
   `;
@@ -366,7 +366,7 @@ export const settingsLook = sub("ajustes-apariencia", "Apariencia", () => {
 export const settingsDevice = sub("ajustes-dispositivo", "En este dispositivo", () => html`
       <section class="card reveal">
         <h2 class="section-title">En este dispositivo</h2>
-        <p class="section-sub">Se guardan en este celular o navegador, no en tus backups.</p>
+        <p class="section-sub">Se guardan en este teléfono o navegador, no en tus backups.</p>
 
         ${canVibrate()
           ? html`<div class="setting">
@@ -381,14 +381,14 @@ export const settingsDevice = sub("ajustes-dispositivo", "En este dispositivo", 
 
         <div class="setting">
           <label class="toggle-field">
-            <span><span class="toggle-label">Cargar montos con centavos</span><span class="field-hint">Prendido, los números entran desde los centavos: 1-5-0-0 es $ 15,00. Apagado, se escriben pesos enteros: 1-5-0-0 es $ 1.500.</span></span>
+            <span><span class="toggle-label">Escribir montos con centavos</span><span class="field-hint">Activado, los números entran desde los centavos: 1-5-0-0 es $ 15,00. Desactivado, se escriben montos enteros: 1-5-0-0 es $ 1.500.</span></span>
             <input type="checkbox" class="switch" ${amountCents() ? "checked" : ""} data-change="set-amount-cents" />
           </label>
         </div>
 
         <div class="setting">
           <label class="toggle-field">
-            <span><span class="toggle-label">Ocultar montos</span><span class="field-hint">Muestra $ ••••• en lugar de los números, para abrir la app en público. También con el ojito del inicio.</span></span>
+            <span><span class="toggle-label">Ocultar montos</span><span class="field-hint">Muestra $ ••••• en lugar de los números, para abrir la app en público. También con el botón del ojo en Inicio.</span></span>
             <input type="checkbox" class="switch" ${isMasked() ? "checked" : ""} data-change="set-hide-amounts" />
           </label>
         </div>
@@ -419,8 +419,8 @@ export const settingsData = sub("ajustes-datos", "Tus datos", () => html`
           <span class="field-hint">Te avisamos en el inicio cuando pase ese tiempo sin backup.</span>
         </div>
         <div class="settings-actions">
-          <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>${backupFileKnown() ? "Actualizar backup" : "Exportar backup"}</strong><span>${backupFileKnown() ? `Reemplaza “${backupFileKnown()}” con tus datos de ahora` : canPickFile() ? "Elegís dónde guardarlo una vez; los próximos reemplazan ese mismo archivo" : "Un archivo .json con todo. Guardalo siempre con el mismo nombre para reemplazar el anterior"}</span></span></button>
-          ${backupFileKnown() ? html`<button type="button" class="settings-action" data-action="export-data" data-choose="1">${icon("edit", 20)}<span><strong>Guardar el backup en otro archivo</strong><span>Elegí otro lugar o nombre; pasa a ser el que se reemplaza</span></span></button>` : ""}
+          <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>${backupFileKnown() ? "Actualizar backup" : "Exportar backup"}</strong><span>${backupFileKnown() ? `Reemplaza “${backupFileKnown()}” con tus datos de ahora` : canPickFile() ? "Eliges dónde guardarlo una vez; los próximos reemplazan ese mismo archivo" : "Un archivo .json con todo. Guárdalo siempre con el mismo nombre para reemplazar el anterior"}</span></span></button>
+          ${backupFileKnown() ? html`<button type="button" class="settings-action" data-action="export-data" data-choose="1">${icon("edit", 20)}<span><strong>Guardar el backup en otro archivo</strong><span>Elige otro lugar o nombre; pasa a ser el que se reemplaza</span></span></button>` : ""}
           <button type="button" class="settings-action" data-action="export-csv">${icon("table", 20)}<span><strong>Exportar a planilla</strong><span>Tus movimientos en .csv, para abrir en Excel o Google Sheets</span></span></button>
           <button type="button" class="settings-action" data-action="open-snapshots">${icon("refresh", 20)}<span><strong>Copias automáticas</strong><span>Volver a como estaban tus datos un día anterior</span></span></button>
           <label class="settings-action">${icon("upload", 20)}<span><strong>Importar backup</strong><span>Reemplaza los datos actuales</span></span>
@@ -456,7 +456,7 @@ export default {
         )}
         <button type="button" class="more-item reveal" data-action="setup-wizard">
           <span class="more-icon">${icon("list", 22)}</span>
-          <span class="more-text"><span class="more-title">Asistente de carga</span><span class="more-sub">Cuentas, tarjeta, facturas, préstamos y metas, paso a paso</span></span>
+          <span class="more-text"><span class="more-title">Asistente de inicio</span><span class="more-sub">Cuentas, tarjeta, facturas, préstamos y metas, paso a paso</span></span>
           ${icon("chevronRight", 18, "more-chevron")}
         </button>
         <button type="button" class="more-item reveal" data-action="show-onboarding">
@@ -470,7 +470,7 @@ export default {
         <div>
           <h2 class="section-title">Tus datos son tuyos</h2>
           <p class="section-sub">Todo se guarda <strong>solo en este dispositivo</strong>, dentro del navegador. No hay cuentas, no hay publicidad y tu información financiera no se envía a ningún servidor.</p>
-          <p class="section-sub">La app guarda copias automáticas, pero si borrás los datos del navegador o cambiás de teléfono se pierden: exportá un backup de vez en cuando.</p>
+          <p class="section-sub">La app guarda copias automáticas, pero si borras los datos del navegador o cambias de teléfono se pierden: exporta un backup de vez en cuando.</p>
         </div>
       </section>
       <p class="app-version">Neko Finanzas v1.1 · by Neko Tools</p>

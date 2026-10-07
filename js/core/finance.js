@@ -13,12 +13,12 @@
  *                        + ingresos registrados en ella (con fecha hasta hoy)
  *                        − gastos registrados en ella   (con fecha hasta hoy)
  *                        ± transferencias desde/hacia otras cuentas
- *                      Es la plata que realmente tenés, sumando todo. Una
+ *                      Es el dinero que realmente tienes, sumando todo. Una
  *                      transferencia no es ingreso ni gasto: solo cambia de
  *                      cuenta (salvo la diferencia si cambia de moneda).
  *
  *    EN METAS          = lo acumulado en cada meta de ahorro.
- *                      Separar plata para una meta NO es un gasto: el dinero
+ *                      Separar dinero para una meta NO es un gasto: el dinero
  *                      sigue siendo tuyo (sigue en el total), solo queda
  *                      apartado. Cada depósito o retiro lo hace el usuario a
  *                      mano y queda en el historial de la meta.
@@ -28,15 +28,15 @@
  *                      cambia en Configuración) + las vencidas sin pagar
  *                      + gastos programados (con fecha futura, como las
  *                      próximas cuotas de una compra) dentro del horizonte
- *                      + lo que debés de un préstamo que vence en ese plazo
+ *                      + lo que debes de un préstamo que vence en ese plazo
  *                      + lo que falta gastar este mes de los presupuestos
  *                      marcados "reservar" (supermercado, gustos por día)
  *                      + el fondo de facturas, si está activado: lo que
  *                      sobró de facturas que vinieron por menos.
  *
- *  Préstamos: prestar plata la saca de tu cuenta (no es un gasto) y lo que
- *  te deben no cuenta como plata tuya hasta que te la devuelven; si te
- *  prestan, la plata entra (no es un ingreso) y devolverla la saca.
+ *  Préstamos: prestar dinero la saca de tu cuenta (no es un gasto) y lo que
+ *  te deben no cuenta como dinero tuyo hasta que te la devuelven; si te
+ *  prestan, el dinero entra (no es un ingreso) y devolverla la saca.
  *                      Una factura semanal cuenta una vez por cada
  *                      vencimiento dentro del horizonte. Cuando se paga,
  *                      se registra como gasto y sale de la reserva.
@@ -44,7 +44,7 @@
  *    DISPONIBLE        = DINERO TOTAL − EN METAS − A RESERVAR
  *                      Lo que se puede gastar sin tocar metas ni facturas.
  *                      Puede ser negativo: significa que lo apartado supera
- *                      lo que tenés, y la app lo muestra como aviso.
+ *                      lo que tienes, y la app lo muestra como aviso.
  *
  *  Monedas: cada movimiento guarda su monto en su propia moneda. Las sumas se
  *  hacen convirtiendo al momento del cálculo con el tipo de cambio que
@@ -300,7 +300,7 @@ export function loanOutstanding(loan, state, today = todayISO()) {
   return Math.max(0, Math.round((loan.amount - paid) * 100) / 100);
 }
 
-/** Te deben / debés, en la moneda principal, con cada préstamo abierto. */
+/** Te deben / debes, en la moneda principal, con cada préstamo abierto. */
 export function loansSummary(state, today = todayISO()) {
   const items = (state.loans || []).map((loan) => {
     const outstanding = loanOutstanding(loan, state, today);
@@ -310,7 +310,7 @@ export function loansSummary(state, today = todayISO()) {
   return { items, lent: sum("lent"), borrowed: sum("borrowed"), open: items.filter((i) => i.outstanding > 0).length };
 }
 
-/** Lo que debés de préstamos con vencimiento dentro del horizonte (o ya vencidos). */
+/** Lo que debes de préstamos con vencimiento dentro del horizonte (o ya vencidos). */
 export function loansReserve(state, today = todayISO()) {
   const until = reserveHorizonEnd(state, today);
   const items = loansSummary(state).items.filter((i) => i.loan.direction === "borrowed" && i.outstanding > 0 && i.loan.dueDate && i.loan.dueDate <= until);
@@ -343,7 +343,7 @@ export function balanceSummary(state, today = todayISO()) {
  *   leftToday = perDay − lo gastado hoy   (negativo: hoy te pasaste)
  *
  * Lo gastado hoy no cuenta los pagos de facturas, las cuotas de una compra que
- * caen hoy (de la 2 en adelante) ni las cuotas de un préstamo: esa plata ya
+ * caen hoy (de la 2 en adelante) ni las cuotas de un préstamo: ese dinero ya
  * estaba reservada, no cambia el disponible.
  */
 export function dailyAllowance(state, today = todayISO()) {
@@ -503,7 +503,7 @@ export function monthlySeries(state, count, endKey) {
 /**
  * Base para los presupuestos en porcentaje: los ingresos del mes, o el
  * "ingreso de referencia" de Configuración si el mes todavía no tiene
- * ingresos cargados (así un 25% no vale $0 el día 1).
+ * ingresos registrados (así un 25% no vale $0 el día 1).
  */
 export function budgetBase(state, key) {
   const income = monthlyTotals(state, key).income;
@@ -556,14 +556,14 @@ export function budgetSpent(state, budget, key) {
 }
 
 // ---------------------------------------------------------------------------
-// Sobres: presupuestos con la plata reservada, y gustos por día
+// Sobres: presupuestos con el dinero reservado, y gustos por día
 // ---------------------------------------------------------------------------
 
 const isEnvelope = (budget) => budget.reserve && budget.target.kind !== "goal";
 
 /**
  * Lo que falta gastar este mes de los presupuestos marcados "reservar" (por
- * ejemplo, supermercado). Esa plata se descuenta del disponible: está
+ * ejemplo, supermercado). Ese dinero se descuenta del disponible: está
  * guardada para eso.
  */
 export function budgetReserve(state, today = todayISO()) {

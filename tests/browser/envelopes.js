@@ -1,4 +1,4 @@
-// Sobres: presupuesto reservado (súper), gustos por día que se acumulan y
+// Sobres: presupuesto reservado (supermercado), gustos por día que se acumulan y
 // sobrante del mes pasado que se ofrece pasar a una meta.
 const w = f.contentWindow, d = w.document, log = (m) => w.console.log("CHECK " + m);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -22,7 +22,7 @@ return (async () => {
     await home();
     log("sin gustos: " + text(".daily-card .daily-main") + " · enlace=" + !!d.querySelector(".daily-card [data-action=add-treats]"));
 
-    // 2) Súper reservado por mes
+    // 2) Supermercado reservado por mes
     openBudgetForm(); await wait(500);
     form().elements.name.value = "Supermercado";
     form().querySelector("input[name=mode][value=fixed]").click();
@@ -31,9 +31,9 @@ return (async () => {
     form().elements.reserve.click();
     const before = avail();
     form().requestSubmit(); await wait(500);
-    log(`súper reservado: disponible ${before} → ${avail()}${avail() === before - 200000 ? "" : " ✗"}`);
+    log(`supermercado reservado: disponible ${before} → ${avail()}${avail() === before - 200000 ? "" : " ✗"}`);
     store.addTransaction({ type: "expense", amount: 40000, currency: "ARS", date: today, categoryId: "exp-super" });
-    log(`gasté 40.000 en el súper: disponible sigue en ${avail()}${avail() === before - 200000 ? "" : " ✗"} · reservado baja a ${F.budgetReserve(store.getState()).amount}`);
+    log(`gasté 40.000 en el supermercado: disponible sigue en ${avail()}${avail() === before - 200000 ? "" : " ✗"} · reservado baja a ${F.budgetReserve(store.getState()).amount}`);
 
     // 3) Gustos por día desde el enlace del Inicio
     await home();
@@ -79,7 +79,7 @@ return (async () => {
     const goal = store.getState().goals[0];
     log(`pasado a la meta: ${F.goalSaved(goal)} en ${goal.name} · disponible ${a0} → ${avail()} · nota="${goal.movements[0].note}"${F.goalSaved(goal) === 50000 && avail() === a0 - 50000 ? "" : " ✗"}`);
     await home();
-    log("ya no se ofrece el del súper: " + ![...d.querySelectorAll("[data-action=leftover-to-goal]")].some((b) => b.dataset.id === superId));
+    log("ya no se ofrece el del supermercado: " + ![...d.querySelectorAll("[data-action=leftover-to-goal]")].some((b) => b.dataset.id === superId));
     const other = d.querySelector("[data-action=leftover-keep]");
     if (other) { other.click(); await wait(400); }
     log("'dejarlo disponible' saca el aviso: quedan " + d.querySelectorAll("[data-action=leftover-keep]").length + " · metas sin cambios=" + (F.goalSaved(store.getState().goals[0]) === 50000));

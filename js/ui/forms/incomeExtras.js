@@ -42,7 +42,7 @@ export function openIncomeExtras() {
   openSheet({
     title: "Extras del mes",
     body: html`<form class="form" novalidate>
-      <p class="sheet-text">Lo que cobraste además del sueldo. Son variables: cargá solo los que tuviste, cuando los tengas.${loadedTotal > 0 ? html` En ${formatMonth(month).split(" ")[0].toLowerCase()} ya llevás <strong>${formatMoney(loadedTotal, main)}</strong> en extras.` : ""}</p>
+      <p class="sheet-text">Lo que cobraste además del sueldo. Son variables: anota solo los que tuviste, cuando los tengas.${loadedTotal > 0 ? html` En ${formatMonth(month).split(" ")[0].toLowerCase()} ya llevas <strong>${formatMoney(loadedTotal, main)}</strong> en extras.` : ""}</p>
       <div class="field">
         <span class="field-label">Moneda</span>
         ${segmented("currency", currencyChoices(main).map((c) => ({ value: c, label: symbolOf(c) })), main)}
@@ -50,7 +50,7 @@ export function openIncomeExtras() {
       <div class="setup-list">
         ${loaded.filter((e) => e.key !== OTHER.key).map(
           (e) => html`<label class="setup-item">
-            <span class="setup-check extra-name"><span>${e.icon} ${e.name}</span>${e.total > 0 ? html`<span class="extra-loaded">ya cargaste ${formatMoney(e.total, main)}</span>` : ""}</span>
+            <span class="setup-check extra-name"><span>${e.icon} ${e.name}</span>${e.total > 0 ? html`<span class="extra-loaded">ya registraste ${formatMoney(e.total, main)}</span>` : ""}</span>
             <span class="amount-input"><input name="extra-${e.key}" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" aria-label="${e.name}" /></span>
           </label>`
         )}
@@ -58,13 +58,13 @@ export function openIncomeExtras() {
           <span class="amount-input"><input name="other-name" type="text" maxlength="40" autocomplete="off" placeholder="Otro (ej.: viáticos)" aria-label="Nombre de otro extra" /></span>
           <span class="amount-input"><input name="other-amount" data-other type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" aria-label="Monto de otro extra" /></span>
         </div>
-        ${loaded.find((e) => e.key === OTHER.key).total > 0 ? html`<span class="extra-loaded">otros extras: ya cargaste ${formatMoney(loaded.find((e) => e.key === OTHER.key).total, main)}</span>` : ""}
+        ${loaded.find((e) => e.key === OTHER.key).total > 0 ? html`<span class="extra-loaded">otros extras: ya registraste ${formatMoney(loaded.find((e) => e.key === OTHER.key).total, main)}</span>` : ""}
       </div>
       <p class="field-error" data-error-for="extras"></p>
       ${dateField({ name: "date", label: "Fecha de cobro", value: todayISO() })}
       ${several ? accountSelect(state, { label: "¿A qué cuenta entraron?", value: state.accounts.find((a) => a.id === getLastAccount() && !a.archived && a.kind !== "credit")?.id || store.defaultAccountId() }) : ""}
       <p class="field-hint">Cada extra queda como un ingreso aparte, dentro de Sueldo (o Propinas), sin repetirse.</p>
-      ${formActions({ submitLabel: "Cargar extras" })}
+      ${formActions({ submitLabel: "Agregar extras" })}
     </form>`,
     onMount(panel, close) {
       const form = panel.querySelector("form");
@@ -91,12 +91,12 @@ export function openIncomeExtras() {
           const otherName = form.elements["other-name"].value.trim();
           const otherAmount = read("other-amount", otherName || "Otro");
           if (otherAmount) extras.push({ name: otherName || "Extra", amount: otherAmount, categoryId: OTHER.categoryId, subcategoryId: OTHER.subcategoryId });
-          else if (otherName) throw new Error(`Poné el monto de “${otherName}”.`);
+          else if (otherName) throw new Error(`Escribe el monto de “${otherName}”.`);
         } catch (error) {
           return fail(error.message);
         }
-        if (!extras.length) return fail("Poné el monto de al menos un extra.");
-        if (!isISODate(form.elements.date.value)) return fieldError(form, "date", "Elegí una fecha válida.");
+        if (!extras.length) return fail("Escribe el monto de al menos un extra.");
+        if (!isISODate(form.elements.date.value)) return fieldError(form, "date", "Elige una fecha válida.");
         const accountId = form.elements.accountId?.value;
         if (accountId) setLastAccount(accountId);
         const currency = form.elements.currency.value || main;
@@ -104,7 +104,7 @@ export function openIncomeExtras() {
         store.addIncomeExtras(extras, { date: form.elements.date.value, accountId, currency });
         close();
         const total = extras.reduce((s, e) => s + e.amount, 0);
-        toast(`${extras.length === 1 ? extras[0].name : `${extras.length} extras`} cargado${extras.length === 1 ? "" : "s"}: ${formatMoney(total, currency)}`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast(`${extras.length === 1 ? extras[0].name : `${extras.length} extras`} registrado${extras.length === 1 ? "" : "s"}: ${formatMoney(total, currency)}`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });

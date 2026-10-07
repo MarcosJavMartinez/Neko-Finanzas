@@ -73,7 +73,7 @@ return (async () => {
     form.requestSubmit(); await wait(500);
     log(`deuda con fecha: reservado ${Math.round(r0)}→${Math.round(sum().debts.amount)} · identidad=${Math.abs(sum().available - (sum().total - sum().inGoals - sum().reserved)) < 0.01 ? "ok" : "MAL ✗"}`);
 
-    // 6) Sin mover plata: solo anotarlo
+    // 6) Sin mover dinero: solo anotarlo
     const t1 = F.totalBalance(store.getState());
     store.addLoan({ person: "Anotado", direction: "lent", amount: 5000, currency: "ARS", date: D.todayISO(), accountId: "" });
     log("solo anotado: total igual=" + (Math.abs(F.totalBalance(store.getState()) - t1) < 0.01));
@@ -84,7 +84,7 @@ return (async () => {
     log("tocar movimiento de préstamo abre: " + (sheet()?.querySelector(".sheet-title")?.textContent || "nada ✗"));
     sheet()?.querySelector("[data-sheet-close]")?.click(); await wait(400);
 
-    // 8) Borrar el préstamo: vuelve la plata
+    // 8) Borrar el préstamo: vuelve el dinero
     openLoanForm({ loan: store.getState().loans.find((l) => l.id === juli.id) }); await wait(500);
     sheet().querySelector("[data-form-delete]").click(); await wait(500);
     sheet().querySelector("[data-confirm]").click(); await wait(600);

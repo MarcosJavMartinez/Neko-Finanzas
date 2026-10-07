@@ -1,5 +1,5 @@
 // Cuentas (efectivo, banco, billetera virtual, ahorro) y transferencias
-// entre ellas. Transferir no es gastar: la plata cambia de lugar.
+// entre ellas. Transferir no es gastar: el dinero cambia de lugar.
 
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
@@ -88,9 +88,9 @@ export function openAccountForm({ account, kind: presetKind } = {}) {
           : segmented("currency", currencyTiles(CURRENCY_CODES), current.currency, { size: "segmented-wrap" })}
       </div>
       <div data-opening-normal ${isCard ? "hidden" : ""}>
-        ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: isCard ? 0 : Math.abs(current.opening || 0), hint: "Lo que tenía esta cuenta antes de cargar movimientos." })}
+        ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: isCard ? 0 : Math.abs(current.opening || 0), hint: "Lo que tenía esta cuenta antes de registrar movimientos." })}
         <label class="toggle-field">
-          <span><span class="toggle-label">Está en rojo</span><span class="field-hint">El saldo es negativo: es plata que debés (descubierto).</span></span>
+          <span><span class="toggle-label">Está en rojo</span><span class="field-hint">El saldo es negativo: es dinero que debes (descubierto).</span></span>
           <input type="checkbox" name="openingNegative" class="switch" ${!isCard && current.opening < 0 ? "checked" : ""} />
         </label>
       </div>
@@ -101,7 +101,7 @@ export function openAccountForm({ account, kind: presetKind } = {}) {
       ${colorPicker(current.color)}
       ${isEdit
         ? html`<label class="toggle-field">
-            <span><span class="toggle-label">Archivada</span><span class="field-hint">No aparece al cargar movimientos. Su saldo sigue contando en el total.</span></span>
+            <span><span class="toggle-label">Archivada</span><span class="field-hint">No aparece al registrar movimientos. Su saldo sigue contando en el total.</span></span>
             <input type="checkbox" name="archived" class="switch" ${current.archived ? "checked" : ""} />
           </label>`
         : ""}
@@ -127,7 +127,7 @@ export function openAccountForm({ account, kind: presetKind } = {}) {
         event.preventDefault();
         clearErrors(form);
         const data = readForm(form);
-        if (!data.name.trim()) return fieldError(form, "name", "Poné un nombre para la cuenta.");
+        if (!data.name.trim()) return fieldError(form, "name", "Escribe un nombre para la cuenta.");
         const card = data.kind === "credit";
         const field = card ? "openingDebt" : "opening";
         const openingText = form.elements[field].value.trim();
@@ -174,7 +174,7 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
   const state = store.getState();
   const active = state.accounts.filter((a) => !a.archived);
   if (!tx && active.length < 2) {
-    toast("Necesitás al menos dos cuentas para mover plata entre ellas", { type: "info" });
+    toast("Necesitas al menos dos cuentas para mover dinero entre ellas", { type: "info" });
     return openAccountForm();
   }
   const isEdit = Boolean(tx);
@@ -182,9 +182,9 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
   const to = tx?.toAccountId || toId || active.find((a) => a.id !== from)?.id;
 
   openSheet({
-    title: isEdit ? "Editar transferencia" : "Mover plata",
+    title: isEdit ? "Editar transferencia" : "Mover dinero",
     body: html`<form class="form" novalidate>
-      <p class="sheet-text">Pasar plata de una cuenta a otra no es un gasto: tu total no cambia.</p>
+      <p class="sheet-text">Pasar dinero de una cuenta a otra no es un gasto: tu total no cambia.</p>
       <div class="field-row field-row-transfer">
         ${accountSelect(state, { name: "fromId", label: "Desde", value: from })}
         <span class="transfer-arrow" aria-hidden="true">${icon("chevronRight", 20)}</span>
@@ -192,7 +192,7 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
       </div>
       ${fixedAmountField({ name: "amount", label: "Monto", currency: findAccount(state, from)?.currency, value: tx?.amount || presetAmount })}
       <div data-to-amount hidden>
-        ${fixedAmountField({ name: "toAmount", label: "Llega a la otra cuenta", currency: findAccount(state, to)?.currency, value: tx?.toAmount, hint: "Sugerido con tu tipo de cambio. Si cambiaste a otro valor, corregilo." })}
+        ${fixedAmountField({ name: "toAmount", label: "Llega a la otra cuenta", currency: findAccount(state, to)?.currency, value: tx?.toAmount, hint: "Sugerido con tu tipo de cambio. Si cambiaste a otro valor, corrígelo." })}
       </div>
       <div class="field">
         <label class="field-label" for="f-date">Fecha</label>
@@ -200,7 +200,7 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
         <p class="field-error" data-error-for="date"></p>
       </div>
       ${textField({ name: "description", label: "Descripción", value: tx?.description || presetDescription || "", placeholder: "Ej.: Retiro del cajero, compra de dólares" })}
-      ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Mover plata", deletable: isEdit })}
+      ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Mover dinero", deletable: isEdit })}
     </form>`,
     onMount(panel, close) {
       const form = panel.querySelector("form");
@@ -218,7 +218,7 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
         const amount = readMoney(form, "amount");
         if (differ && !toEdited && amount > 0) form.elements.toAmount.value = amountToInput(Math.round(convert(amount, a.currency, b.currency, s.rates) * 100) / 100);
         const hint = form.querySelector('[data-hint-for="toAmount"]');
-        if (hint && differ) hint.textContent = `Sugerido con tu tipo de cambio (${formatMoney(convert(1, b.currency, a.currency, s.rates), a.currency, { reveal: true })} por ${b.currency}). Si cambiaste a otro valor, corregilo.`;
+        if (hint && differ) hint.textContent = `Sugerido con tu tipo de cambio (${formatMoney(convert(1, b.currency, a.currency, s.rates), a.currency, { reveal: true })} por ${b.currency}). Si cambiaste a otro valor, corrígelo.`;
       };
       form.addEventListener("input", (event) => {
         if (event.target.name === "toAmount") toEdited = true;
@@ -236,11 +236,11 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
         clearErrors(form);
         const data = readForm(form);
         const amount = readMoney(form, "amount");
-        if (data.fromId === data.toId) return fieldError(form, "amount", "Elegí dos cuentas distintas.");
-        if (!(amount > 0)) return fieldError(form, "amount", "Ingresá un monto mayor a cero.");
-        if (!isISODate(data.date)) return fieldError(form, "date", "Elegí una fecha válida.");
+        if (data.fromId === data.toId) return fieldError(form, "amount", "Elige dos cuentas distintas.");
+        if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
+        if (!isISODate(data.date)) return fieldError(form, "date", "Elige una fecha válida.");
         const toAmount = toBox.hidden ? amount : readMoney(form, "toAmount");
-        if (!(toAmount > 0)) return fieldError(form, "toAmount", "Ingresá cuánto llega a la otra cuenta.");
+        if (!(toAmount > 0)) return fieldError(form, "toAmount", "Ingresa cuánto llega a la otra cuenta.");
         const values = { fromId: data.fromId, toId: data.toId, amount, toAmount, date: data.date, description: data.description };
         try {
           if (isEdit) store.updateTransfer(tx.id, values);
@@ -289,7 +289,7 @@ export function openAccountDetail(accountId) {
       <div class="account-detail-actions">
         ${card
           ? html`<button type="button" class="btn btn-primary btn-sm" data-do="pay-card">${icon("check", 16)} Pagar tarjeta</button>`
-          : html`<button type="button" class="btn btn-soft btn-sm" data-do="transfer">${icon("swap", 16)} Mover plata</button>`}
+          : html`<button type="button" class="btn btn-soft btn-sm" data-do="transfer">${icon("swap", 16)} Mover dinero</button>`}
         <button type="button" class="btn btn-ghost btn-sm" data-do="edit">${icon("edit", 16)} Editar</button>
       </div>
       ${card && card.upcoming.length
@@ -318,7 +318,7 @@ export function openAccountDetail(accountId) {
         if (!what) return;
         close();
         if (what === "transfer") openTransferForm({ fromId: accountId });
-        // Pagar la tarjeta: mover plata desde la cuenta principal a la tarjeta.
+        // Pagar la tarjeta: mover dinero desde la cuenta principal a la tarjeta.
         if (what === "pay-card") openTransferForm({ fromId: store.defaultAccountId(), toId: accountId, amount: card.debt || undefined, description: `Pago de ${account.name}` });
         if (what === "edit") openAccountForm({ account: store.getState().accounts.find((a) => a.id === accountId) });
       });

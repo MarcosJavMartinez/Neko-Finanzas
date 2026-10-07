@@ -28,7 +28,7 @@ export default {
       return html`<div class="card">${emptyState({
         art: "neko-repartiendo",
         title: "Sin presupuestos todavía",
-        text: "Repartí tus ingresos, reservá lo del súper del mes o ponete un límite de gustos por día.",
+        text: "Reparte tus ingresos, reserva lo del supermercado del mes o ponte un límite de gustos por día.",
         actionLabel: "Crear presupuesto",
         action: "add-budget",
       })}</div>`;
@@ -39,13 +39,13 @@ export default {
         ? `Sobre tus ingresos de ${formatMonth(view.month)}: ${formatMoney(overview.base.amount, main)}`
         : overview.base.source === "reference"
           ? `Todavía no hay ingresos este mes: se usa tu ingreso de referencia (${formatMoney(overview.base.amount, main)}).`
-          : "Todavía no hay ingresos este mes: los presupuestos en % valen $0 hasta que cargues uno (o definí un ingreso de referencia en Configuración).";
+          : "Todavía no hay ingresos este mes: los presupuestos en % valen $0 hasta que registres uno (o define un ingreso de referencia en Configuración).";
     const unassigned = Math.max(0, 100 - overview.assignedPct);
 
     return html`
       ${monthNav(view.month, "budget-month")}
       <section class="card reveal">
-        <div class="section-head"><h2 class="section-title section-title-art">${art("ilus-frascos", 48)}Cómo repartís tus ingresos</h2>
+        <div class="section-head"><h2 class="section-title section-title-art">${art("ilus-frascos", 48)}Cómo repartes tus ingresos</h2>
           <button type="button" class="section-link" data-action="add-budget">${icon("plus", 16)}Nuevo</button></div>
         ${stackBar([
           ...overview.items.map((i) => ({ label: i.budget.name, value: Math.max(0.0001, (i.limit / (overview.base.amount || 1)) * 100), color: i.budget.color, tip: formatMoney(i.limit, main) })),
@@ -70,7 +70,7 @@ export default {
             </span>
             ${progressBar(i.pct, { color: i.budget.color, level: i.level, label: i.budget.name })}
             <span class="budget-foot">${i.level !== "ok" ? statusChip(i.level, LEVEL_TEXT[i.level]) : ""}${i.level === "over"
-              ? `Te pasaste ${formatMoney(-i.remaining, main)}. No pasa nada: tomalo como dato para el mes que viene.`
+              ? `Te pasaste ${formatMoney(-i.remaining, main)}. No pasa nada: tómalo como dato para el mes que viene.`
               : i.level === "done"
                 ? "¡Separaste lo que te propusiste!"
                 : isGoal

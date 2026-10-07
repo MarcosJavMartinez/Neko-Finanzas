@@ -59,18 +59,18 @@ export const LISTA_ICONS = [
  */
 const SUBCATEGORIES = {
   "exp-super": [["almacen", "Almacén", "🥫"], ["carniceria", "Carnicería", "🥩"], ["verduleria", "Verdulería", "🥬"], ["dietetica", "Dietética", "🥜"], ["limpieza", "Limpieza", "🧴"], ["panaderia", "Panadería", "🥖"], ["bebidas", "Bebidas", "🥤"]],
-  "exp-comida": [["delivery", "Delivery", "🛵"], ["restaurante", "Restaurante", "🍽️"], ["cafe", "Café", "☕"], ["almuerzo", "Almuerzo", "🥪"], ["kiosco", "Kiosco", "🍫"]],
-  "exp-transporte": [["nafta", "Nafta", "⛽"], ["sube", "Colectivo / SUBE", "🚌"], ["taxi", "Taxi / Uber", "🚕"], ["estacionamiento", "Estacionamiento", "🅿️"], ["peajes", "Peajes", "🛣️"], ["mantenimiento", "Mantenimiento del auto", "🔧"]],
+  "exp-comida": [["delivery", "Delivery", "🛵"], ["restaurante", "Restaurante", "🍽️"], ["cafe", "Café", "☕"], ["almuerzo", "Almuerzo", "🥪"], ["kiosco", "Snacks y dulces", "🍫"]],
+  "exp-transporte": [["nafta", "Combustible", "⛽"], ["sube", "Transporte público", "🚌"], ["taxi", "Taxi / Uber", "🚕"], ["estacionamiento", "Estacionamiento", "🅿️"], ["peajes", "Peajes", "🛣️"], ["mantenimiento", "Mantenimiento del auto", "🔧"]],
   "exp-ropa": [["ropa", "Ropa", "👕"], ["calzado", "Calzado", "👟"], ["accesorios", "Accesorios", "👜"]],
   "exp-entretenimiento": [["cine", "Cine", "🎬"], ["salidas", "Salidas", "🍻"], ["juegos", "Juegos", "🎮"], ["eventos", "Eventos", "🎟️"], ["libros", "Libros", "📖"]],
-  "exp-salud": [["farmacia", "Farmacia", "💊"], ["medico", "Médico", "🩺"], ["prepaga", "Obra social / Prepaga", "🏥"], ["gimnasio", "Gimnasio", "🏋️"], ["dentista", "Dentista", "🦷"]],
+  "exp-salud": [["farmacia", "Farmacia", "💊"], ["medico", "Médico", "🩺"], ["prepaga", "Seguro médico", "🏥"], ["gimnasio", "Gimnasio", "🏋️"], ["dentista", "Dentista", "🦷"]],
   "exp-compras": [["tecnologia", "Tecnología", "💻"], ["regalos", "Regalos", "🎁"], ["deco", "Deco", "🪴"], ["online", "Compras online", "📦"]],
-  "exp-hogar": [["alquiler", "Alquiler", "🔑"], ["expensas", "Expensas", "🏢"], ["reparaciones", "Reparaciones", "🔧"], ["muebles", "Muebles", "🛋️"], ["articulos", "Artículos para la casa", "🧺"]],
+  "exp-hogar": [["alquiler", "Alquiler", "🔑"], ["expensas", "Gastos comunes", "🏢"], ["reparaciones", "Reparaciones", "🔧"], ["muebles", "Muebles", "🛋️"], ["articulos", "Artículos para la casa", "🧺"]],
   "exp-servicios": [["luz", "Luz", "💡"], ["gas", "Gas", "🔥"], ["agua", "Agua", "💧"], ["internet", "Internet", "🌐"], ["telefono", "Teléfono", "📱"], ["seguro", "Seguro", "🛡️"]],
   "exp-suscripciones": [["netflix", "Netflix", "📺"], ["prime", "Prime Video", "🎞️"], ["crunchyroll", "Crunchyroll", "🍥"], ["spotify", "Spotify", "🎵"], ["geforce", "GeForce NOW", "🎮"], ["chatgpt", "ChatGPT", "🤖"], ["disney", "Disney+", "🏰"], ["youtube", "YouTube Premium", "▶️"]],
   "exp-educacion": [["cursos", "Cursos", "🎓"], ["cuota", "Cuota", "🏫"], ["libros", "Libros", "📚"], ["materiales", "Materiales", "✏️"]],
   "exp-viajes": [["pasajes", "Pasajes", "✈️"], ["alojamiento", "Alojamiento", "🏨"], ["excursiones", "Excursiones", "🗺️"], ["comida", "Comida en viaje", "🍝"]],
-  "inc-sueldo": [["mensual", "Sueldo mensual", "💼"], ["aguinaldo", "Aguinaldo", "🎄"], ["extras", "Horas extra", "⏱️"], ["proporcional", "Sueldo proporcional", "⏳"], ["comision", "Comisiones", "📈"], ["bono", "Bono o premio", "🎁"], ["vacaciones", "Vacaciones", "🏖️"], ["otros", "Otros extras", "✨"]],
+  "inc-sueldo": [["mensual", "Sueldo mensual", "💼"], ["aguinaldo", "Paga extra o aguinaldo", "🎄"], ["extras", "Horas extra", "⏱️"], ["proporcional", "Sueldo proporcional", "⏳"], ["comision", "Comisiones", "📈"], ["bono", "Bono o premio", "🎁"], ["vacaciones", "Vacaciones", "🏖️"], ["otros", "Otros extras", "✨"]],
   "inc-independiente": [["proyectos", "Proyectos", "🧩"], ["clases", "Clases", "🧑‍🏫"], ["consultoria", "Consultoría", "💬"]],
   "inc-ventas": [["online", "Ventas online", "📦"], ["usados", "Cosas usadas", "♻️"]],
 };
@@ -107,7 +107,7 @@ export const DEFAULT_CATEGORIES = [
 ];
 
 // ---------------------------------------------------------------------------
-// Cuentas: dónde está la plata (efectivo, banco, billetera virtual, ahorro).
+// Cuentas: dónde está el dinero (efectivo, banco, billetera virtual, ahorro).
 // ---------------------------------------------------------------------------
 
 export const ACCOUNT_KINDS = {
@@ -115,15 +115,15 @@ export const ACCOUNT_KINDS = {
   bank: { label: "Banco", icon: "🏦" },
   wallet: { label: "Billetera virtual", icon: "📱" },
   savings: { label: "Ahorro", icon: "🐷" },
-  // Tarjeta de crédito: su saldo es lo que debés (negativo). Lo que gastás con
-  // ella baja tu total en el momento; pagarla es mover plata del banco a la
+  // Tarjeta de crédito: su saldo es lo que debes (negativo). Lo que gastas con
+  // ella baja tu total en el momento; pagarla es mover dinero del banco a la
   // tarjeta (no es un gasto nuevo).
   credit: { label: "Tarjeta de crédito", icon: "💳" },
 };
 
 /** Extras que pueden venir junto con el sueldo (cada uno se registra como un ingreso aparte). */
 export const INCOME_EXTRAS = [
-  { key: "aguinaldo", name: "Aguinaldo", icon: "🎄", categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.aguinaldo" },
+  { key: "aguinaldo", name: "Paga extra o aguinaldo", icon: "🎄", categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.aguinaldo" },
   { key: "extras", name: "Horas extra", icon: "⏱️", categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.extras" },
   { key: "comision", name: "Comisión", icon: "📈", categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.comision" },
   { key: "bono", name: "Bono o premio", icon: "🎁", categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.bono" },
@@ -137,7 +137,7 @@ export const INSTALLMENT_OPTIONS = [1, 2, 3, 6, 9, 12, 18, 24];
 export const DEFAULT_ACCOUNT_ID = "acc-principal";
 
 export function defaultAccount(currency = "ARS", opening = 0) {
-  return { id: DEFAULT_ACCOUNT_ID, name: "Mi plata", icon: "👛", color: "#08a7c8", currency, kind: "cash", opening, archived: false };
+  return { id: DEFAULT_ACCOUNT_ID, name: "Mi dinero", icon: "👛", color: "#08a7c8", currency, kind: "cash", opening, archived: false };
 }
 
 /** Categorías de respaldo: no se pueden borrar (reciben lo de las borradas). */

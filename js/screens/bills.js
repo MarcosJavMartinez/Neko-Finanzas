@@ -89,7 +89,7 @@ function openDay(date) {
   openSheet({
     title: `Vencen el ${formatDate(date, { withYear: true })}`,
     body: html`<div class="card card-flush rows">${items.map((i) => billRow(state, i.bill, { today, dueDate: i.dueDate, status: i.status }))}</div>
-      <p class="fine-print">${icon("info", 14)} Tocá una factura para ver el detalle. Solo se puede pagar el vencimiento actual de cada una.</p>`,
+      <p class="fine-print">${icon("info", 14)} Toca una factura para ver el detalle. Solo se puede pagar el vencimiento actual de cada una.</p>`,
   });
 }
 
@@ -104,8 +104,8 @@ export default {
     if (!state.bills.length) {
       return html`<div class="card">${emptyState({
         art: "neko-durmiendo",
-        title: "Todavía no cargaste facturas",
-        text: "Agregá luz, gas, internet o tus suscripciones con su fecha de vencimiento y te decimos cuánto reservar.",
+        title: "Todavía no agregaste facturas",
+        text: "Agrega luz, gas, internet o tus suscripciones con su fecha de vencimiento y te decimos cuánto reservar.",
         actionLabel: "Agregar factura",
         action: "add-bill",
         mood: "sleepy",
@@ -141,7 +141,7 @@ export default {
             <span class="mini-icon">${icon("shield", 20)}</span>
             <div class="row-main">
               <span class="row-title">Fondo de facturas: <strong data-pulse="cushion">${formatMoney(cushion.amount, main)}</strong></span>
-              <span class="row-meta">${cushion.amount > 0 ? "Lo que sobró de facturas que vinieron por menos. Está reservado para las próximas." : "Cuando una factura venga por menos de lo esperado, la diferencia se guarda acá."}</span>
+              <span class="row-meta">${cushion.amount > 0 ? "Lo que sobró de facturas que vinieron por menos. Está reservado para las próximas." : "Cuando una factura venga por menos de lo esperado, la diferencia se guarda aquí."}</span>
             </div>
             ${cushion.amount > 0
               ? html`<span class="cushion-actions">
@@ -163,7 +163,7 @@ export default {
       <section class="card ics-card reveal">
         <span class="mini-icon">${icon("calendar", 20)}</span>
         <div class="row-main">
-          <span class="row-title">Llevá los vencimientos a tu calendario</span>
+          <span class="row-title">Lleva los vencimientos a tu calendario</span>
           <span class="row-meta">Google Calendar, iPhone u Outlook te avisan el día antes, sin que abras la app.</span>
         </div>
         <button type="button" class="btn btn-sm btn-soft" data-action="export-ics">${icon("download", 16)} Exportar</button>
@@ -198,7 +198,7 @@ export default {
         return;
       }
       downloadFile(ics, "neko-finanzas-vencimientos.ics", "text/calendar;charset=utf-8");
-      toast(`Calendario descargado: ${count} factura${count === 1 ? "" : "s"}. Abrilo para sumarlas a tu calendario.`, { duration: 6000 });
+      toast(`Calendario descargado: ${count} factura${count === 1 ? "" : "s"}. Ábrelo para sumarlas a tu calendario.`, { duration: 6000 });
     },
   },
 };

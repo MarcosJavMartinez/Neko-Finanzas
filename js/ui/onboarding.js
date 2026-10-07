@@ -12,25 +12,25 @@ import * as store from "../core/store.js";
 const STEPS = [
   {
     art: html`<img class="ob-art-img" src="img/neko-hola.webp" alt="" width="150" height="150" />`,
-    title: "Tu plata, clara",
+    title: "Tu dinero, claro",
     text: "Neko Finanzas responde cuatro preguntas: ¿cuánto tengo?, ¿cuánto tengo que reservar?, ¿cuánto puedo gastar? y ¿cuánto estoy ahorrando?",
   },
   {
     icon: "wallet",
     tone: "brand",
     title: "Tu saldo disponible",
-    text: "Es lo que podés gastar tranquilo: tu dinero total, menos lo que reservás para las facturas que vienen y lo que apartaste para tus metas.",
+    text: "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo que reservas para las facturas que vienen y lo que apartaste para tus metas.",
   },
   {
     icon: "plus",
     tone: "action",
-    title: "Cargá en segundos",
-    text: "Tocá «Agregar transacción» para anotar un gasto o un ingreso. Sumá tus facturas con su vencimiento y te decimos cuánto reservar.",
+    title: "Anota en segundos",
+    text: "Toca «Agregar transacción» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.",
   },
   {
     art: html`<img class="ob-art-img" src="img/neko-seguro.webp" alt="" width="150" height="150" />`,
     title: "Tus datos son tuyos",
-    text: "Todo queda en este dispositivo: sin cuentas ni publicidad. Hacé un backup de vez en cuando desde Configuración.",
+    text: "Todo queda en este dispositivo: sin cuentas ni publicidad. Haz un backup de vez en cuando desde Configuración.",
   },
 ];
 
@@ -49,7 +49,7 @@ function startWithMine() {
   whenHistorySettled(async () => {
     const ok = await confirmDialog({
       title: "¿Empezar con lo tuyo?",
-      text: "Se borran los datos de ejemplo, incluido lo que hayas cargado encima. Después te hacemos unas preguntas para cargar tu punto de partida.",
+      text: "Se borran los datos de ejemplo, incluido lo que hayas agregado encima. Después te hacemos unas preguntas para registrar tu punto de partida.",
       confirmLabel: "Empezar",
       danger: true,
     });
@@ -62,7 +62,7 @@ function startWithMine() {
 export function openOnboarding() {
   const state = store.getState();
   // Último paso: la primera vez (con los datos de ejemplo de fondo) se
-  // pregunta si empezás con lo tuyo o mirás el ejemplo; con la app vacía, lo
+  // pregunta si empiezas con lo tuyo o miras el ejemplo; con la app vacía, lo
   // mismo pero al revés; con datos propios, nada que reemplazar.
   const extra = state.settings.isDemo
     ? { what: "close", label: "Ver el ejemplo", primary: "mine", done: "Empezar con lo mío", question: true }
@@ -79,7 +79,7 @@ export function openOnboarding() {
           <div class="ob-art ${step.tone ? `ob-art-${step.tone}` : ""}">${step.art || icon(step.icon, 40)}</div>
           <h3 class="ob-title">${step.title}</h3>
           <p class="ob-text">${step.text}</p>
-          ${i === STEPS.length - 1 && extra.question ? html`<p class="ob-question">¿Empezás con lo tuyo o preferís mirar un ejemplo primero?</p>` : ""}
+          ${i === STEPS.length - 1 && extra.question ? html`<p class="ob-question">¿Empiezas con lo tuyo o prefieres ver un ejemplo primero?</p>` : ""}
         </section>`
       )}
       <div class="ob-dots" aria-hidden="true">${STEPS.map((_, i) => html`<span class="ob-dot" data-ob-dot="${i}"></span>`)}</div>

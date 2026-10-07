@@ -108,7 +108,7 @@ eq("saldos por cuenta", F.accountBalances(acc, "2026-09-30").map((e) => Math.rou
 eq("total con transferencias", Math.round(F.totalBalance(acc, "2026-09-30")), 10000);
 eq("transferencias no son gastos", F.monthlyTotals(acc, "2026-02").expense, 0);
 
-// Préstamos: mueven plata de las cuentas pero no son ingreso ni gasto
+// Préstamos: mueven dinero de las cuentas pero no son ingreso ni gasto
 const lo = sanitizeState({
   rates: { USD: 1000 },
   categories: [],
@@ -130,7 +130,7 @@ eq("pago con movimiento inexistente queda sin txId", lo.loans[0].payments.map((p
 eq("movimiento de un préstamo inválido descartado", lo.transactions.map((t) => t.id), ["m1", "m2"]);
 eq("saldo de la cuenta con préstamos", Math.round(F.accountBalances(lo, "2026-09-30")[0].balance), 80000);
 eq("falta cobrar", F.loanOutstanding(lo.loans[0]), 15000);
-eq("te deben / debés", [F.loansSummary(lo).lent, F.loansSummary(lo).borrowed], [15000, 50000]);
+eq("te deben / debes", [F.loansSummary(lo).lent, F.loansSummary(lo).borrowed], [15000, 50000]);
 eq("deuda que vence en 30 días se reserva", Math.round(F.balanceSummary(lo, "2026-09-30").debts.amount), 50000);
 eq("préstamos no son gastos", F.monthlyTotals(lo, "2026-09").expense, 0);
 eq("color con CSS inyectado", evil.categories[0].color, "#8b958e");
@@ -226,9 +226,9 @@ eq("monto que no alcanza para cuotas → un solo pago", [tiny.length, tiny[0].am
 eq("la cuenta por defecto no es la tarjeta", store.defaultAccountId(), "bank");
 let threw = "";
 try { store.addTransfer({ fromId: "bank", toId: "bank", amount: 10 }); } catch (e) { threw = e.message; }
-eq("transferir a la misma cuenta se rechaza", threw, "Elegí dos cuentas distintas");
+eq("transferir a la misma cuenta se rechaza", threw, "Elige dos cuentas distintas");
 try { store.deleteAccount("card"); threw = "se borró"; } catch (e) { threw = e.message; }
-eq("no se borra una cuenta con movimientos", threw, "Esta cuenta tiene movimientos: podés archivarla");
+eq("no se borra una cuenta con movimientos", threw, "Esta cuenta tiene movimientos: puedes archivarla");
 store.saveAccount({ ...store.getState().accounts[0], archived: true });
 store.saveAccount({ ...store.getState().accounts[1], archived: true });
 eq("siempre queda una cuenta activa", store.getState().accounts.some((a) => !a.archived), true);
@@ -259,10 +259,10 @@ eq("cobro parcial: se guarda el monto habitual", store.getState().transactions[0
 const paid = store.confirmRecurring("s1");
 eq("al mes siguiente se propone lo habitual, no el parcial", [paid.amount, paid.date, paid.recurrence.nextDate, paid.recurrence.amount], [800000, "2026-11-10", "2026-12-10", undefined]);
 eq("la recurrencia pasa al cobro nuevo", store.getState().transactions.filter((t) => t.recurrence).map((t) => t.id), [paid.id]);
-const dec = store.confirmRecurring(paid.id, { amount: 750000, date: "2026-12-11", extras: [{ name: "Aguinaldo", amount: 400000, categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.aguinaldo" }, { name: "Propinas", amount: 5000, categoryId: "inc-propinas" }, { name: "Nada", amount: 0, categoryId: "inc-sueldo" }] });
+const dec = store.confirmRecurring(paid.id, { amount: 750000, date: "2026-12-11", extras: [{ name: "Paga extra o aguinaldo", amount: 400000, categoryId: "inc-sueldo", subcategoryId: "inc-sueldo.aguinaldo" }, { name: "Propinas", amount: 5000, categoryId: "inc-propinas" }, { name: "Nada", amount: 0, categoryId: "inc-sueldo" }] });
 eq("cobro con descuento: registra lo real y conserva lo habitual", [dec.amount, dec.date, dec.recurrence.amount, dec.recurrence.nextDate], [750000, "2026-12-11", 800000, "2027-01-10"]);
-const extrasTx = store.getState().transactions.filter((t) => ["Aguinaldo", "Propinas", "Nada"].includes(t.description));
-eq("extras: un ingreso aparte por cada uno", extrasTx.map((t) => [t.description, t.amount, t.categoryId, t.subcategoryId, t.date, t.accountId]), [["Aguinaldo", 400000, "inc-sueldo", "inc-sueldo.aguinaldo", "2026-12-11", "bank"], ["Propinas", 5000, "inc-propinas", "", "2026-12-11", "bank"]]);
+const extrasTx = store.getState().transactions.filter((t) => ["Paga extra o aguinaldo", "Propinas", "Nada"].includes(t.description));
+eq("extras: un ingreso aparte por cada uno", extrasTx.map((t) => [t.description, t.amount, t.categoryId, t.subcategoryId, t.date, t.accountId]), [["Paga extra o aguinaldo", 400000, "inc-sueldo", "inc-sueldo.aguinaldo", "2026-12-11", "bank"], ["Propinas", 5000, "inc-propinas", "", "2026-12-11", "bank"]]);
 eq("ingresos de diciembre = sueldo + extras", F.monthlyTotals(store.getState(), "2026-12").income, 1155000);
 const raise = store.confirmRecurring(dec.id, { amount: 900000, keepAsUsual: true });
 eq("aumento: el monto nuevo pasa a ser el habitual", [raise.amount, raise.recurrence.amount], [900000, undefined]);
@@ -287,13 +287,13 @@ eq("último día del mes: un día", day.days, 1);
 day = F.dailyAllowance(dayState([{ id: "g", type: "expense", amount: 500000, currency: "ARS", date: "2026-03-10", categoryId: "exp-otros", accountId: "a" }]), "2026-03-22");
 eq("sin disponible, nunca da negativo por día", day.perDay, 0);
 
-// Sobres: presupuesto reservado (súper) y gustos por día
+// Sobres: presupuesto reservado (supermercado) y gustos por día
 const env = (budgets, transactions = [], goals = []) => sanitizeState({ accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 500000 }], categories: buildDemoState().categories, budgets, transactions, goals });
-const superB = { id: "sup", name: "Súper", mode: "fixed", value: 200000, currency: "ARS", target: { kind: "categories", categoryIds: ["exp-super"] }, reserve: true, since: "2026-02-10" };
+const superB = { id: "sup", name: "Supermercado", mode: "fixed", value: 200000, currency: "ARS", target: { kind: "categories", categoryIds: ["exp-super"] }, reserve: true, since: "2026-02-10" };
 const gasto = (id, amount, date, categoryId = "exp-super") => ({ id, type: "expense", amount, currency: "ARS", date, categoryId, accountId: "a" });
 let es = env([superB], [gasto("g1", 50000, "2026-03-05")]);
-eq("súper reservado: lo que falta gastar del mes", [F.budgetReserve(es, "2026-03-10").amount, F.balanceSummary(es, "2026-03-10").available], [150000, 300000]);
-eq("gastar en el súper no cambia el disponible", F.balanceSummary(env([superB], [gasto("g1", 50000, "2026-03-05"), gasto("g2", 30000, "2026-03-09")]), "2026-03-10").available, 300000);
+eq("supermercado reservado: lo que falta gastar del mes", [F.budgetReserve(es, "2026-03-10").amount, F.balanceSummary(es, "2026-03-10").available], [150000, 300000]);
+eq("gastar en el supermercado no cambia el disponible", F.balanceSummary(env([superB], [gasto("g1", 50000, "2026-03-05"), gasto("g2", 30000, "2026-03-09")]), "2026-03-10").available, 300000);
 eq("pasarse del presupuesto sí lo baja", F.balanceSummary(env([superB], [gasto("g1", 260000, "2026-03-05")]), "2026-03-10").available, 240000);
 eq("sin 'reservar' no se descuenta", F.budgetReserve(env([{ ...superB, reserve: false }]), "2026-03-10").amount, 0);
 eq("un presupuesto para una meta nunca se reserva", env([{ ...superB, target: { kind: "goal", goalId: "x" } }]).budgets.length, 0);
@@ -305,14 +305,14 @@ store.settleBudgetLeftover("sup", "2026-02", { goalId: "goal", amount: 80000, no
 eq("pasarlo a la meta: queda apartado y no se vuelve a ofrecer", [F.goalSaved(store.getState().goals[0]), store.getState().budgets[0].settledMonth, F.budgetLeftovers(store.getState(), "2026-03-03").length], [80000, "2026-02", 0]);
 store.restore(es);
 store.settleBudgetLeftover("sup", "2026-02");
-eq("dejarlo disponible: no mueve plata y no se vuelve a ofrecer", [F.goalSaved(store.getState().goals[0]), F.budgetLeftovers(store.getState(), "2026-03-03").length], [0, 0]);
+eq("dejarlo disponible: no mueve dinero y no se vuelve a ofrecer", [F.goalSaved(store.getState().goals[0]), F.budgetLeftovers(store.getState(), "2026-03-03").length], [0, 0]);
 
 const treatsB = { id: "tr", name: "Gustos", icon: "☕", mode: "daily", value: 5000, currency: "ARS", target: { kind: "categories", categoryIds: ["exp-comida"] }, reserve: true, since: "2026-02-01" };
 let ts = env([treatsB]);
 let tr = F.treatAllowance(ts, "2026-03-04");
 eq("gustos: se acumulan los días sin gastar", [tr.days, tr.perDay, tr.accumulated], [4, 5000, 20000]);
 tr = F.treatAllowance(env([treatsB], [gasto("c1", 3000, "2026-03-02", "exp-comida"), gasto("c2", 4000, "2026-03-04", "exp-comida"), gasto("s", 9999, "2026-03-04", "exp-super")]), "2026-03-04");
-eq("gustos: baja con lo gastado en sus categorías (no con el súper)", [tr.accumulated, tr.spentToday, tr.spent], [13000, 4000, 7000]);
+eq("gustos: baja con lo gastado en sus categorías (no con el supermercado)", [tr.accumulated, tr.spentToday, tr.spent], [13000, 4000, 7000]);
 tr = F.treatAllowance(env([treatsB], [gasto("c1", 30000, "2026-03-01", "exp-comida")]), "2026-03-02");
 eq("gustos: pasarse deja saldo negativo que se recupera con los días", tr.accumulated, -20000);
 eq("gustos: límite del mes = valor por día × días del mes", F.budgetStatus(ts, ts.budgets[0], "2026-03").limit, 155000);
@@ -343,7 +343,7 @@ store.payBill("luz", { date: "2099-01-09", amount: 25000 });
 store.moveCushionToGoal("meta", 10000);
 eq("fondo a una meta: sale del fondo y queda apartado", [F.billCushion(store.getState()).amount, F.goalSaved(store.getState().goals[0]), store.getState().goals[0].movements[0].note], [5000, 10000, "Fondo de facturas"]);
 store.moveCushionToGoal("no-existe", 5000);
-eq("meta inexistente: no se pierde plata del fondo", F.billCushion(store.getState()).amount, 5000);
+eq("meta inexistente: no se pierde dinero del fondo", F.billCushion(store.getState()).amount, 5000);
 store.restore(cushionState(false));
 store.payBill("luz", { date: "2026-03-09", amount: 30000 });
 eq("desactivado: no reserva nada", [F.billCushion(store.getState()).amount, F.balanceSummary(store.getState(), "2026-03-09").available], [0, 270000]);
@@ -413,11 +413,11 @@ let cs = store.getState();
 let cp = F.loanPlanStatus(cs, cs.loans[0], "2099-01-15");
 eq("préstamo en cuotas: entra lo recibido, sin contar como ingreso", [F.balanceSummary(cs, "2099-01-15").total, cs.transactions.filter((t) => t.type === "income").length], [200000, 0]);
 eq("préstamo en cuotas: faltan todas, próxima y total con interés", [cp.remaining, cp.next, cp.left, cp.total, cp.interest], [6, "2099-02-10", 150000, 150000, 50000]);
-eq("préstamo en cuotas: cuenta en lo que debés", F.loansSummary(cs, "2099-01-15").borrowed, 150000);
+eq("préstamo en cuotas: cuenta en lo que debes", F.loansSummary(cs, "2099-01-15").borrowed, 150000);
 eq("préstamo en cuotas: la cuota que se acerca queda reservada", F.scheduledReserve(cs, "2099-02-05").amount, 25000);
 eq("préstamo en cuotas: no se reserva dos veces", F.loansReserve(cs, "2099-02-05").amount, 0);
 cp = F.loanPlanStatus(cs, cs.loans[0], "2099-03-15");
-eq("préstamo en cuotas: las cuotas vencidas bajan la plata y la deuda", [cp.paid, cp.remaining, cp.left, F.balanceSummary(cs, "2099-03-15").total], [2, 4, 100000, 150000]);
+eq("préstamo en cuotas: las cuotas vencidas bajan el dinero y la deuda", [cp.paid, cp.remaining, cp.left, F.balanceSummary(cs, "2099-03-15").total], [2, 4, 100000, 150000]);
 eq("préstamo en cuotas: al terminar no se debe nada", [F.loanPlanStatus(cs, cs.loans[0], "2099-08-01").remaining, F.loansSummary(cs, "2099-08-01").borrowed], [0, 0]);
 const csBack = sanitizeState(JSON.parse(JSON.stringify(cs)));
 eq("préstamo en cuotas: sobrevive a un backup", [csBack.loans[0].plan.count, csBack.loans[0].plan.amount, csBack.transactions.filter((t) => t.installment?.group === csBack.loans[0].plan.group).length], [6, 25000, 6]);
@@ -428,7 +428,7 @@ store.updateCreditLoan(credit.id, { lender: "Mercado Pago", count: 8, installmen
 cs = store.getState();
 cp = F.loanPlanStatus(cs, cs.loans[0], "2099-03-15");
 eq("editar préstamo: las pagadas no cambian, las que faltan sí", [cp.paid, cp.remaining, cp.next, cp.left, cp.total, cp.installments.map((t) => t.installment.n + "/" + t.installment.of).join(" ")], [2, 6, "2099-04-15", 120000, 170000, "1/8 2/8 3/8 4/8 5/8 6/8 7/8 8/8"]);
-eq("editar préstamo: la plata ya pagada no se mueve", F.balanceSummary(cs, "2099-03-15").total, 150000);
+eq("editar préstamo: lo ya pagado no se mueve", F.balanceSummary(cs, "2099-03-15").total, 150000);
 // Cancelarlo antes: un pago de 100.000 reemplaza las 6 cuotas que faltaban
 store.payOffCreditLoan(credit.id, { amount: 100000, date: "2099-03-20", accountId: "a" }, "2099-03-20");
 cs = store.getState();
@@ -436,7 +436,7 @@ cp = F.loanPlanStatus(cs, cs.loans[0], "2099-03-20");
 eq("cancelar antes: no queda nada por pagar y el total es lo realmente pagado", [cp.remaining, cp.left, cp.count, cp.total, cp.interest, F.balanceSummary(cs, "2099-03-20").total], [0, 0, 3, 150000, 50000, 50000]);
 eq("cancelar antes: sobrevive a un backup", sanitizeState(JSON.parse(JSON.stringify(cs))).loans[0].plan.count, 3);
 store.deleteLoan(credit.id);
-eq("préstamo en cuotas: borrarlo se lleva la plata y las cuotas", [store.getState().loans.length, store.getState().transactions.length], [0, 0]);
+eq("préstamo en cuotas: borrarlo se lleva el dinero y las cuotas", [store.getState().loans.length, store.getState().transactions.length], [0, 0]);
 
 // Avisos de vencimientos
 const remState = sanitizeState({
@@ -448,7 +448,7 @@ const plan = R.buildPlan(remState, "2026-03-09", 1);
 eq("avisos: lo vencido hace mucho no se avisa", plan.some((i) => i.tag.startsWith("factura:b2")), false);
 eq("avisos: el día anterior", plan.find((i) => i.tag === "factura:b1:2026-03-10:antes").titles["2026-03-09"], "Mañana vence Luz");
 eq("avisos: el día y los siguientes", Object.values(plan.find((i) => i.tag === "factura:b1:2026-03-10:dia").titles), ["Hoy vence Luz", "Luz venció ayer", "Luz venció hace 2 días", "Luz venció hace 3 días"]);
-eq("avisos: préstamo que hay que devolver", plan.find((i) => i.tag === "prestamo:L:2026-03-11:antes").titles["2026-03-10"], "Mañana le tenés que devolver a Papá");
+eq("avisos: préstamo que hay que devolver", plan.find((i) => i.tag === "prestamo:L:2026-03-11:antes").titles["2026-03-10"], "Mañana le tienes que devolver a Papá");
 eq("avisos: 3 días antes", Object.values(R.buildPlan(remState, "2026-03-07", 3).find((i) => i.tag === "factura:b1:2026-03-10:antes").titles), ["En 3 días vence Luz", "En 2 días vence Luz", "Mañana vence Luz"]);
 eq("avisos: con ese día no hay aviso previo", R.buildPlan(remState, "2026-03-09", 0).some((i) => i.tag.endsWith(":antes")), false);
 mem.set("nekoFinanzas.hideAmounts", "1");

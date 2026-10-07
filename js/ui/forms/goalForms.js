@@ -1,5 +1,5 @@
-// Metas de ahorro: crear/editar, ver detalle y mover plata (depositar o
-// retirar). Depositar no es un gasto: la plata sigue siendo del usuario,
+// Metas de ahorro: crear/editar, ver detalle y mover dinero (depositar o
+// retirar). Depositar no es un gasto: el dinero sigue siendo del usuario,
 // solo queda apartada y deja de contar como "disponible".
 
 import { html } from "../dom.js";
@@ -40,7 +40,7 @@ export function openGoalForm({ goal } = {}) {
       ${dateField({ name: "targetDate", label: "Fecha objetivo", value: current.targetDate, required: false })}
       ${emojiPicker(current.icon, { choices: GOAL_ICONS })}
       ${colorPicker(current.color)}
-      ${isEdit ? html`<p class="field-hint">Para sumar o sacar plata usá “Depositar” o “Retirar” en el detalle de la meta.</p>` : ""}
+      ${isEdit ? html`<p class="field-hint">Para agregar o retirar dinero usa “Depositar” o “Retirar” en el detalle de la meta.</p>` : ""}
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Crear meta", deletable: isEdit })}
     </form>`,
     onMount(panel, close) {
@@ -50,8 +50,8 @@ export function openGoalForm({ goal } = {}) {
         clearErrors(form);
         const data = readForm(form);
         const target = readAmount(form, "target");
-        if (!data.name.trim()) return fieldError(form, "name", "Poné un nombre para tu meta.");
-        if (!(target > 0)) return fieldError(form, "target", "Ingresá cuánto querés juntar.");
+        if (!data.name.trim()) return fieldError(form, "name", "Escribe un nombre para tu meta.");
+        if (!(target > 0)) return fieldError(form, "target", "Ingresa cuánto quieres reunir.");
         const values = {
           name: data.name.trim(),
           icon: data.icon || current.icon,
@@ -108,8 +108,8 @@ export function openGoalMove(goalId, direction = "deposit") {
     title: isDeposit ? `Depositar en ${goal.name}` : `Retirar de ${goal.name}`,
     body: html`<form class="form" novalidate>
       <p class="sheet-text">${isDeposit
-        ? html`Esta plata queda <strong>apartada</strong> para tu meta: sigue siendo tuya, pero deja de contar como disponible.`
-        : html`Lo que retires vuelve a tu <strong>saldo disponible</strong>. Tenés ${formatMoney(saved, goal.currency)} en esta meta.`}</p>
+        ? html`Este dinero queda <strong>apartado</strong> para tu meta: sigue siendo tuyo, pero deja de contar como disponible.`
+        : html`Lo que retires vuelve a tu <strong>saldo disponible</strong>. Tienes ${formatMoney(saved, goal.currency)} en esta meta.`}</p>
       <div class="field field-amount tone-${isDeposit ? "goal" : "income"}">
         <label class="field-label" for="f-amount">Monto en ${goal.currency}</label>
         <div class="amount-input">
@@ -124,7 +124,7 @@ export function openGoalMove(goalId, direction = "deposit") {
           (v) => html`<button type="button" class="chip chip-action" data-quick="${v}">${formatMoney(v, goal.currency)}</button>`
         )}
       </div>
-      ${textField({ name: "note", label: "Nota", placeholder: isDeposit ? "Ej.: Ahorro de septiembre" : "Ej.: Seña del pasaje" })}
+      ${textField({ name: "note", label: "Nota", placeholder: isDeposit ? "Ej.: Ahorro de septiembre" : "Ej.: Anticipo del viaje" })}
       <p class="notice notice-warn" data-warning hidden>${icon("alert", 16)}<span></span></p>
       ${formActions({ submitLabel: isDeposit ? "Depositar" : "Retirar" })}
     </form>`,
@@ -135,7 +135,7 @@ export function openGoalMove(goalId, direction = "deposit") {
         const amount = readAmount(form);
         const show = isDeposit && amount > availableInGoal;
         warning.hidden = !show;
-        if (show) warning.querySelector("span").textContent = "Es más que tu saldo disponible. Podés hacerlo igual, pero tu disponible quedaría en negativo.";
+        if (show) warning.querySelector("span").textContent = "Es más que tu saldo disponible. Puedes hacerlo igual, pero tu disponible quedaría en negativo.";
       };
       form.elements.amount.addEventListener("input", checkWarning);
       form.addEventListener("click", (event) => {
@@ -148,8 +148,8 @@ export function openGoalMove(goalId, direction = "deposit") {
         event.preventDefault();
         clearErrors(form);
         const amount = readAmount(form);
-        if (!(amount > 0)) return fieldError(form, "amount", "Ingresá un monto mayor a cero.");
-        if (!isDeposit && amount > saved + 0.001) return fieldError(form, "amount", `No podés retirar más de lo que tiene la meta (${formatMoney(saved, goal.currency)}).`);
+        if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
+        if (!isDeposit && amount > saved + 0.001) return fieldError(form, "amount", `No puedes retirar más de lo que tiene la meta (${formatMoney(saved, goal.currency)}).`);
         const backup = store.snapshot();
         store.moveGoalMoney(goal.id, isDeposit ? amount : -amount, form.elements.note.value.trim());
         close();
@@ -207,7 +207,7 @@ export function openGoalDetail(goalId) {
               </span>
             </li>`
           )}</ul>`
-        : html`<p class="muted-text">Todavía no depositaste en esta meta. ¡El primer paso es el más lindo!</p>`}
+        : html`<p class="muted-text">Todavía no depositaste en esta meta. ¡El primer paso es el más importante!</p>`}
     </div>`,
     onMount(panel, close) {
       panel.addEventListener("click", (event) => {

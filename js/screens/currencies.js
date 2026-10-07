@@ -42,7 +42,7 @@ export default {
         <h2 class="section-title">País</h2>
         <p class="section-sub">Define cómo se escriben los números. No cambia tus montos ni tu moneda.</p>
         <div class="field form">
-          <label class="field-label" for="f-region">¿Dónde usás la app?</label>
+          <label class="field-label" for="f-region">¿Dónde usas la app?</label>
           <select id="f-region" name="region" data-change="set-region">
             ${Object.values(REGIONS).map((r) => html`<option value="${r.code}" ${r.code === state.settings.region ? "selected" : ""}>${r.name}</option>`)}
           </select>
@@ -66,13 +66,13 @@ export default {
       </section>
 
       <section class="card reveal">
-        <h2 class="section-title">Otras monedas que usás</h2>
-        <p class="section-sub">Las que marques aparecen al cargar un movimiento, una cuenta o una meta.</p>
+        <h2 class="section-title">Otras monedas que usas</h2>
+        <p class="section-sub">Las que marques aparecen al registrar un movimiento, una cuenta o una meta.</p>
         <div class="currency-toggles">
           ${Object.values(CURRENCIES)
             .filter((c) => c.code !== main)
             .map(
-              (c) => html`<label class="chip-check ${locked.has(c.code) ? "is-locked" : ""}" title="${locked.has(c.code) ? "Ya tenés algo cargado en esta moneda" : c.name}">
+              (c) => html`<label class="chip-check ${locked.has(c.code) ? "is-locked" : ""}" title="${locked.has(c.code) ? "Ya tienes algo registrado en esta moneda" : c.name}">
                 <input type="checkbox" value="${c.code}" ${active.includes(c.code) ? "checked" : ""} ${locked.has(c.code) ? "disabled" : ""} data-change="toggle-currency" />
                 <span>${symbolOf(c.code)} ${c.code}</span>
               </label>`
@@ -83,7 +83,7 @@ export default {
       ${others.length
         ? html`<section class="card reveal">
             <h2 class="section-title">Tipo de cambio</h2>
-            <p class="section-sub">Cargalo a mano, con el valor que uses vos.</p>
+            <p class="section-sub">Ingrésalo a mano, con el valor que tú uses.</p>
             <form class="rates-form" data-rates-form novalidate>
               ${others.map((code) => {
                 const pair = ratePair(state, code);
@@ -96,7 +96,7 @@ export default {
                 </label>`;
               })}
             </form>
-            <p class="fine-print">${icon("info", 14)} Las conversiones (≈) usan estos valores. No consultamos ningún servidor: si cambia la cotización, actualizala acá.${updated ? ` Última actualización: ${updated}.` : ""}</p>
+            <p class="fine-print">${icon("info", 14)} Las conversiones (≈) usan estos valores. No consultamos ningún servidor: si cambia la cotización, actualízala aquí.${updated ? ` Última actualización: ${updated}.` : ""}</p>
           </section>`
         : ""}
     `;
@@ -117,7 +117,7 @@ export default {
       const value = parseAmount(el.value);
       const state = store.getState();
       if (!(value > 0)) {
-        toast("Ingresá un valor mayor a cero", { type: "error" });
+        toast("Ingresa un valor mayor a cero", { type: "error" });
         el.value = amountToInput(Math.round(ratePair(state, el.name).value * 100) / 100);
         return;
       }

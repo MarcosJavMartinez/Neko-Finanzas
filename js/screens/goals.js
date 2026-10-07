@@ -20,8 +20,8 @@ export default {
     if (!state.goals.length) {
       return html`<div class="card">${emptyState({
         art: "neko-ahorrando",
-        title: "Todavía no tenés metas",
-        text: "Creá una y empezá a separar dinero para eso que querés.",
+        title: "Todavía no tienes metas",
+        text: "Crea una y empieza a separar dinero para eso que quieres.",
         actionLabel: "Crear mi primera meta",
         action: "add-goal",
       })}</div>`;
@@ -41,7 +41,7 @@ export default {
       ${done.length
         ? html`<h2 class="section-title section-title-spaced section-title-art">${art("neko-festejando", 56)}Cumplidas</h2><div class="goal-list">${done.map((g) => goalCard(state, g))}</div>`
         : ""}
-      <p class="fine-print center">${icon("info", 14)} Apartar plata para una meta no es un gasto: sigue en tu dinero total, pero no cuenta como disponible.</p>
+      <p class="fine-print center">${icon("info", 14)} Apartar dinero para una meta no es un gasto: sigue en tu dinero total, pero no cuenta como disponible.</p>
     `;
   },
 };
