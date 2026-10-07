@@ -2,6 +2,7 @@
 // compartir en WhatsApp o historias). Se dibuja en un canvas dentro del
 // dispositivo: nada se sube a ningún lado.
 
+import { msg, tr } from "../core/i18n.js";
 import { formatMoney } from "../core/money.js";
 import { formatMonth } from "../core/dates.js";
 import { monthlyTotals, expensesByCategory, percent } from "../core/finance.js";
@@ -110,7 +111,7 @@ async function draw(state, key) {
   ctx.fillText("Neko Finanzas", x, 110);
   ctx.font = `600 28px ${UI}`;
   ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.fillText("Resumen de " + formatMonth(key).toLowerCase(), x, 150);
+  ctx.fillText(msg`Resumen de ${formatMonth(key).toLowerCase()}`, x, 150);
 
   // Tarjeta principal: ahorro del mes
   const cardY = 210;
@@ -125,14 +126,14 @@ async function draw(state, key) {
   const saved = totals.saved;
   ctx.fillStyle = C.text2;
   ctx.font = `700 34px ${DISPLAY}`;
-  ctx.fillText(saved >= 0 ? "Este mes ahorraste" : "Este mes gastaste de más", PAD + 48, cardY + 74);
+  ctx.fillText(tr(saved >= 0 ? "Este mes ahorraste" : "Este mes gastaste de más"), PAD + 48, cardY + 74);
   ctx.fillStyle = saved >= 0 ? C.incomeInk : C.expenseInk;
   ctx.font = `800 96px ${DISPLAY}`;
   ctx.fillText(fit(ctx, m(Math.abs(saved)), W - PAD * 2 - 96), PAD + 48, cardY + 178);
   if (totals.income > 0) {
     ctx.fillStyle = C.muted;
     ctx.font = `600 28px ${UI}`;
-    ctx.fillText(`${Math.round(Math.abs(totals.savingsRate))}% de tus ingresos`, PAD + 48, cardY + 222);
+    ctx.fillText(msg`${Math.round(Math.abs(totals.savingsRate))}% de tus ingresos`, PAD + 48, cardY + 222);
   }
 
   // Tres cifras: ingresos, gastos, metas
@@ -151,7 +152,7 @@ async function draw(state, key) {
     ctx.fill();
     ctx.fillStyle = t.ink;
     ctx.font = `700 28px ${DISPLAY}`;
-    ctx.fillText(t.label, tx + 28, tileY + 56);
+    ctx.fillText(tr(t.label), tx + 28, tileY + 56);
     ctx.fillStyle = C.text;
     ctx.font = `800 40px ${DISPLAY}`;
     ctx.fillText(fit(ctx, m(t.value), tileW - 56), tx + 28, tileY + 112);
@@ -164,12 +165,12 @@ async function draw(state, key) {
   ctx.fill();
   ctx.fillStyle = C.text;
   ctx.font = `800 36px ${DISPLAY}`;
-  ctx.fillText("¿En qué se fue el dinero?", PAD + 48, listY + 72);
+  ctx.fillText(tr("¿En qué se fue el dinero?"), PAD + 48, listY + 72);
 
   if (!cats.length) {
     ctx.fillStyle = C.muted;
     ctx.font = `500 30px ${UI}`;
-    ctx.fillText("Sin gastos registrados este mes.", PAD + 48, listY + 140);
+    ctx.fillText(tr("Sin gastos registrados este mes."), PAD + 48, listY + 140);
   }
   const rowH = 76;
   const innerW = W - PAD * 2 - 96;
@@ -208,7 +209,7 @@ async function draw(state, key) {
   ctx.fillStyle = C.muted;
   ctx.font = `600 26px ${UI}`;
   ctx.textAlign = "center";
-  ctx.fillText("Hecho con Neko Finanzas · nekotools.site", W / 2, H - 78);
+  ctx.fillText(tr("Hecho con Neko Finanzas · nekotools.site"), W / 2, H - 78);
   ctx.textAlign = "left";
 
   return canvas;
@@ -223,7 +224,7 @@ export async function shareMonthSummary(state, key) {
   const file = new File([blob], filename, { type: "image/png" });
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: `Resumen de ${formatMonth(key)}` });
+      await navigator.share({ files: [file], title: msg`Resumen de ${formatMonth(key)}` });
       return "shared";
     } catch (error) {
       if (error?.name === "AbortError") return "cancelled";

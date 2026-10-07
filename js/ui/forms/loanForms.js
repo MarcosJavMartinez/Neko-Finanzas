@@ -2,6 +2,7 @@
 // no es un gasto ni un ingreso: el dinero entra o sale de una cuenta, y la
 // app lleva la cuenta de cuánto falta.
 
+import { msg, tr } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog, whenHistorySettled } from "../sheet.js";
@@ -27,7 +28,7 @@ function accountChoice(state, value, label) {
   </div>`;
 }
 
-const directionText = (loan) => (loan.direction === "lent" ? `Le prestaste a ${loan.person}` : `Te prestó ${loan.person}`);
+const directionText = (loan) => (loan.direction === "lent" ? msg`Le prestaste a ${loan.person}` : msg`Te prestó ${loan.person}`);
 
 export function openLoanForm({ loan, direction = "lent" } = {}) {
   const state = store.getState();
@@ -61,10 +62,10 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
       form.addEventListener("change", (event) => {
         if (event.target.name !== "direction") return;
         const lent = event.target.value === "lent";
-        form.querySelector('label[for$="accountId"]').textContent = lent ? "¿De qué cuenta salió?" : "¿A qué cuenta entró?";
-        form.querySelector("[data-loan-hint]").textContent = lent
-          ? "No es un gasto: el dinero vuelve cuando te lo devuelvan."
-          : "No es un ingreso: si pones fecha para devolverlo, la app lo reserva de tu disponible cuando se acerque.";
+        form.querySelector('label[for$="accountId"]').textContent = tr(lent ? "¿De qué cuenta salió?" : "¿A qué cuenta entró?");
+        form.querySelector("[data-loan-hint]").textContent = tr(
+          lent ? "No es un gasto: el dinero vuelve cuando te lo devuelvan." : "No es un ingreso: si pones fecha para devolverlo, la app lo reserva de tu disponible cuando se acerque."
+        );
       });
       form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -81,13 +82,13 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
           toast("Préstamo actualizado");
         } else {
           const saved = store.addLoan({ ...values, direction: data.direction });
-          toast(saved.direction === "lent" ? `Anotado: ${saved.person} te debe ${formatMoney(amount, values.currency)}` : `Anotado: le debes ${formatMoney(amount, values.currency)} a ${saved.person}`);
+          toast(saved.direction === "lent" ? msg`Anotado: ${saved.person} te debe ${formatMoney(amount, values.currency)}` : msg`Anotado: le debes ${formatMoney(amount, values.currency)} a ${saved.person}`);
         }
         close();
       });
       form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
         const ok = await confirmDialog({
-          title: `¿Borrar el préstamo con ${loan.person}?`,
+          title: msg`¿Borrar el préstamo con ${loan.person}?`,
           text: "Se borra también el dinero que se registró en tus cuentas por este préstamo.",
           confirmLabel: "Borrar",
           danger: true,
@@ -110,7 +111,7 @@ export function openLoanPayment(loanId) {
   const outstanding = loanOutstanding(loan);
   const lent = loan.direction === "lent";
   openSheet({
-    title: lent ? `${loan.person} te devolvió` : `Le devolviste a ${loan.person}`,
+    title: lent ? msg`${loan.person} te devolvió` : msg`Le devolviste a ${loan.person}`,
     body: html`<form class="form" novalidate>
       <p class="sheet-text">Falta${outstanding === 1 ? "" : "n"} <strong>${formatMoney(outstanding, loan.currency)}</strong>. Puedes registrar una parte o todo.</p>
       ${amountField({ value: outstanding, currency: loan.currency, label: "Monto", autofocus: false, tone: "tone-goal" })}
@@ -127,13 +128,13 @@ export function openLoanPayment(loanId) {
         clearErrors(form);
         const amount = readAmount(form);
         if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
-        if (amount > outstanding + 0.005) return fieldError(form, "amount", `Es más de lo que falta (${formatMoney(outstanding, loan.currency)}).`);
+        if (amount > outstanding + 0.005) return fieldError(form, "amount", msg`Es más de lo que falta (${formatMoney(outstanding, loan.currency)}).`);
         const date = isISODate(form.elements.date.value) ? form.elements.date.value : todayISO();
         const backup = store.snapshot();
         store.addLoanPayment(loan.id, { amount, date, accountId: form.elements.accountId.value });
         close();
         const left = loanOutstanding(store.getState().loans.find((l) => l.id === loan.id));
-        toast(left > 0 ? `Registrado. Faltan ${formatMoney(left, loan.currency)}` : "¡Préstamo saldado! 🎉", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast(left > 0 ? msg`Registrado. Faltan ${formatMoney(left, loan.currency)}` : "¡Préstamo saldado! 🎉", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });
@@ -196,8 +197,8 @@ export function openCreditLoanForm() {
         const extra = Math.round((total - received) * 100) / 100;
         totalBox.querySelector("span").textContent =
           extra > 0
-            ? `En total devuelves ${formatMoney(total, currency(), { reveal: true })}: ${formatMoney(extra, currency(), { reveal: true })} más de lo que recibiste.`
-            : `En total devuelves ${formatMoney(total, currency(), { reveal: true })}.`;
+            ? msg`En total devuelves ${formatMoney(total, currency(), { reveal: true })}: ${formatMoney(extra, currency(), { reveal: true })} más de lo que recibiste.`
+            : msg`En total devuelves ${formatMoney(total, currency(), { reveal: true })}.`;
       };
       form.addEventListener("input", sync);
       form.addEventListener("change", sync);
@@ -215,7 +216,7 @@ export function openCreditLoanForm() {
         if (data.firstDue < today) return fieldError(form, "firstDue", "La primera cuota tiene que vencer de hoy en adelante.");
         const saved = store.addCreditLoan({ lender: data.person, received, count, installment: each, firstDue: data.firstDue, currency: data.currency, accountId: data.accountId });
         close();
-        toast(`Anotado: ${saved.plan.count} cuotas de ${formatMoney(saved.plan.amount, saved.currency)} a ${saved.person}`);
+        toast(msg`Anotado: ${saved.plan.count} cuotas de ${formatMoney(saved.plan.amount, saved.currency)} a ${saved.person}`);
       });
     },
   });
@@ -233,7 +234,7 @@ function openCreditLoanEdit(loanId) {
   openSheet({
     title: "Editar préstamo",
     body: html`<form class="form" novalidate>
-      <p class="notice notice-info">${icon("info", 16)}<span>${plan.paid ? `Las ${plan.paid} cuota${plan.paid === 1 ? "" : "s"} que ya pasaron no cambian.` : "Todavía no venció ninguna cuota."} Lo que edites aquí se aplica a las que faltan.</span></p>
+      <p class="notice notice-info">${icon("info", 16)}<span>${plan.paid ? msg`Las ${plan.paid} cuota${plan.paid === 1 ? "" : "s"} que ya pasaron no cambian.` : "Todavía no venció ninguna cuota."} Lo que edites aquí se aplica a las que faltan.</span></p>
       ${textField({ name: "person", label: "¿Quién te lo dio?", value: loan.person, required: true, maxlength: 40 })}
       <div class="field-row">
         <div class="field">
@@ -317,7 +318,7 @@ function openCreditLoanDetail(state, loan) {
     body: html`<div class="loan-detail">
       <p class="account-detail-label">Préstamo en cuotas · recibiste ${formatMoney(loan.amount, loan.currency)} el ${formatDate(loan.date)}</p>
       <p class="account-detail-balance">${done ? "Terminado de pagar" : formatMoney(plan.left, loan.currency)}</p>
-      <p class="fine-print">${done ? `${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)}` : `Faltan ${plan.remaining} de ${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)} · la próxima vence el ${formatDate(plan.next)}`}</p>
+      <p class="fine-print">${done ? msg`${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)}` : msg`Faltan ${plan.remaining} de ${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)} · la próxima vence el ${formatDate(plan.next)}`}</p>
       ${progressBar(percent(plan.paid, plan.count), { color: "var(--goal)", label: "Cuotas pagadas" })}
       <p class="sheet-text">En total devuelves ${formatMoney(plan.total, loan.currency)}${plan.interest > 0 ? html`: <strong>${formatMoney(plan.interest, loan.currency)}</strong> de interés` : ""}.</p>
       <h3 class="section-title section-title-spaced">Cuotas</h3>
@@ -326,7 +327,7 @@ function openCreditLoanDetail(state, loan) {
           (t) => html`<div class="row loan-payment ${t.date <= today ? "is-done" : ""}">
             <span class="row-main">
               <span class="row-title">Cuota ${t.installment.n} de ${t.installment.of} · ${formatMoney(t.amount, loan.currency)}</span>
-              <span class="row-meta">${t.date <= today ? `Pagada el ${formatDate(t.date, { withYear: true })}` : `Vence el ${formatDate(t.date, { withYear: true })}`}</span>
+              <span class="row-meta">${t.date <= today ? msg`Pagada el ${formatDate(t.date, { withYear: true })}` : msg`Vence el ${formatDate(t.date, { withYear: true })}`}</span>
             </span>
             <span aria-hidden="true">${t.date <= today ? "✅" : ""}</span>
           </div>`
@@ -350,7 +351,7 @@ function openCreditLoanDetail(state, loan) {
       });
       panel.querySelector("[data-do=delete]").addEventListener("click", async () => {
         const ok = await confirmDialog({
-          title: `¿Borrar el préstamo de ${loan.person}?`,
+          title: msg`¿Borrar el préstamo de ${loan.person}?`,
           text: "Se borran el dinero recibido y todas sus cuotas, pagadas y por venir.",
           confirmLabel: "Borrar",
           danger: true,
@@ -380,7 +381,7 @@ export function openLoanDetail(loanId) {
     body: html`<div class="loan-detail">
       <p class="account-detail-label">${directionText(loan)} el ${formatDate(loan.date)}${account ? ` · ${account.icon} ${account.name}` : ""}</p>
       <p class="account-detail-balance">${outstanding > 0 ? formatMoney(outstanding, loan.currency) : "Saldado"}</p>
-      <p class="fine-print">${outstanding > 0 ? `${loan.direction === "lent" ? "Te falta cobrar" : "Te falta devolver"} de ${formatMoney(loan.amount, loan.currency)}` : `${formatMoney(loan.amount, loan.currency)} devueltos`}${loan.dueDate && outstanding > 0 ? ` · ${formatDue(loan.dueDate, today)}` : ""}</p>
+      <p class="fine-print">${outstanding > 0 ? `${loan.direction === "lent" ? "Te falta cobrar" : "Te falta devolver"} de ${formatMoney(loan.amount, loan.currency)}` : msg`${formatMoney(loan.amount, loan.currency)} devueltos`}${loan.dueDate && outstanding > 0 ? ` · ${formatDue(loan.dueDate, today)}` : ""}</p>
       ${progressBar(percent(paid, loan.amount), { color: "var(--goal)", label: "Parte devuelta" })}
       ${loan.note ? html`<p class="sheet-text">${loan.note}</p>` : ""}
       <div class="account-detail-actions">

@@ -6,6 +6,7 @@
 // recurrentes llevan la regla de repetición (RRULE) equivalente. Avisos: el
 // día anterior a las 9 y el mismo día a las 9.
 
+import { msg } from "./i18n.js";
 import { formatMoney } from "./money.js";
 import { todayISO } from "./dates.js";
 
@@ -82,7 +83,7 @@ export function billsToICS(state, now = new Date()) {
     end.setDate(end.getDate() + 1);
     const endISO = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
     const amount = formatMoney(bill.amount, bill.currency, { reveal: true });
-    const title = `${bill.icon ? `${bill.icon} ` : ""}Vence ${bill.name} · ${amount}`;
+    const title = msg`${bill.icon ? `${bill.icon} ` : ""}Vence ${bill.name} · ${amount}`;
     lines.push(
       "BEGIN:VEVENT",
       `UID:${bill.id}@neko-finanzas`,
@@ -90,17 +91,17 @@ export function billsToICS(state, now = new Date()) {
       `DTSTART;VALUE=DATE:${ymd(start)}`,
       `DTEND;VALUE=DATE:${ymd(endISO)}`,
       `SUMMARY:${text(title)}`,
-      `DESCRIPTION:${text(`Factura de ${amount}${start < today ? " (vencida)" : ""}. Registra el pago en Neko Finanzas para que deje de estar reservada.`)}`,
+      `DESCRIPTION:${text(msg`Factura de ${amount}${start < today ? " (vencida)" : ""}. Registra el pago en Neko Finanzas para que deje de estar reservada.`)}`,
       "TRANSP:TRANSPARENT",
       ...(bill.recurring ? [`RRULE:${rule(bill)}`] : []),
       "BEGIN:VALARM",
       "ACTION:DISPLAY",
-      `DESCRIPTION:${text(`Mañana vence ${bill.name}`)}`,
+      `DESCRIPTION:${text(msg`Mañana vence ${bill.name}`)}`,
       "TRIGGER:-PT15H",
       "END:VALARM",
       "BEGIN:VALARM",
       "ACTION:DISPLAY",
-      `DESCRIPTION:${text(`Hoy vence ${bill.name}`)}`,
+      `DESCRIPTION:${text(msg`Hoy vence ${bill.name}`)}`,
       "TRIGGER:PT9H",
       "END:VALARM",
       "END:VEVENT"

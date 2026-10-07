@@ -2,6 +2,7 @@
 // retirar). Depositar no es un gasto: el dinero sigue siendo del usuario,
 // solo queda apartada y deja de contar como "disponible".
 
+import { msg, tr } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
@@ -70,16 +71,16 @@ export function openGoalForm({ goal } = {}) {
           toast("Meta actualizada");
         } else {
           store.addGoal(values);
-          toast(`Meta “${values.name}” creada ✨`);
+          toast(msg`Meta “${values.name}” creada ✨`);
         }
         close();
       });
       form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
         const saved = goalProgress(goal).saved;
         const ok = await confirmDialog({
-          title: `¿Eliminar “${goal.name}”?`,
+          title: msg`¿Eliminar “${goal.name}”?`,
           text: saved > 0
-            ? `Los ${formatMoney(saved, goal.currency)} apartados vuelven a tu saldo disponible.`
+            ? msg`Los ${formatMoney(saved, goal.currency)} apartados vuelven a tu saldo disponible.`
             : "La meta no tiene dinero apartado.",
           confirmLabel: "Eliminar meta",
           danger: true,
@@ -105,7 +106,7 @@ export function openGoalMove(goalId, direction = "deposit") {
   const availableInGoal = convert(available, state.settings.mainCurrency, goal.currency, state.rates);
 
   openSheet({
-    title: isDeposit ? `Depositar en ${goal.name}` : `Retirar de ${goal.name}`,
+    title: isDeposit ? msg`Depositar en ${goal.name}` : msg`Retirar de ${goal.name}`,
     body: html`<form class="form" novalidate>
       <p class="sheet-text">${isDeposit
         ? html`Este dinero queda <strong>apartado</strong> para tu meta: sigue siendo tuyo, pero deja de contar como disponible.`
@@ -135,7 +136,7 @@ export function openGoalMove(goalId, direction = "deposit") {
         const amount = readAmount(form);
         const show = isDeposit && amount > availableInGoal;
         warning.hidden = !show;
-        if (show) warning.querySelector("span").textContent = "Es más que tu saldo disponible. Puedes hacerlo igual, pero tu disponible quedaría en negativo.";
+        if (show) warning.querySelector("span").textContent = tr("Es más que tu saldo disponible. Puedes hacerlo igual, pero tu disponible quedaría en negativo.");
       };
       form.elements.amount.addEventListener("input", checkWarning);
       form.addEventListener("click", (event) => {
@@ -149,16 +150,16 @@ export function openGoalMove(goalId, direction = "deposit") {
         clearErrors(form);
         const amount = readAmount(form);
         if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
-        if (!isDeposit && amount > saved + 0.001) return fieldError(form, "amount", `No puedes retirar más de lo que tiene la meta (${formatMoney(saved, goal.currency)}).`);
+        if (!isDeposit && amount > saved + 0.001) return fieldError(form, "amount", msg`No puedes retirar más de lo que tiene la meta (${formatMoney(saved, goal.currency)}).`);
         const backup = store.snapshot();
         store.moveGoalMoney(goal.id, isDeposit ? amount : -amount, form.elements.note.value.trim());
         close();
         const after = goalProgress(store.getState().goals.find((g) => g.id === goal.id));
         const message = isDeposit
           ? after.done
-            ? `¡Llegaste a tu meta “${goal.name}”! 🎉`
-            : `${formatMoney(amount, goal.currency)} apartados para “${goal.name}”`
-          : `${formatMoney(amount, goal.currency)} volvieron a tu disponible`;
+            ? msg`¡Llegaste a tu meta “${goal.name}”! 🎉`
+            : msg`${formatMoney(amount, goal.currency)} apartados para “${goal.name}”`
+          : msg`${formatMoney(amount, goal.currency)} volvieron a tu disponible`;
         toast(message, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
@@ -186,7 +187,7 @@ export function openGoalDetail(goalId) {
         <span class="cat-bubble cat-bubble-xl is-tinted" style="--c:${goal.color}">${goal.icon}</span>
         <p class="goal-detail-amount"><strong>${formatMoney(p.saved, goal.currency)}</strong> <span>/ ${formatMoney(goal.target, goal.currency)}</span></p>
         ${approx(state, p.saved, goal.currency)}
-        ${progressBar(p.pct, { color: goal.color, level: p.done ? "done" : "ok", label: `Progreso de ${goal.name}` })}
+        ${progressBar(p.pct, { color: goal.color, level: p.done ? "done" : "ok", label: msg`Progreso de ${goal.name}` })}
         <p class="goal-detail-meta">${p.done
           ? "¡Meta cumplida! 🎉"
           : html`${Math.floor(p.pct)}% · faltan ${formatMoney(p.remaining, goal.currency)}${monthly ? html` · ${formatMoney(monthly, goal.currency)}/mes hasta el ${formatDate(goal.targetDate, { withYear: true })}` : ""}`}</p>

@@ -3,6 +3,7 @@
 // rápidas y lo reciente. En escritorio es un tablero: el saldo arriba, los
 // gráficos del mes y el resto en una grilla (ver styles/layout.css).
 
+import { msg, tr } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, txRow, chartSize } from "../ui/components.js";
@@ -43,7 +44,8 @@ function heroSize(text) {
 /** "facturas", "facturas y cuotas", "facturas, cuotas y deudas"… */
 function reserveLabel(summary) {
   const parts = ["facturas", summary.scheduled.amount > 0 && "cuotas", summary.debts.amount > 0 && "deudas", summary.envelopes.amount > 0 && "gastos del mes"].filter(Boolean);
-  return parts.length > 1 ? `${parts.slice(0, -1).join(", ")} y ${parts[parts.length - 1]}` : parts[0];
+  const names = parts.map(tr);
+  return names.length > 1 ? msg`${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}` : names[0];
 }
 
 export default {
@@ -158,7 +160,7 @@ export default {
     // día" se muestra lo acumulado; si no, el disponible repartido por día.
     const treats = treatAllowance(state, today);
     const daily = dailyAllowance(state, today);
-    const untilText = daily.reason === "income" ? `hasta que cobres, el ${formatDate(daily.until)}` : "hasta fin de mes";
+    const untilText = daily.reason === "income" ? msg`hasta que cobres, el ${formatDate(daily.until)}` : "hasta fin de mes";
     const dailyCard = isEmpty
       ? ""
       : treats
@@ -168,7 +170,7 @@ export default {
               ${treats.accumulated >= 0
                 ? html`<p class="daily-main">Para gustos tienes <strong data-pulse="daily">${m(treats.accumulated)}</strong></p>`
                 : html`<p class="daily-main">En gustos te pasaste por <strong data-pulse="daily">${m(-treats.accumulated)}</strong></p>`}
-              <p class="daily-sub">${m(treats.perDay)} por día${treats.spentToday > 0 ? ` · hoy llevas ${m(treats.spentToday)}` : ""}</p>
+              <p class="daily-sub">${m(treats.perDay)} por día${treats.spentToday > 0 ? msg` · hoy llevas ${m(treats.spentToday)}` : ""}</p>
               <p class="daily-note">${treats.accumulated >= 0 ? "Lo que no gastas hoy se acumula para mañana." : "Se va recuperando con los días que no gastes."} Cuenta: ${treats.budget.name}.</p>
             </div>
           </section>`
@@ -179,10 +181,10 @@ export default {
                 ${daily.leftToday >= 0
                   ? html`<p class="daily-main">Hoy puedes gastar <strong data-pulse="daily">${m(daily.leftToday)}</strong></p>`
                   : html`<p class="daily-main">Hoy ya te pasaste por <strong data-pulse="daily">${m(-daily.leftToday)}</strong></p>`}
-                <p class="daily-sub">${m(daily.perDay)} por día ${untilText}${daily.spentToday > 0 ? ` · hoy llevas ${m(daily.spentToday)}` : ""}</p>
+                <p class="daily-sub">${m(daily.perDay)} por día ${untilText}${daily.spentToday > 0 ? msg` · hoy llevas ${m(daily.spentToday)}` : ""}</p>
                 <p class="daily-note">${daily.days === 1
-                  ? `Es todo tu disponible: ${daily.reason === "income" ? "mañana cobras" : "hoy termina el mes"}. La comida`
-                  : `Es tu disponible repartido en los ${daily.days} días que faltan ${daily.reason === "income" ? "para tu próximo cobro" : "para terminar el mes"}, contando hoy: la comida`} y el transporte también salen de aquí. <button type="button" class="inline-link" data-action="add-treats">Ponte un límite de gustos por día</button> y lo que no gastes se acumula.</p>
+                  ? msg`Es todo tu disponible: ${daily.reason === "income" ? "mañana cobras" : "hoy termina el mes"}. La comida`
+                  : msg`Es tu disponible repartido en los ${daily.days} días que faltan ${daily.reason === "income" ? "para tu próximo cobro" : "para terminar el mes"}, contando hoy: la comida`} y el transporte también salen de aquí. <button type="button" class="inline-link" data-action="add-treats">Ponte un límite de gustos por día</button> y lo que no gastes se acumula.</p>
               </div>
             </section>`
           : "";
@@ -213,7 +215,7 @@ export default {
       (tx) => html`<div class="card card-soft card-pending reveal">
         <span class="mini-icon ${tx.type === "expense" ? "mini-icon-expense" : "mini-icon-income"}">${icon("repeat", 18)}</span>
         <div class="row-main">
-          <span class="row-title">${tx.type === "expense" ? `¿Ya pagaste “${tx.description || state.categories.find((c) => c.id === tx.categoryId)?.name || "tu gasto"}”?` : `¿Ya cobraste “${tx.description || "tu ingreso"}”?`}</span>
+          <span class="row-title">${tx.type === "expense" ? msg`¿Ya pagaste “${tx.description || state.categories.find((c) => c.id === tx.categoryId)?.name || "tu gasto"}”?` : msg`¿Ya cobraste “${tx.description || "tu ingreso"}”?`}</span>
           <span class="row-meta">${formatMoney(tx.recurrence.amount || tx.amount, tx.currency)} · esperado el ${formatDate(tx.recurrence.nextDate)}</span>
         </div>
         <div class="card-pending-actions">
@@ -262,7 +264,7 @@ export default {
           ${budgetAlerts.slice(0, 3).map(
             (b) => html`<div class="budget-mini">
               <span class="budget-mini-name">${b.budget.icon} ${b.budget.name}</span>
-              <span class="budget-mini-val">${b.level === "over" ? `Superado por ${m(-b.remaining)}` : `Quedan ${m(b.remaining)}`}</span>
+              <span class="budget-mini-val">${b.level === "over" ? msg`Superado por ${m(-b.remaining)}` : msg`Quedan ${m(b.remaining)}`}</span>
               ${progressBar(b.pct, { color: b.budget.color, level: b.level })}
             </div>`
           )}
@@ -344,7 +346,7 @@ export default {
       ${backupReminderDue(state)
         ? html`<div class="demo-banner backup-banner reveal" role="status">
             <span class="demo-banner-icon">${icon("shield", 16)}</span>
-            <span class="demo-banner-text"><strong>${getLastBackup() ? `Tu último backup fue hace ${daysSinceBackup(state)} días.` : "Todavía no hiciste ningún backup."}</strong>
+            <span class="demo-banner-text"><strong>${getLastBackup() ? msg`Tu último backup fue hace ${daysSinceBackup(state)} días.` : "Todavía no hiciste ningún backup."}</strong>
               Guarda una copia fuera de este dispositivo (Drive, iCloud, tu correo) por si cambias de teléfono o se borran los datos del navegador.</span>
             <span class="backup-banner-actions">
               <button type="button" class="btn btn-sm btn-ghost" data-action="snooze-backup">Ahora no</button>

@@ -4,6 +4,7 @@
 // aumento). Los extras (aguinaldo, comisión, propinas…) son otra línea:
 // variables y sin repetirse, se cargan en "Extras del mes".
 
+import { msg } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { openSheet, whenHistorySettled } from "../sheet.js";
 import { openIncomeExtras } from "./incomeExtras.js";
@@ -26,7 +27,7 @@ export function openIncomeConfirm(templateId) {
   const several = state.accounts.filter((a) => !a.archived).length > 1;
 
   openSheet({
-    title: isExpense ? `¿Pagaste “${name}”?` : `¿Cobraste “${name}”?`,
+    title: isExpense ? msg`¿Pagaste “${name}”?` : msg`¿Cobraste “${name}”?`,
     body: html`<form class="form" novalidate>
       ${amountField({ value: usual, currency: template.currency, label: isExpense ? "¿Cuánto pagaste?" : "¿Cuánto te depositaron?", autofocus: false, tone: isExpense ? "tone-expense" : "tone-income" })}
       <p class="field-hint">${isExpense ? "Si esta vez fue otro monto, escribe el real." : "Si fue menos (días trabajados, descuentos) o más, escribe el monto real."} Lo habitual son ${formatMoney(usual, template.currency)}.</p>
@@ -62,7 +63,7 @@ export function openIncomeConfirm(templateId) {
         });
         const withExtras = Boolean(form.elements.withExtras?.checked);
         close();
-        toast(`${name} registrado: ${formatMoney(tx.amount, tx.currency)}`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast(msg`${name} registrado: ${formatMoney(tx.amount, tx.currency)}`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
         // Los extras son otra cosa: variables y sin repetirse. Se cargan en su hoja.
         if (withExtras) whenHistorySettled(() => openIncomeExtras());
       });

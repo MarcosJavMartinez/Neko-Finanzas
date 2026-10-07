@@ -1,5 +1,6 @@
 // Préstamos: lo que te deben y lo que debes, con cuánto falta de cada uno.
 
+import { msg } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { emptyState, progressBar } from "../ui/components.js";
@@ -15,7 +16,7 @@ function creditLoanRow(item, today) {
     <span class="cat-bubble cat-bubble-md loan-bubble" aria-hidden="true">${done ? "✅" : "🏦"}</span>
     <span class="row-main">
       <span class="row-title">${loan.person}</span>
-      <span class="row-meta">${done ? "Terminado de pagar" : `Faltan ${plan.remaining} de ${plan.count} cuotas · la próxima vence el ${formatDate(plan.next)}`}</span>
+      <span class="row-meta">${done ? "Terminado de pagar" : msg`Faltan ${plan.remaining} de ${plan.count} cuotas · la próxima vence el ${formatDate(plan.next)}`}</span>
       ${done ? "" : progressBar(percent(plan.paid, plan.count), { color: "var(--goal)" })}
     </span>
     <span class="account-amount">
@@ -35,7 +36,7 @@ export function loanRow(item, today = todayISO()) {
     <span class="cat-bubble cat-bubble-md loan-bubble" aria-hidden="true">${done ? "✅" : "🤝"}</span>
     <span class="row-main">
       <span class="row-title">${loan.person}</span>
-      <span class="row-meta ${overdue ? "is-overdue" : ""}">${done ? "Saldado" : [`de ${formatMoney(loan.amount, loan.currency)}`, due].filter(Boolean).join(" · ")}</span>
+      <span class="row-meta ${overdue ? "is-overdue" : ""}">${done ? "Saldado" : [msg`de ${formatMoney(loan.amount, loan.currency)}`, due].filter(Boolean).join(" · ")}</span>
       ${done ? "" : progressBar(percent(loan.amount - outstanding, loan.amount), { color: "var(--goal)" })}
     </span>
     <span class="account-amount">

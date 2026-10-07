@@ -1,6 +1,7 @@
 // Facturas y servicios: cuánto reservar, el calendario de vencimientos del
 // mes y el estado de cada obligación.
 
+import { msg, tr, dateLocale } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { art, billRow, emptyState } from "../ui/components.js";
@@ -15,7 +16,8 @@ import { billsToICS } from "../core/ics.js";
 import { downloadFile } from "../ui/download.js";
 import { toast } from "../ui/toast.js";
 
-const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
+/** Iniciales de lunes a domingo en el idioma elegido ("L M M J V S D"). El 1/1/2024 fue lunes. */
+const weekdays = () => Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + i).toLocaleDateString(dateLocale(), { weekday: "narrow" }).toUpperCase());
 // Prioridad del color de un día con varias facturas: lo más urgente manda.
 const TONE_ORDER = ["overdue", "soon", "later", "paid"];
 
@@ -47,7 +49,7 @@ function calendar(state, today) {
       continue;
     }
     const tone = dayTone(items, today);
-    const label = `${formatDate(iso)}: ${items.map((i) => i.bill.name).join(", ")}`;
+    const label = `${formatDate(iso)}: ${items.map((i) => tr(i.bill.name)).join(", ")}`;
     cells.push(html`<button type="button" class="cal-cell has-due tone-${tone} ${isToday ? "is-today" : ""}" data-action="bills-day" data-date="${iso}" aria-label="${label}" title="${label}">
       ${day}${items.length > 1 ? html`<span class="cal-count">${items.length}</span>` : ""}
     </button>`);
@@ -66,7 +68,7 @@ function calendar(state, today) {
       <button type="button" class="icon-btn" data-action="bills-month" data-delta="1" aria-label="Mes siguiente">${icon("chevronRight", 20)}</button>
     </div>
     <div class="cal-grid">
-      ${WEEKDAYS.map((d) => html`<span class="cal-weekday" aria-hidden="true">${d}</span>`)}
+      ${weekdays().map((d) => html`<span class="cal-weekday" aria-hidden="true">${d}</span>`)}
       ${cells}
     </div>
     <div class="cal-foot">
@@ -87,7 +89,7 @@ function openDay(date) {
   const items = billCalendar(state, date.slice(0, 7), today)[date] || [];
   if (!items.length) return;
   openSheet({
-    title: `Vencen el ${formatDate(date, { withYear: true })}`,
+    title: msg`Vencen el ${formatDate(date, { withYear: true })}`,
     body: html`<div class="card card-flush rows">${items.map((i) => billRow(state, i.bill, { today, dueDate: i.dueDate, status: i.status }))}</div>
       <p class="fine-print">${icon("info", 14)} Toca una factura para ver el detalle. Solo se puede pagar el vencimiento actual de cada una.</p>`,
   });
@@ -121,7 +123,7 @@ export default {
     const monthlyTotal = state.bills
       .filter((b) => b.recurring)
       .reduce((s, b) => s + toMain(state, b.amount, b.currency) * monthlyFactor(b.frequency), 0);
-    const horizon = state.settings.reserveHorizon === "month" ? "hasta fin de mes" : `hasta el ${formatDate(reserve.until)}`;
+    const horizon = state.settings.reserveHorizon === "month" ? "hasta fin de mes" : msg`hasta el ${formatDate(reserve.until)}`;
 
     const group = (title, list) =>
       list.length ? html`<h2 class="section-title section-title-spaced">${title}</h2><div class="card card-flush rows">${list.map((x) => billRow(state, x.bill, { today }))}</div>` : "";
@@ -189,7 +191,7 @@ export default {
       const amount = billCushion(getState()).amount;
       const backup = snapshot();
       releaseBillCushion(amount);
-      toast(`${formatMoney(amount, getState().settings.mainCurrency)} volvieron a tu disponible`, { type: "info", actionLabel: "Deshacer", onAction: () => restore(backup) });
+      toast(msg`${formatMoney(amount, getState().settings.mainCurrency)} volvieron a tu disponible`, { type: "info", actionLabel: "Deshacer", onAction: () => restore(backup) });
     },
     "export-ics"() {
       const { ics, count } = billsToICS(getState());
@@ -198,7 +200,7 @@ export default {
         return;
       }
       downloadFile(ics, "neko-finanzas-vencimientos.ics", "text/calendar;charset=utf-8");
-      toast(`Calendario descargado: ${count} factura${count === 1 ? "" : "s"}. Ábrelo para sumarlas a tu calendario.`, { duration: 6000 });
+      toast(msg`Calendario descargado: ${count} factura${count === 1 ? "" : "s"}. Ábrelo para sumarlas a tu calendario.`, { duration: 6000 });
     },
   },
 };

@@ -1,5 +1,6 @@
 // Campos de formulario compartidos por todas las hojas.
 
+import { tr } from "../../core/i18n.js";
 import { html, setHTML } from "../dom.js";
 import { icon } from "../icons.js";
 import { amountToInput, parseAmount, CURRENCY_CODES, zeroAmount, currencyChoices, symbolOf, CURRENCIES } from "../../core/money.js";
@@ -182,7 +183,7 @@ export function readAmount(form, name = "amount") {
 export function fieldError(form, name, message) {
   const el = form.querySelector(`[data-error-for="${name}"]`);
   if (el) {
-    el.textContent = message;
+    el.textContent = tr(message);
     el.closest(".field")?.classList.add("has-error");
   }
   const input = form.elements[name];

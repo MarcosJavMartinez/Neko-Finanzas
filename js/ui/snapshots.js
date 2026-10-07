@@ -1,5 +1,6 @@
 // Copias automáticas: lista y restauración (Configuración → Tus datos).
 
+import { dateLocale } from "../core/i18n.js";
 import { html, setHTML } from "./dom.js";
 import { icon } from "./icons.js";
 import { openSheet, confirmDialog } from "./sheet.js";
@@ -10,7 +11,7 @@ import * as store from "../core/store.js";
 function when(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "Fecha desconocida";
-  return d.toLocaleString("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).replace(".", "");
+  return d.toLocaleString(dateLocale(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).replace(".", "");
 }
 
 function plural(n, one, many) {

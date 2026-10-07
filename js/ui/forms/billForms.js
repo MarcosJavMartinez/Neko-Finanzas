@@ -1,5 +1,6 @@
 // Facturas y servicios: alta/edición, detalle y registro de pago.
 
+import { msg, tr, dateLocale, getLanguage } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
@@ -107,13 +108,13 @@ export function openBillForm({ bill } = {}) {
           toast("Factura actualizada");
         } else {
           store.addBill(values);
-          toast(`“${values.name}” agregada · se reservarán ${formatMoney(amount, values.currency)}`);
+          toast(msg`“${values.name}” agregada · se reservarán ${formatMoney(amount, values.currency)}`);
         }
         close();
       });
       form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
         const ok = await confirmDialog({
-          title: `¿Eliminar “${bill.name}”?`,
+          title: msg`¿Eliminar “${bill.name}”?`,
           text: "Los pagos que ya registraste quedan como gastos en tus movimientos.",
           confirmLabel: "Eliminar",
           danger: true,
@@ -134,9 +135,9 @@ export function openPayBill(billId) {
   const bill = state.bills.find((b) => b.id === billId);
   if (!bill) return;
   openSheet({
-    title: `Pagar ${bill.name}`,
+    title: msg`Pagar ${bill.name}`,
     body: html`<form class="form" novalidate>
-      <p class="sheet-text">Se va a registrar como <strong>gasto</strong> y dejará de estar reservado${bill.recurring ? `. El próximo vencimiento pasa a ${formatDate(FREQUENCIES[bill.frequency].next(bill.dueDate, bill.dueDay))}` : ""}.</p>
+      <p class="sheet-text">Se va a registrar como <strong>gasto</strong> y dejará de estar reservado${bill.recurring ? msg`. El próximo vencimiento pasa a ${formatDate(FREQUENCIES[bill.frequency].next(bill.dueDate, bill.dueDay))}` : ""}.</p>
       ${amountField({ value: bill.amount, currency: bill.currency, label: "Monto pagado", autofocus: false, tone: "tone-expense" })}
       ${dateField({ name: "date", label: "Fecha de pago", value: todayISO() })}
       ${state.accounts.filter((a) => !a.archived).length > 1
@@ -162,8 +163,8 @@ export function openPayBill(billId) {
         const after = store.getState();
         const diff = after.settings.billCushion ? toMain(after, bill.amount, bill.currency) - toMain(after, amount, currency) : 0;
         const main = after.settings.mainCurrency;
-        const extra = diff > 0.005 ? ` · ${formatMoney(diff, main)} menos de lo esperado: quedan guardados para tus próximas facturas` : diff < -0.005 ? ` · ${formatMoney(-diff, main)} más de lo esperado${billCushion(after).saved - (after.settings.billCushionReleased || 0) >= 0 ? ": salieron del fondo" : ""}` : "";
-        toast(`${bill.name} pagada · se registró el gasto${extra}`, { duration: extra ? 7000 : undefined, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        const extra = diff > 0.005 ? msg` · ${formatMoney(diff, main)} menos de lo esperado: quedan guardados para tus próximas facturas` : diff < -0.005 ? msg` · ${formatMoney(-diff, main)} más de lo esperado${billCushion(after).saved - (after.settings.billCushionReleased || 0) >= 0 ? ": salieron del fondo" : ""}` : "";
+        toast(msg`${bill.name} pagada · se registró el gasto${extra}`, { duration: extra ? 7000 : undefined, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });
@@ -236,7 +237,7 @@ export function openBillDetail(billId) {
 function categoryLabel(state, item) {
   const category = findCategory(state, item.categoryId);
   const sub = findSubcategory(category, item.subcategoryId);
-  return [category?.name || "—", sub?.name].filter(Boolean).join(" · ");
+  return [tr(category?.name) || "—", tr(sub?.name)].filter(Boolean).join(" · ");
 }
 
 /** "Vence todos los meses el día 29" · "Vence cada semana, los miércoles" … */
@@ -244,21 +245,21 @@ function repeatText(dueDate, recurring, frequency) {
   if (!dueDate) return "Elige la fecha de vencimiento.";
   const d = parseISO(dueDate);
   const day = d.getDate();
-  const first = `La primera vez vence el ${formatDate(dueDate, { withYear: true })}.`;
-  if (!recurring) return `Vence una sola vez, el ${formatDate(dueDate, { withYear: true })}.`;
+  const first = msg`La primera vez vence el ${formatDate(dueDate, { withYear: true })}.`;
+  if (!recurring) return msg`Vence una sola vez, el ${formatDate(dueDate, { withYear: true })}.`;
   // "los lunes" … "los sábados", "los domingos"
-  const weekdayName = d.toLocaleDateString("es-AR", { weekday: "long" });
-  const weekday = weekdayName.endsWith("s") ? weekdayName : weekdayName + "s";
-  const monthName = d.toLocaleDateString("es-AR", { month: "long" });
+  const weekdayName = d.toLocaleDateString(dateLocale(), { weekday: "long" });
+  const weekday = getLanguage() !== "es" || weekdayName.endsWith("s") ? weekdayName : weekdayName + "s";
+  const monthName = d.toLocaleDateString(dateLocale(), { month: "long" });
   const rule = {
-    weekly: `Vence cada semana, los ${weekday}`,
-    biweekly: `Vence cada 2 semanas, los ${weekday}`,
-    monthly: `Vence todos los meses el día ${day}`,
-    bimonthly: `Vence cada 2 meses, el día ${day}`,
-    quarterly: `Vence cada 3 meses, el día ${day}`,
-    semiannual: `Vence cada 6 meses, el día ${day}`,
-    yearly: `Vence todos los años el ${day} de ${monthName}`,
-  }[frequency] || `Vence el día ${day}`;
+    weekly: msg`Vence cada semana, los ${weekday}`,
+    biweekly: msg`Vence cada 2 semanas, los ${weekday}`,
+    monthly: msg`Vence todos los meses el día ${day}`,
+    bimonthly: msg`Vence cada 2 meses, el día ${day}`,
+    quarterly: msg`Vence cada 3 meses, el día ${day}`,
+    semiannual: msg`Vence cada 6 meses, el día ${day}`,
+    yearly: msg`Vence todos los años el ${day} de ${monthName}`,
+  }[frequency] || msg`Vence el día ${day}`;
   // Día 29-31: en los meses más cortos vence el último día.
   const shortMonths = day > 28 && ["monthly", "bimonthly", "quarterly", "semiannual"].includes(frequency) ? " (o el último día, en los meses más cortos)" : "";
   return `${rule}${shortMonths}. ${first}`;

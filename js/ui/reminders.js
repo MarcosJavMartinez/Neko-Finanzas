@@ -11,6 +11,7 @@
 // próximos días (qué decir cada día) y cuáles ya se mostraron. El service
 // worker solo lee ese plan: no necesita la lógica financiera.
 
+import { msg, tr } from "../core/i18n.js";
 import { withStore } from "../core/db.js";
 import { cardStatus, loanOutstanding, loanPlanStatus } from "../core/finance.js";
 import { formatMoney } from "../core/money.js";
@@ -26,12 +27,12 @@ export const reminderPermission = () => (remindersSupported() ? Notification.per
 
 /** Qué decir según cuántos días faltan (o pasaron). */
 function title(kind, name, diff) {
-  const when = diff > 1 ? `En ${diff} días` : diff === 1 ? "Mañana" : diff === 0 ? "Hoy" : null;
-  const ago = diff === -1 ? "ayer" : `hace ${-diff} días`;
-  if (kind === "card") return when ? `${when} vence el resumen de ${name}` : `El resumen de ${name} venció ${ago}`;
-  if (kind === "debt") return when ? `${when} le tienes que devolver a ${name}` : `Tenías que devolverle a ${name} ${ago}`;
-  if (kind === "lent") return when ? `${when} ${name} te tiene que devolver` : `${name} te tenía que devolver ${ago}`;
-  return when ? `${when} vence ${name}` : `${name} venció ${ago}`;
+  const when = diff > 1 ? msg`En ${diff} días` : diff === 1 ? "Mañana" : diff === 0 ? "Hoy" : null;
+  const ago = diff === -1 ? "ayer" : msg`hace ${-diff} días`;
+  if (kind === "card") return when ? msg`${when} vence el resumen de ${name}` : msg`El resumen de ${name} venció ${ago}`;
+  if (kind === "debt") return when ? msg`${when} le tienes que devolver a ${name}` : msg`Tenías que devolverle a ${name} ${ago}`;
+  if (kind === "lent") return when ? msg`${when} ${name} te tiene que devolver` : msg`${name} te tenía que devolver ${ago}`;
+  return when ? msg`${when} vence ${name}` : msg`${name} venció ${ago}`;
 }
 
 /**
@@ -44,7 +45,7 @@ export function buildPlan(state, today = todayISO(), daysBefore = getReminderDay
   const items = [];
   const add = (id, due, name, amount, kind) => {
     if (!due || due < addDays(today, -AFTER_DAYS)) return;
-    const body = hide || !amount ? "Toca para abrir Neko Finanzas" : `${amount} · Toca para abrir Neko Finanzas`;
+    const body = hide || !amount ? "Toca para abrir Neko Finanzas" : msg`${amount} · Toca para abrir Neko Finanzas`;
     const stage = (tag, from, until) => {
       const titles = {};
       for (let day = from; day <= until; day = addDays(day, 1)) titles[day] = title(kind, name, daysBetween(day, due));
@@ -67,7 +68,7 @@ export function buildPlan(state, today = todayISO(), daysBefore = getReminderDay
     // Préstamo en cuotas: se avisa la próxima cuota.
     if (loan.plan) {
       const plan = loanPlanStatus(state, loan, today);
-      if (plan.next) add(`cuota:${loan.id}`, plan.next, `la cuota del préstamo ${loan.person}`, money(plan.amount, loan.currency), "bill");
+      if (plan.next) add(`cuota:${loan.id}`, plan.next, msg`la cuota del préstamo ${loan.person}`, money(plan.amount, loan.currency), "bill");
       continue;
     }
     const outstanding = loanOutstanding(loan);
@@ -105,7 +106,9 @@ export async function syncPlan(state) {
   await writeRecord({ enabled: true, items, shown });
 }
 
-async function show(titleText, options) {
+async function show(title, { body, ...rest }) {
+  const titleText = tr(title);
+  const options = { ...rest, body: tr(body) };
   const registration = await navigator.serviceWorker.getRegistration();
   if (registration) return registration.showNotification(titleText, options);
   return new Notification(titleText, options); // sin service worker (por ejemplo, abierto como archivo)

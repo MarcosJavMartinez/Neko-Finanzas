@@ -1,5 +1,6 @@
 // Presupuestos del mes: cuánto se usó de cada uno, con avisos suaves.
 
+import { msg } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { art, emptyState, monthNav, progressBar, statusChip } from "../ui/components.js";
@@ -36,9 +37,9 @@ export default {
     const overview = budgetsOverview(state, view.month);
     const baseText =
       overview.base.source === "income"
-        ? `Sobre tus ingresos de ${formatMonth(view.month)}: ${formatMoney(overview.base.amount, main)}`
+        ? msg`Sobre tus ingresos de ${formatMonth(view.month)}: ${formatMoney(overview.base.amount, main)}`
         : overview.base.source === "reference"
-          ? `Todavía no hay ingresos este mes: se usa tu ingreso de referencia (${formatMoney(overview.base.amount, main)}).`
+          ? msg`Todavía no hay ingresos este mes: se usa tu ingreso de referencia (${formatMoney(overview.base.amount, main)}).`
           : "Todavía no hay ingresos este mes: los presupuestos en % valen $0 hasta que registres uno (o define un ingreso de referencia en Configuración).";
     const unassigned = Math.max(0, 100 - overview.assignedPct);
 
@@ -52,7 +53,7 @@ export default {
           { label: "Sin asignar", value: unassigned, color: "var(--track-strong)", tip: `${Math.round(unassigned)}%` },
         ])}
         <ul class="legend legend-wrap">
-          ${overview.items.map((i) => html`<li class="legend-item"><span class="legend-swatch" style="--c:${i.budget.color}"></span>${i.budget.name} <span class="muted-text">${i.budget.mode === "percent" ? `${i.budget.value}%` : i.budget.mode === "daily" ? `${formatMoney(i.budget.value, i.budget.currency)} por día` : formatMoney(i.budget.value, i.budget.currency)}</span></li>`)}
+          ${overview.items.map((i) => html`<li class="legend-item"><span class="legend-swatch" style="--c:${i.budget.color}"></span>${i.budget.name} <span class="muted-text">${i.budget.mode === "percent" ? `${i.budget.value}%` : i.budget.mode === "daily" ? msg`${formatMoney(i.budget.value, i.budget.currency)} por día` : formatMoney(i.budget.value, i.budget.currency)}</span></li>`)}
         </ul>
         <p class="fine-print">${icon("info", 14)} ${baseText}${overview.assignedPct > 100.5 ? html` <strong class="text-warn">Asignaste ${Math.round(overview.assignedPct)}%: más de lo que entra.</strong>` : ""}</p>
       </section>
@@ -70,12 +71,12 @@ export default {
             </span>
             ${progressBar(i.pct, { color: i.budget.color, level: i.level, label: i.budget.name })}
             <span class="budget-foot">${i.level !== "ok" ? statusChip(i.level, LEVEL_TEXT[i.level]) : ""}${i.level === "over"
-              ? `Te pasaste ${formatMoney(-i.remaining, main)}. No pasa nada: tómalo como dato para el mes que viene.`
+              ? msg`Te pasaste ${formatMoney(-i.remaining, main)}. No pasa nada: tómalo como dato para el mes que viene.`
               : i.level === "done"
                 ? "¡Separaste lo que te propusiste!"
                 : isGoal
-                  ? `Faltan ${formatMoney(i.remaining, main)} para el objetivo del mes`
-                  : `Te quedan ${formatMoney(i.remaining, main)}`}</span>
+                  ? msg`Faltan ${formatMoney(i.remaining, main)} para el objetivo del mes`
+                  : msg`Te quedan ${formatMoney(i.remaining, main)}`}</span>
           </button>`;
         })}
       </div>

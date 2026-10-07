@@ -1,6 +1,7 @@
 // Tutorial "¿Cómo funciona?": 4 pasos cortos. Aparece la primera vez que se
 // abre la app (sin datos) y se puede volver a ver desde Más y Configuración.
 
+import { tr } from "../core/i18n.js";
 import { html } from "./dom.js";
 import { icon } from "./icons.js";
 import { confirmDialog, openSheet, whenHistorySettled } from "./sheet.js";
@@ -98,7 +99,7 @@ export function openOnboarding() {
         // En el último paso con dos opciones, "Atrás" deja lugar a esas dos.
         $("[data-ob=back]").hidden = index === 0 || (last && !!extra.what);
         if (extra.what) $(`[data-ob=${extra.what}]`).hidden = !last;
-        $("[data-ob=next]").textContent = last ? extra.done : "Siguiente";
+        $("[data-ob=next]").textContent = tr(last ? extra.done : "Siguiente");
       };
       panel.addEventListener("click", (event) => {
         const button = event.target.closest("[data-ob]");

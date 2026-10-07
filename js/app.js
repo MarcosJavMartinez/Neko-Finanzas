@@ -6,6 +6,7 @@
 // data-change="…": se busca primero en la pantalla actual y después en las
 // acciones globales de abajo. Si un handler devuelve true, se redibuja.
 
+import { getLanguage, initLanguage, msg, tr } from "./core/i18n.js";
 import * as store from "./core/store.js";
 import { requestPersistence, STORAGE_KEY, onRemoteChange } from "./core/storage.js";
 import { html, setHTML, $, prefersReducedMotion } from "./ui/dom.js";
@@ -176,8 +177,8 @@ const GLOBAL_ACTIONS = {
     toast(
       result.how === "replaced"
         ? result.first
-          ? `Backup guardado en “${result.name}”. Los próximos van a reemplazar ese mismo archivo.`
-          : `Backup actualizado en “${result.name}”`
+          ? msg`Backup guardado en “${result.name}”. Los próximos van a reemplazar ese mismo archivo.`
+          : msg`Backup actualizado en “${result.name}”`
         : result.how === "shared"
           ? "Backup listo. Guárdalo con el mismo nombre para reemplazar el anterior."
           : "Backup descargado"
@@ -191,7 +192,7 @@ const GLOBAL_ACTIONS = {
       return;
     }
     downloadFile(transactionsToCSV(state), `neko-finanzas-movimientos-${todayISO()}.csv`, "text/csv;charset=utf-8");
-    toast(`Planilla descargada: ${state.transactions.length} movimiento${state.transactions.length === 1 ? "" : "s"}`);
+    toast(msg`Planilla descargada: ${state.transactions.length} movimiento${state.transactions.length === 1 ? "" : "s"}`);
   },
   "show-onboarding": () => openOnboarding(),
   "share-app": () => shareApp(),
@@ -285,7 +286,7 @@ function render({ animate = false } = {}) {
     location.replace("#/inicio");
     return;
   }
-  document.title = currentScreen.id === DEFAULT_ROUTE ? "Neko Finanzas — by Neko Tools" : `${currentScreen.title} · Neko Finanzas`;
+  document.title = currentScreen.id === DEFAULT_ROUTE ? "Neko Finanzas — by Neko Tools" : `${tr(currentScreen.title)} · Neko Finanzas`;
   document.body.classList.toggle("is-wide", Boolean(currentScreen.wide));
   renderHeader();
   renderTabs();
@@ -521,7 +522,23 @@ function hideSplash() {
   return 1700;
 }
 
+/** Los textos que están escritos en index.html (pestañas, etiquetas) pasan al idioma elegido. */
+function localizeStatic() {
+  if (getLanguage() === "es") return;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = node.nodeValue.trim();
+    const to = text && tr(text.replace(/\s+/g, " "));
+    if (to && to !== text) node.nodeValue = node.nodeValue.replace(text, to);
+  }
+  for (const el of document.querySelectorAll("[aria-label], [title]")) {
+    for (const name of ["aria-label", "title"]) if (el.hasAttribute(name)) el.setAttribute(name, tr(el.getAttribute(name)));
+  }
+}
+
 async function start() {
+  await initLanguage();
+  localizeStatic();
   setMasked(amountsHidden());
   showCustomImage();
   initBackupFile().then(() => currentScreen?.id === "ajustes-datos" && render());

@@ -2,6 +2,8 @@
 // con Date/UTC) evita los corrimientos de un día que aparecen al cruzar
 // zonas horarias, y además se ordenan y comparan como texto.
 
+import { dateLocale, msg } from "./i18n.js";
+
 const pad = (n) => String(n).padStart(2, "0");
 
 export function toISO(date) {
@@ -74,11 +76,9 @@ export function lastMonthKeys(count, endKey = currentMonthKey()) {
   return keys;
 }
 
-const LOCALE = "es-AR";
-
 export function formatMonth(key, { short = false } = {}) {
   const [y, m] = key.split("-").map(Number);
-  const label = new Date(y, m - 1, 1).toLocaleDateString(LOCALE, {
+  const label = new Date(y, m - 1, 1).toLocaleDateString(dateLocale(), {
     month: short ? "short" : "long",
     ...(short ? {} : { year: "numeric" }),
   });
@@ -89,7 +89,7 @@ export function formatDate(iso, { withYear = false, weekday = false } = {}) {
   const d = parseISO(iso);
   const sameYear = d.getFullYear() === new Date().getFullYear();
   return d
-    .toLocaleDateString(LOCALE, {
+    .toLocaleDateString(dateLocale(), {
       day: "numeric",
       month: "short",
       ...(withYear || !sameYear ? { year: "numeric" } : {}),
@@ -112,10 +112,10 @@ export function formatDue(iso, today = todayISO()) {
   const diff = daysBetween(today, iso);
   if (diff === 0) return "Vence hoy";
   if (diff === 1) return "Vence mañana";
-  if (diff > 1 && diff <= 14) return `Vence en ${diff} días`;
-  if (diff > 14) return `Vence el ${formatDate(iso)}`;
+  if (diff > 1 && diff <= 14) return msg`Vence en ${diff} días`;
+  if (diff > 14) return msg`Vence el ${formatDate(iso)}`;
   if (diff === -1) return "Venció ayer";
-  return `Venció hace ${-diff} días`;
+  return msg`Venció hace ${-diff} días`;
 }
 
 export function capitalize(text) {

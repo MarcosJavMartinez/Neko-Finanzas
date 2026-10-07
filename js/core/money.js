@@ -1,3 +1,4 @@
+import { setDateRegion, msg } from "./i18n.js";
 // Monedas, conversión y formato de montos.
 //
 // Los tipos de cambio los define el usuario a mano y se guardan como
@@ -83,6 +84,7 @@ export function configureMoney({ region: nextRegion, currencies } = {}) {
   if (Array.isArray(currencies) && currencies.length) active = currencies.filter((c) => CURRENCIES[c]);
   formatters.clear();
   seps = null;
+  setDateRegion(region);
 }
 
 export const getRegion = () => region;
@@ -173,7 +175,7 @@ export function formatCompact(amount, currency = PIVOT) {
   const abs = Math.abs(amount);
   const sign = amount < 0 ? "−" : "";
   if (abs >= 1e6) return `${sign}${symbol} ${numberFormatter(1).format(abs / 1e6).replace(/[.,]0$/, "")} M`;
-  if (abs >= 1e4) return `${sign}${symbol} ${Math.round(abs / 1000)} mil`;
+  if (abs >= 1e4) return msg`${sign}${symbol} ${Math.round(abs / 1000)} mil`;
   return formatMoney(amount, currency);
 }
 

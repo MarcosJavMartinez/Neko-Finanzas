@@ -2,6 +2,7 @@
 // (cálculo, apariencia, este dispositivo y tus datos), cada una en su
 // propia pantalla para que no quede una lista interminable.
 
+import { msg } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { toast } from "../ui/toast.js";
@@ -84,7 +85,7 @@ function lastBackupText() {
   const last = getLastBackup();
   if (!last) return "Todavía no hiciste ningún backup desde este dispositivo.";
   const days = Math.floor((Date.now() - last) / DAY);
-  return `Último backup: ${days <= 0 ? "hoy" : days === 1 ? "ayer" : `hace ${days} días`}.`;
+  return msg`Último backup: ${days <= 0 ? "hoy" : days === 1 ? "ayer" : msg`hace ${days} días`}.`;
 }
 
 function installBlock() {
@@ -245,7 +246,7 @@ const handlers = {
           markBackup();
           toast(
             result.skipped > 0
-              ? `Backup importado. Se omitieron ${result.skipped} movimiento${result.skipped === 1 ? "" : "s"} con datos inválidos.`
+              ? msg`Backup importado. Se omitieron ${result.skipped} movimiento${result.skipped === 1 ? "" : "s"} con datos inválidos.`
               : "Backup importado",
             { type: result.skipped > 0 ? "info" : "success" }
           );
@@ -419,7 +420,7 @@ export const settingsData = sub("ajustes-datos", "Tus datos", () => html`
           <span class="field-hint">Te avisamos en el inicio cuando pase ese tiempo sin backup.</span>
         </div>
         <div class="settings-actions">
-          <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>${backupFileKnown() ? "Actualizar backup" : "Exportar backup"}</strong><span>${backupFileKnown() ? `Reemplaza “${backupFileKnown()}” con tus datos de ahora` : canPickFile() ? "Eliges dónde guardarlo una vez; los próximos reemplazan ese mismo archivo" : "Un archivo .json con todo. Guárdalo siempre con el mismo nombre para reemplazar el anterior"}</span></span></button>
+          <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>${backupFileKnown() ? "Actualizar backup" : "Exportar backup"}</strong><span>${backupFileKnown() ? msg`Reemplaza “${backupFileKnown()}” con tus datos de ahora` : canPickFile() ? "Eliges dónde guardarlo una vez; los próximos reemplazan ese mismo archivo" : "Un archivo .json con todo. Guárdalo siempre con el mismo nombre para reemplazar el anterior"}</span></span></button>
           ${backupFileKnown() ? html`<button type="button" class="settings-action" data-action="export-data" data-choose="1">${icon("edit", 20)}<span><strong>Guardar el backup en otro archivo</strong><span>Elige otro lugar o nombre; pasa a ser el que se reemplaza</span></span></button>` : ""}
           <button type="button" class="settings-action" data-action="export-csv">${icon("table", 20)}<span><strong>Exportar a planilla</strong><span>Tus movimientos en .csv, para abrir en Excel o Google Sheets</span></span></button>
           <button type="button" class="settings-action" data-action="open-snapshots">${icon("refresh", 20)}<span><strong>Copias automáticas</strong><span>Volver a como estaban tus datos un día anterior</span></span></button>

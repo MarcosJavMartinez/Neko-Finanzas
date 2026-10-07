@@ -1,6 +1,7 @@
 // Cuentas (efectivo, banco, billetera virtual, ahorro) y transferencias
 // entre ellas. Transferir no es gastar: el dinero cambia de lugar.
 
+import { msg } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
@@ -148,10 +149,10 @@ export function openAccountForm({ account, kind: presetKind } = {}) {
           dueDay: Number(data.dueDay),
         });
         close();
-        toast(isEdit ? "Cuenta actualizada" : `Cuenta “${saved.name}” creada`);
+        toast(isEdit ? "Cuenta actualizada" : msg`Cuenta “${saved.name}” creada`);
       });
       form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
-        const ok = await confirmDialog({ title: `¿Eliminar “${account.name}”?`, text: "La cuenta no tiene movimientos, así que no se pierde nada.", confirmLabel: "Eliminar", danger: true });
+        const ok = await confirmDialog({ title: msg`¿Eliminar “${account.name}”?`, text: "La cuenta no tiene movimientos, así que no se pierde nada.", confirmLabel: "Eliminar", danger: true });
         if (!ok) return;
         try {
           const backup = store.snapshot();
@@ -218,7 +219,7 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
         const amount = readMoney(form, "amount");
         if (differ && !toEdited && amount > 0) form.elements.toAmount.value = amountToInput(Math.round(convert(amount, a.currency, b.currency, s.rates) * 100) / 100);
         const hint = form.querySelector('[data-hint-for="toAmount"]');
-        if (hint && differ) hint.textContent = `Sugerido con tu tipo de cambio (${formatMoney(convert(1, b.currency, a.currency, s.rates), a.currency, { reveal: true })} por ${b.currency}). Si cambiaste a otro valor, corrígelo.`;
+        if (hint && differ) hint.textContent = msg`Sugerido con tu tipo de cambio (${formatMoney(convert(1, b.currency, a.currency, s.rates), a.currency, { reveal: true })} por ${b.currency}). Si cambiaste a otro valor, corrígelo.`;
       };
       form.addEventListener("input", (event) => {
         if (event.target.name === "toAmount") toEdited = true;
@@ -250,7 +251,7 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
         }
         close();
         const s = store.getState();
-        toast(isEdit ? "Transferencia actualizada" : `Moviste ${formatMoney(amount, findAccount(s, data.fromId).currency)} a ${findAccount(s, data.toId).name}`);
+        toast(isEdit ? "Transferencia actualizada" : msg`Moviste ${formatMoney(amount, findAccount(s, data.fromId).currency)} a ${findAccount(s, data.toId).name}`);
       });
       form.querySelector("[data-form-delete]")?.addEventListener("click", () => {
         const backup = store.snapshot();
@@ -299,7 +300,7 @@ export function openAccountDetail(accountId) {
                 (g) => html`<div class="row installment-row">
                   <span class="row-main">
                     <span class="row-title">${g.title || findCategory(state, g.categoryId)?.name || "Compra"}</span>
-                    <span class="row-meta">${g.of > 1 ? `Quedan ${g.remaining} de ${g.of} cuotas` : "Gasto programado"} · próxima el ${formatDate(g.next)}</span>
+                    <span class="row-meta">${g.of > 1 ? msg`Quedan ${g.remaining} de ${g.of} cuotas` : "Gasto programado"} · próxima el ${formatDate(g.next)}</span>
                   </span>
                   <span class="account-balance">${formatMoney(g.amount / g.remaining, g.currency)}${g.remaining > 1 ? html`<span class="muted-text">/mes</span>` : ""}</span>
                 </div>`
@@ -319,7 +320,7 @@ export function openAccountDetail(accountId) {
         close();
         if (what === "transfer") openTransferForm({ fromId: accountId });
         // Pagar la tarjeta: mover dinero desde la cuenta principal a la tarjeta.
-        if (what === "pay-card") openTransferForm({ fromId: store.defaultAccountId(), toId: accountId, amount: card.debt || undefined, description: `Pago de ${account.name}` });
+        if (what === "pay-card") openTransferForm({ fromId: store.defaultAccountId(), toId: accountId, amount: card.debt || undefined, description: msg`Pago de ${account.name}` });
         if (what === "edit") openAccountForm({ account: store.getState().accounts.find((a) => a.id === accountId) });
       });
     },

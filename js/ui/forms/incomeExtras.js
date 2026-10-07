@@ -3,6 +3,7 @@
 // cargan en el mes en que se cobran, cada uno como un ingreso aparte dentro
 // de su categoría, así se distingue cuánto fue sueldo y cuánto extra.
 
+import { msg, tr } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { openSheet } from "../sheet.js";
 import { toast } from "../toast.js";
@@ -72,14 +73,14 @@ export function openIncomeExtras() {
         event.preventDefault();
         clearErrors(form);
         const fail = (message) => {
-          form.querySelector('[data-error-for="extras"]').textContent = message;
+          form.querySelector('[data-error-for="extras"]').textContent = tr(message);
           form.querySelector('[data-error-for="extras"]').scrollIntoView({ block: "nearest" });
         };
         const read = (name, label) => {
           const text = form.elements[name].value.trim();
           if (!text) return 0;
           const value = parseAmount(text);
-          if (!(value > 0) || value > MAX_AMOUNT) throw new Error(`El monto de “${label}” no es válido.`);
+          if (!(value > 0) || value > MAX_AMOUNT) throw new Error(msg`El monto de “${label}” no es válido.`);
           return Math.round(value * 100) / 100;
         };
         const extras = [];
@@ -91,7 +92,7 @@ export function openIncomeExtras() {
           const otherName = form.elements["other-name"].value.trim();
           const otherAmount = read("other-amount", otherName || "Otro");
           if (otherAmount) extras.push({ name: otherName || "Extra", amount: otherAmount, categoryId: OTHER.categoryId, subcategoryId: OTHER.subcategoryId });
-          else if (otherName) throw new Error(`Escribe el monto de “${otherName}”.`);
+          else if (otherName) throw new Error(msg`Escribe el monto de “${otherName}”.`);
         } catch (error) {
           return fail(error.message);
         }
@@ -104,7 +105,7 @@ export function openIncomeExtras() {
         store.addIncomeExtras(extras, { date: form.elements.date.value, accountId, currency });
         close();
         const total = extras.reduce((s, e) => s + e.amount, 0);
-        toast(`${extras.length === 1 ? extras[0].name : `${extras.length} extras`} registrado${extras.length === 1 ? "" : "s"}: ${formatMoney(total, currency)}`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast(msg`${extras.length === 1 ? extras[0].name : msg`${extras.length} extras`} registrado${extras.length === 1 ? "" : "s"}: ${formatMoney(total, currency)}`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });

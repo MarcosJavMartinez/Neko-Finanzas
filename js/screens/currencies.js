@@ -1,6 +1,7 @@
 // País y monedas: cómo se escriben los números, la moneda principal, las
 // otras monedas que se usan y sus tipos de cambio (cargados a mano).
 
+import { LANGUAGES, getLanguage, msg, saveLanguage } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { art } from "../ui/components.js";
 import { icon } from "../ui/icons.js";
@@ -29,7 +30,7 @@ function lockedCurrencies(state) {
 export default {
   id: "monedas",
   tab: "mas",
-  title: "País y monedas",
+  title: "Idioma y monedas",
   back: "#/mas",
   render(state) {
     const main = state.settings.mainCurrency;
@@ -38,6 +39,16 @@ export default {
     const others = active.filter((c) => c !== main);
     const updated = state.ratesUpdatedAt ? formatDate(toISO(new Date(state.ratesUpdatedAt)), { withYear: true }) : "";
     return html`
+      <section class="card reveal">
+        <h2 class="section-title">Idioma</h2>
+        <div class="field form">
+          <label class="field-label" for="f-language">¿En qué idioma quieres la app?</label>
+          <select id="f-language" name="language" data-change="set-language">
+            ${Object.entries(LANGUAGES).map(([code, l]) => html`<option value="${code}" ${code === getLanguage() ? "selected" : ""}>${l.name}</option>`)}
+          </select>
+        </div>
+      </section>
+
       <section class="card reveal">
         <h2 class="section-title">País</h2>
         <p class="section-sub">Define cómo se escriben los números. No cambia tus montos ni tu moneda.</p>
@@ -96,19 +107,24 @@ export default {
                 </label>`;
               })}
             </form>
-            <p class="fine-print">${icon("info", 14)} Las conversiones (≈) usan estos valores. No consultamos ningún servidor: si cambia la cotización, actualízala aquí.${updated ? ` Última actualización: ${updated}.` : ""}</p>
+            <p class="fine-print">${icon("info", 14)} Las conversiones (≈) usan estos valores. No consultamos ningún servidor: si cambia la cotización, actualízala aquí.${updated ? msg` Última actualización: ${updated}.` : ""}</p>
           </section>`
         : ""}
     `;
   },
   changes: {
+    "set-language"(el) {
+      // Se recarga: así también cambian los textos fijos y los que ya estaban armados.
+      saveLanguage(el.value);
+      location.reload();
+    },
     "set-region"(el) {
       store.setRegion(el.value);
-      toast(`Formato de ${REGIONS[el.value]?.name || ""}: ${formatNumber(1234567.5, 2)}`);
+      toast(msg`Formato de ${REGIONS[el.value]?.name || ""}: ${formatNumber(1234567.5, 2)}`);
     },
     "set-main"(el) {
       store.setMainCurrency(el.value);
-      toast(`Moneda principal: ${el.value}`);
+      toast(msg`Moneda principal: ${el.value}`);
     },
     "toggle-currency"(el) {
       store.toggleCurrency(el.value, el.checked);

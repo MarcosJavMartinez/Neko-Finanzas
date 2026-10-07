@@ -1,6 +1,7 @@
 // Cuentas: dónde está tu dinero (efectivo, banco, billetera virtual, ahorro)
 // y las transferencias entre ellas. La suma de todas es tu dinero total.
 
+import { msg } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { art, txRow } from "../ui/components.js";
@@ -19,7 +20,7 @@ export function accountRow(state, entry) {
       <span class="cat-bubble cat-bubble-md" style="--c:${account.color}" aria-hidden="true">${account.icon}</span>
       <span class="row-main">
         <span class="row-title">${account.name}</span>
-        <span class="row-meta">Tarjeta · vence el ${formatDate(card.due)}${card.upcoming.length ? ` · ${card.upcoming.length} en cuotas` : ""}</span>
+        <span class="row-meta">Tarjeta · vence el ${formatDate(card.due)}${card.upcoming.length ? msg` · ${card.upcoming.length} en cuotas` : ""}</span>
       </span>
       <span class="account-amount">
         <span class="account-balance ${card.debt > 0 ? "is-negative" : ""}">${card.debt > 0 ? formatMoney(-card.debt, account.currency) : card.credit > 0 ? formatMoney(card.credit, account.currency) : "Sin deuda"}</span>
@@ -62,7 +63,7 @@ export default {
         <div class="summary-text">
           <p class="summary-label">Tu dinero, sumando todas las cuentas</p>
           <p class="summary-amount" data-pulse="accounts-total">${formatMoney(total, main)}</p>
-          <p class="summary-sub">${active.length} cuenta${active.length === 1 ? "" : "s"} activa${active.length === 1 ? "" : "s"}${archived.length ? ` · ${archived.length} archivada${archived.length === 1 ? "" : "s"}` : ""}</p>
+          <p class="summary-sub">${active.length} cuenta${active.length === 1 ? "" : "s"} activa${active.length === 1 ? "" : "s"}${archived.length ? msg` · ${archived.length} archivada${archived.length === 1 ? "" : "s"}` : ""}</p>
         </div>
       </section>
       <div class="accounts-actions reveal">

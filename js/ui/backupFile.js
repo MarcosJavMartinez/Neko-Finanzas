@@ -9,6 +9,7 @@
 //   eliges el mismo nombre, el sistema ofrece reemplazarlo.
 // - Si nada de eso está disponible, se descarga con un nombre fijo.
 
+import { tr } from "../core/i18n.js";
 import { withStore } from "../core/db.js";
 import { downloadFile } from "./download.js";
 
@@ -113,7 +114,7 @@ export async function saveBackup(text, { choose = false } = {}) {
     const touch = window.matchMedia("(pointer: coarse)").matches;
     if (touch && navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: "Backup de Neko Finanzas" });
+        await navigator.share({ files: [file], title: tr("Backup de Neko Finanzas") });
         return { how: "shared" };
       } catch (error) {
         if (error?.name === "AbortError") return { how: "cancelled" };

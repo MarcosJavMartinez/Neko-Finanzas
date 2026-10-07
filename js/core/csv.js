@@ -6,6 +6,7 @@
 // transferencias entre cuentas van con su monto pero sin "monto en moneda
 // principal" (no son ingreso ni gasto: no cambian la suma).
 
+import { msg, tr } from "./i18n.js";
 import { findAccount, findCategory, findSubcategory, toMain } from "./finance.js";
 import { formatMoney } from "./money.js";
 
@@ -22,7 +23,7 @@ function number(value) {
  * fórmula (una descripción tipo "=HYPERLINK(...)" sería peligrosa).
  */
 function text(value) {
-  let s = String(value ?? "");
+  let s = String(tr(value) ?? "");
   if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
   return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
@@ -38,7 +39,7 @@ export function transactionsToCSV(state) {
       }
       if (tx.type === "transfer") {
         const to = findAccount(state, tx.toAccountId);
-        const fx = tx.currency !== tx.toCurrency ? ` (llegan ${formatMoney(tx.toAmount, tx.toCurrency, { reveal: true })})` : "";
+        const fx = tx.currency !== tx.toCurrency ? msg` (llegan ${formatMoney(tx.toAmount, tx.toCurrency, { reveal: true })})` : "";
         return [tx.date, tx.time || "", text("Transferencia"), text(`${account?.name || "?"} → ${to?.name || "?"}`), "", "", text((tx.description || "") + fx), number(tx.amount), tx.currency, ""].join(";");
       }
       const category = findCategory(state, tx.categoryId);
@@ -57,6 +58,6 @@ export function transactionsToCSV(state) {
         number(sign * toMain(state, tx.amount, tx.currency)),
       ].join(";");
     });
-  const header = [...HEADERS, `Monto en ${main}`].map(text).join(";");
+  const header = [...HEADERS, msg`Monto en ${main}`].map(text).join(";");
   return "﻿" + [header, ...rows].join("\r\n") + "\r\n";
 }

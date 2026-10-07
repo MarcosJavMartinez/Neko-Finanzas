@@ -1,6 +1,7 @@
 // Lo que sobró de un presupuesto reservado el mes pasado (por ejemplo, del
 // supermercado): elegir a qué meta pasarlo. La app lo ofrece, no lo mueve sola.
 
+import { msg } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, whenHistorySettled } from "../sheet.js";
@@ -21,7 +22,7 @@ export function openLeftoverSheet(budgetId) {
   const { budget, month, amount } = leftover;
 
   openSheet({
-    title: `Sobrante de ${budget.name}`,
+    title: msg`Sobrante de ${budget.name}`,
     body: state.goals.length
       ? html`<form class="form" novalidate>
           <p class="sheet-text">En ${formatMonth(month).toLowerCase()} te sobraron <strong>${formatMoney(amount, main)}</strong>. Pásalos a una meta y quedan apartados como ahorro.</p>
@@ -58,12 +59,12 @@ export function openLeftoverSheet(budgetId) {
         clearErrors(form);
         const value = parseAmount(form.elements.amount.value);
         if (!(value > 0) || value > MAX_AMOUNT) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
-        if (value > amount + 0.005) return fieldError(form, "amount", `Es más de lo que sobró (${formatMoney(amount, main)}).`);
+        if (value > amount + 0.005) return fieldError(form, "amount", msg`Es más de lo que sobró (${formatMoney(amount, main)}).`);
         const goal = store.getState().goals.find((g) => g.id === form.elements.goalId.value);
         const backup = store.snapshot();
-        store.settleBudgetLeftover(budget.id, month, { goalId: goal.id, amount: Math.round(value * 100) / 100, note: `Sobrante de ${budget.name} (${formatMonth(month).toLowerCase()})` });
+        store.settleBudgetLeftover(budget.id, month, { goalId: goal.id, amount: Math.round(value * 100) / 100, note: msg`Sobrante de ${budget.name} (${formatMonth(month).toLowerCase()})` });
         close();
-        toast(`${formatMoney(value, main)} pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast(msg`${formatMoney(value, main)} pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });
@@ -114,12 +115,12 @@ export function openCushionSheet() {
         clearErrors(form);
         const value = parseAmount(form.elements.amount.value);
         if (!(value > 0) || value > MAX_AMOUNT) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
-        if (value > amount + 0.005) return fieldError(form, "amount", `Es más de lo que hay en el fondo (${formatMoney(amount, main)}).`);
+        if (value > amount + 0.005) return fieldError(form, "amount", msg`Es más de lo que hay en el fondo (${formatMoney(amount, main)}).`);
         const goal = store.getState().goals.find((g) => g.id === form.elements.goalId.value);
         const backup = store.snapshot();
         store.moveCushionToGoal(goal.id, Math.round(value * 100) / 100);
         close();
-        toast(`${formatMoney(value, main)} del fondo pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast(msg`${formatMoney(value, main)} del fondo pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });

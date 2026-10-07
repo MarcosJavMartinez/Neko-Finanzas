@@ -4,6 +4,7 @@
 // junto, así la persona entiende cómo funciona antes de empezar a usarla.
 // Lo que no tenga se deja vacío; todo se puede cambiar después.
 
+import { msg, tr } from "../../core/i18n.js";
 import { html, setHTML } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, whenHistorySettled } from "../sheet.js";
@@ -107,7 +108,7 @@ const RENDER = {
       ${a.accounts.map(
         (acc, i) => html`<div class="setup-item">
           <label class="setup-check"><input type="checkbox" class="switch" name="acc-on-${i}" ${acc.on ? "checked" : ""} /><span>${acc.icon} ${acc.name}</span></label>
-          ${money(`acc-amount-${i}`, acc.amount, acc.usd ? "USD" : a.currency, `Cuánto tienes en ${acc.name}`)}
+          ${money(`acc-amount-${i}`, acc.amount, acc.usd ? "USD" : a.currency, msg`Cuánto tienes en ${acc.name}`)}
         </div>`
       )}
     </div>
@@ -147,7 +148,7 @@ const RENDER = {
       ${a.bills.map(
         (b, i) => html`<div class="setup-item setup-item-bill">
           <label class="setup-check"><input type="checkbox" class="switch" name="bill-on-${i}" ${b.on ? "checked" : ""} /><span>${b.icon} ${b.name}</span></label>
-          ${money(`bill-amount-${i}`, b.amount, a.currency, `Monto de ${b.name}`)}
+          ${money(`bill-amount-${i}`, b.amount, a.currency, msg`Monto de ${b.name}`)}
           <label class="setup-day"><span>día</span><select name="bill-day-${i}" aria-label="Día del mes en que vence ${b.name}">${Array.from({ length: 31 }, (_, d) => d + 1).map((d) => html`<option value="${d}" ${d === Number(b.day) ? "selected" : ""}>${d}</option>`)}</select></label>
         </div>`
       )}
@@ -209,23 +210,23 @@ function summaryLines(a, state) {
   const accounts = a.accounts.filter((x) => x.on);
   if (accounts.length) {
     const total = accounts.reduce((s, x) => s + convert(num(x.amount) || 0, x.usd ? "USD" : a.currency, a.currency, state.rates), 0);
-    lines.push(["👛", `${accounts.length} cuenta${accounts.length === 1 ? "" : "s"}: ${accounts.map((x) => x.name).join(", ")} · ${m(total)} en total`]);
+    lines.push(["👛", msg`${accounts.length} cuenta${accounts.length === 1 ? "" : "s"}: ${accounts.map((x) => x.name).join(", ")} · ${m(total)} en total`]);
   }
-  if (num(a.salary) > 0) lines.push(["💼", `Ingreso de referencia: ${m(num(a.salary))} por mes`]);
+  if (num(a.salary) > 0) lines.push(["💼", msg`Ingreso de referencia: ${m(num(a.salary))} por mes`]);
   if (a.card.on) {
     const purchases = validPurchases(a);
-    lines.push(["💳", `${a.card.name.trim() || "Tarjeta de crédito"} · deuda de hoy ${m(num(a.card.debt) || 0)}${purchases.length ? ` · ${purchases.length} compra${purchases.length === 1 ? "" : "s"} en cuotas` : ""}`]);
+    lines.push(["💳", msg`${a.card.name.trim() || "Tarjeta de crédito"} · deuda de hoy ${m(num(a.card.debt) || 0)}${purchases.length ? msg` · ${purchases.length} compra${purchases.length === 1 ? "" : "s"} en cuotas` : ""}`]);
   }
   const bills = a.bills.filter((b) => b.on && num(b.amount) > 0);
-  if (bills.length) lines.push(["🧾", `${bills.length} factura${bills.length === 1 ? "" : "s"}: ${bills.map((b) => b.name).join(", ")} · ${m(bills.reduce((s, b) => s + num(b.amount), 0))} por mes`]);
-  if (num(a.groceries) > 0) lines.push(["🛒", `Supermercado: ${m(num(a.groceries))} reservados por mes`]);
-  if (num(a.treats) > 0) lines.push(["☕", `Gustos: ${m(num(a.treats))} por día, acumulables`]);
+  if (bills.length) lines.push(["🧾", msg`${bills.length} factura${bills.length === 1 ? "" : "s"}: ${bills.map((b) => b.name).join(", ")} · ${m(bills.reduce((s, b) => s + num(b.amount), 0))} por mes`]);
+  if (num(a.groceries) > 0) lines.push(["🛒", msg`Supermercado: ${m(num(a.groceries))} reservados por mes`]);
+  if (num(a.treats) > 0) lines.push(["☕", msg`Gustos: ${m(num(a.treats))} por día, acumulables`]);
   const loans = validLoans(a);
   const lent = loans.filter((l) => l.direction === "lent").reduce((s, l) => s + num(l.amount), 0);
   const borrowed = loans.filter((l) => l.direction === "borrowed").reduce((s, l) => s + num(l.amount), 0);
-  if (loans.length) lines.push(["🤝", [lent > 0 && `Te deben ${m(lent)}`, borrowed > 0 && `debes ${m(borrowed)}`].filter(Boolean).join(" · ")]);
+  if (loans.length) lines.push(["🤝", [lent > 0 && msg`Te deben ${m(lent)}`, borrowed > 0 && msg`debes ${m(borrowed)}`].filter(Boolean).join(" · ")]);
   const goals = validGoals(a);
-  if (goals.length) lines.push(["🎯", `${goals.length} meta${goals.length === 1 ? "" : "s"}: ${goals.map((g) => g.name.trim()).join(", ")} · ${m(goals.reduce((s, g) => s + (num(g.saved) || 0), 0))} ya apartados`]);
+  if (goals.length) lines.push(["🎯", msg`${goals.length} meta${goals.length === 1 ? "" : "s"}: ${goals.map((g) => g.name.trim()).join(", ")} · ${m(goals.reduce((s, g) => s + (num(g.saved) || 0), 0))} ya apartados`]);
   return lines;
 }
 
@@ -398,13 +399,13 @@ export function openSetupWizard() {
             ${RENDER[step()](answers, additive, store.getState())}`
         );
         errorBox.hidden = true;
-        form.querySelector("[data-setup=back]").textContent = index === 0 ? "Después" : "Atrás";
-        form.querySelector("[data-setup-next]").textContent = last ? "Guardar todo" : "Siguiente";
+        form.querySelector("[data-setup=back]").textContent = tr(index === 0 ? "Después" : "Atrás");
+        form.querySelector("[data-setup-next]").textContent = tr(last ? "Guardar todo" : "Siguiente");
         panel.querySelector(".sheet-body").scrollTop = 0;
       };
 
       const fail = (message) => {
-        errorBox.textContent = message;
+        errorBox.textContent = tr(message);
         errorBox.hidden = false;
         errorBox.scrollIntoView({ block: "nearest" });
       };

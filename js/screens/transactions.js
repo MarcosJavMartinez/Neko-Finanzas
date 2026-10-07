@@ -1,6 +1,7 @@
 // Transacciones: buscador y filtros en el header (como Neko Lista), selector
 // de mes y todos los movimientos en UNA superficie blanca agrupados por día.
 
+import { msg } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { txRow, emptyState, monthNav, segmented } from "../ui/components.js";
@@ -135,7 +136,7 @@ export default {
     return html`
       <button type="button" class="btn btn-primary btn-block btn-add reveal" data-action="add-any">${icon("plus", 20)}Agregar</button>
       ${searching
-        ? html`<p class="active-filter search-scope">${icon("search", 14)} <span><strong>${found.length} resultado${found.length === 1 ? "" : "s"}</strong> en todos los meses${found.length > SEARCH_LIMIT ? ` · se muestran los ${SEARCH_LIMIT} más recientes` : ""}</span> <button type="button" class="chip chip-action" data-action="tx-clear-search">${icon("close", 12)}Quitar búsqueda</button></p>`
+        ? html`<p class="active-filter search-scope">${icon("search", 14)} <span><strong>${found.length} resultado${found.length === 1 ? "" : "s"}</strong> en todos los meses${found.length > SEARCH_LIMIT ? msg` · se muestran los ${SEARCH_LIMIT} más recientes` : ""}</span> <button type="button" class="chip chip-action" data-action="tx-clear-search">${icon("close", 12)}Quitar búsqueda</button></p>`
         : monthNav(view.month, "tx-month", lastMonth)}
       ${view.month > currentMonthKey() ? html`<p class="active-filter">${icon("calendar", 14)} Mes futuro: son movimientos programados, todavía no cuentan en tu saldo. <button type="button" class="chip chip-action" data-action="tx-today">Volver a este mes</button></p>` : ""}
       <div class="month-totals" ${searching ? "hidden" : ""}>

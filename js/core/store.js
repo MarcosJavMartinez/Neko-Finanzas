@@ -6,6 +6,7 @@
 // registra un gasto visible; depositar en una meta queda en su historial;
 // un ingreso recurrente solo se registra cuando el usuario lo confirma.
 
+import { msg } from "./i18n.js";
 import { initStorage, loadData, saveData, clearData, onWriteError, saveSnapshot, listSnapshots, loadSnapshot } from "./storage.js";
 import { ACCOUNT_KINDS, DEFAULT_ACCOUNT_ID, createEmptyState, DEFAULT_CATEGORIES, defaultSubcategories, FALLBACK_CATEGORY, PALETTE, PALETTE_V1, SCHEMA_VERSION, uid } from "../data/defaults.js";
 import { buildDemoState } from "../data/demo.js";
@@ -313,7 +314,7 @@ export { DEFAULT_ACCOUNT_ID };
 
 const loanFlow = (loan, isPayment) => ((loan.direction === "lent") === isPayment ? "in" : "out");
 const loanText = (loan, isPayment) =>
-  loan.direction === "lent" ? (isPayment ? `${loan.person} te devolvió` : `Préstamo a ${loan.person}`) : isPayment ? `Le devolviste a ${loan.person}` : `Préstamo de ${loan.person}`;
+  loan.direction === "lent" ? (isPayment ? msg`${loan.person} te devolvió` : msg`Préstamo a ${loan.person}`) : isPayment ? msg`Le devolviste a ${loan.person}` : msg`Préstamo de ${loan.person}`;
 
 function loanMovement(s, loan, { amount, accountId, date, isPayment }) {
   return withValidAccount(s, {
@@ -433,7 +434,7 @@ export function addCreditLoan({ lender, received, count, installment, firstDue, 
           s,
           withValidCategory(
             s,
-            { id: uid("tx"), type: "expense", amount: each, currency, date: addMonths(firstDue, k, day), time: "", categoryId: FALLBACK_CATEGORY.expense, subcategoryId: "", description: `Cuota préstamo ${loan.person}`.slice(0, 80), accountId: tx.accountId, installment: { group, n: k + 1, of: n }, createdAt: new Date().toISOString() },
+            { id: uid("tx"), type: "expense", amount: each, currency, date: addMonths(firstDue, k, day), time: "", categoryId: FALLBACK_CATEGORY.expense, subcategoryId: "", description: msg`Cuota préstamo ${loan.person}`.slice(0, 80), accountId: tx.accountId, installment: { group, n: k + 1, of: n }, createdAt: new Date().toISOString() },
             "expense"
           )
         )
@@ -475,7 +476,7 @@ function renumberPlan(s, loan) {
   const all = s.transactions.filter((t) => t.installment?.group === loan.plan.group).sort((a, b) => a.date.localeCompare(b.date));
   all.forEach((t, i) => {
     t.installment = { group: loan.plan.group, n: i + 1, of: all.length };
-    t.description = `Cuota préstamo ${loan.person}`.slice(0, 80);
+    t.description = msg`Cuota préstamo ${loan.person}`.slice(0, 80);
   });
   loan.plan.count = all.length;
   return all;

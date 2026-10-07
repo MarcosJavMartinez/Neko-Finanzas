@@ -1,6 +1,7 @@
 // Registrar o editar un ingreso/gasto. Pensado para ser rápido: tipo,
 // monto y categoría arriba; fecha y descripción con valores por defecto.
 
+import { msg, tr } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet } from "../sheet.js";
@@ -65,7 +66,7 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
     body: html`<form class="form" novalidate data-type="${current.type}">
       ${bill ? "" : segmented("type", [{ value: "income", label: "Ingreso", icon: "arrowDown" }, { value: "expense", label: "Gasto", icon: "arrowUp" }], current.type, { size: "segmented-lg" })}
       ${bill ? html`<p class="notice notice-info">${icon("receipt", 16)}Es el pago de la factura “${bill.name}”. Si lo borras, la factura vuelve a quedar pendiente.</p>` : ""}
-      ${plan ? html`<p class="notice notice-info">${icon("calendar", 16)}Es la cuota ${plan.n} de ${plan.of} ${planLoan ? `del préstamo de ${planLoan.person}` : "de una compra en cuotas"}. Los cambios se aplican solo a esta cuota.</p>` : ""}
+      ${plan ? html`<p class="notice notice-info">${icon("calendar", 16)}Es la cuota ${plan.n} de ${plan.of} ${planLoan ? msg`del préstamo de ${planLoan.person}` : "de una compra en cuotas"}. Los cambios se aplican solo a esta cuota.</p>` : ""}
       ${amountField({ value: current.amount, currency: current.currency, autofocus: !isEdit, tone: `tone-${current.type}` })}
       ${showAccount ? accountSelect(state, { value: accountId, label: current.type === "income" ? "Cuenta" : "Cuenta o medio de pago" }) : ""}
       ${isEdit
@@ -73,7 +74,7 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         : html`<div class="field installments-field" ${current.type === "expense" && isCardAccount(accountId) ? "" : "hidden"}>
             <label class="field-label" for="f-installments">Cuotas</label>
             <select id="f-installments" name="installments">
-              ${INSTALLMENT_OPTIONS.map((n) => html`<option value="${n}">${n === 1 ? "En un pago" : `${n} cuotas`}</option>`)}
+              ${INSTALLMENT_OPTIONS.map((n) => html`<option value="${n}">${n === 1 ? "En un pago" : msg`${n} cuotas`}</option>`)}
             </select>
             <p class="field-hint" data-installments-hint>Cada cuota se registra en su mes: la primera en la fecha de la compra y las demás quedan programadas.</p>
           </div>`}
@@ -116,7 +117,7 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         const extrasLink = form.querySelector("[data-extras-link]");
         if (extrasLink) extrasLink.hidden = selectedType !== "income";
         syncInstallments();
-        form.elements.description.placeholder = selectedType === "income" ? "Ej.: Sueldo de septiembre" : "Ej.: Supermercado del sábado";
+        form.elements.description.placeholder = tr(selectedType === "income" ? "Ej.: Sueldo de septiembre" : "Ej.: Supermercado del sábado");
         replaceCategoryPicker(form, store.getState(), selectedType, null);
         replaceSubcategoryPicker(form, store.getState(), null);
       });
@@ -132,7 +133,7 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         const amount = readAmount(form);
         const hint = installmentsBox.querySelector("[data-installments-hint]");
         hint.textContent = n > 1 && amount > 0
-          ? `${n} cuotas de ≈ ${formatMoney(amount / n, form.elements.currency.value)}: la primera en la fecha de la compra y las demás quedan programadas, una por mes.`
+          ? msg`${n} cuotas de ≈ ${formatMoney(amount / n, form.elements.currency.value)}: la primera en la fecha de la compra y las demás quedan programadas, una por mes.`
           : "Cada cuota se registra en su mes: la primera en la fecha de la compra y las demás quedan programadas.";
       }
       form.addEventListener("change", (event) => {
@@ -194,10 +195,10 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
           const installments = Number(data.installments || 1);
           if (selectedType === "expense" && installments > 1 && isCardAccount(values.accountId)) {
             store.addInstallmentPurchase(values, installments);
-            toast(`Compra en ${installments} cuotas de ≈ ${formatMoney(amount / installments, values.currency)} guardada`);
+            toast(msg`Compra en ${installments} cuotas de ≈ ${formatMoney(amount / installments, values.currency)} guardada`);
           } else {
             store.addTransaction(values);
-            toast(`${selectedType === "income" ? "Ingreso" : "Gasto"} de ${formatMoney(amount, values.currency)} guardado`);
+            toast(msg`${selectedType === "income" ? "Ingreso" : "Gasto"} de ${formatMoney(amount, values.currency)} guardado`);
           }
         }
         close();
@@ -208,8 +209,8 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         // Una cuota: se puede borrar sola o toda la compra.
         if (planLoan) {
           const all = await confirmDialog({
-            title: `¿Borrar el préstamo de ${planLoan.person}?`,
-            text: `Es la cuota ${plan.n} de ${plan.of}. Las cuotas no se borran una por una: se borra el préstamo entero, con el dinero recibido y todas sus cuotas.`,
+            title: msg`¿Borrar el préstamo de ${planLoan.person}?`,
+            text: msg`Es la cuota ${plan.n} de ${plan.of}. Las cuotas no se borran una por una: se borra el préstamo entero, con el dinero recibido y todas sus cuotas.`,
             confirmLabel: "Borrar el préstamo",
             danger: true,
           });
@@ -222,8 +223,8 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         if (plan) {
           const all = await confirmDialog({
             title: "¿Borrar toda la compra?",
-            text: `Es la cuota ${plan.n} de ${plan.of}. Puedes borrar las ${plan.of} cuotas juntas, o cancelar y dejarla.`,
-            confirmLabel: `Borrar las ${plan.of} cuotas`,
+            text: msg`Es la cuota ${plan.n} de ${plan.of}. Puedes borrar las ${plan.of} cuotas juntas, o cancelar y dejarla.`,
+            confirmLabel: msg`Borrar las ${plan.of} cuotas`,
             danger: true,
           });
           if (!all) return;

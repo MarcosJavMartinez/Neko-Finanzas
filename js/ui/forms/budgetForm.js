@@ -1,6 +1,7 @@
 // Presupuestos mensuales: por porcentaje de los ingresos o monto fijo, y
 // aplicados a categorías de gasto, a una meta (ahorro) o "al resto".
 
+import { msg, tr } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
@@ -110,7 +111,7 @@ export function openBudgetForm({ budget, preset } = {}) {
           form.querySelector("[data-fixed-only]").hidden = !fixed;
           form.querySelector("[data-percent-only]").hidden = fixed;
           form.querySelector("[data-daily-only]").hidden = event.target.value !== "daily";
-          form.querySelector("[data-value-label]").textContent = VALUE_LABEL[event.target.value];
+          form.querySelector("[data-value-label]").textContent = tr(VALUE_LABEL[event.target.value]);
           const field = form.elements.value;
           field.placeholder = fixed ? zeroAmount() : "25";
           // El porcentaje se escribe tal cual; el monto, con centavos.
@@ -162,7 +163,7 @@ export function openBudgetForm({ budget, preset } = {}) {
         close();
       });
       form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
-        const ok = await confirmDialog({ title: `¿Eliminar “${budget.name}”?`, text: "Tus movimientos no se modifican.", confirmLabel: "Eliminar", danger: true });
+        const ok = await confirmDialog({ title: msg`¿Eliminar “${budget.name}”?`, text: "Tus movimientos no se modifican.", confirmLabel: "Eliminar", danger: true });
         if (!ok) return;
         const backup = store.snapshot();
         store.deleteBudget(budget.id);

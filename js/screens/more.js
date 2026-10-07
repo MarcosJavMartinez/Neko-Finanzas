@@ -1,5 +1,6 @@
 // Más: acceso a las secciones secundarias.
 
+import { msg, tr } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { appFooter } from "../ui/components.js";
@@ -14,7 +15,7 @@ function loanSub(state) {
   const l = loansSummary(state);
   const main = state.settings.mainCurrency;
   if (!l.open) return "Lo que te deben y lo que debes";
-  return [l.lent > 0 && `Te deben ${formatMoney(l.lent, main)}`, l.borrowed > 0 && `debes ${formatMoney(l.borrowed, main)}`].filter(Boolean).join(" · ");
+  return [l.lent > 0 && msg`Te deben ${formatMoney(l.lent, main)}`, l.borrowed > 0 && msg`debes ${formatMoney(l.borrowed, main)}`].filter(Boolean).join(" · ");
 }
 
 export default {
@@ -29,15 +30,15 @@ export default {
     const activeAccounts = state.accounts.filter((a) => !a.archived).length;
     const groups = [
       { title: "Tu dinero", items: [
-      { href: "#/cuentas", icon: "wallet", title: "Cuentas", sub: activeAccounts > 1 ? `${activeAccounts} cuentas · efectivo, banco, billeteras` : "Efectivo, banco, billeteras virtuales" },
-      { href: "#/presupuestos", icon: "pie", title: "Presupuestos", sub: state.budgets.length ? `${state.budgets.length} activos${alerts ? ` · ${alerts} para revisar` : ""}` : "Reparte tus ingresos" },
+      { href: "#/cuentas", icon: "wallet", title: "Cuentas", sub: activeAccounts > 1 ? msg`${activeAccounts} cuentas · efectivo, banco, billeteras` : "Efectivo, banco, billeteras virtuales" },
+      { href: "#/presupuestos", icon: "pie", title: "Presupuestos", sub: state.budgets.length ? msg`${state.budgets.length} activos${alerts ? msg` · ${alerts} para revisar` : ""}` : "Reparte tus ingresos" },
       { href: "#/prestamos", icon: "swap", title: "Préstamos", sub: loanSub(state) },
-      { href: "#/facturas", icon: "receipt", title: "Facturas y servicios", sub: state.bills.length ? `${formatMoney(reserve.amount, main)} a reservar` : "Luz, internet, suscripciones…" },
+      { href: "#/facturas", icon: "receipt", title: "Facturas y servicios", sub: state.bills.length ? msg`${formatMoney(reserve.amount, main)} a reservar` : "Luz, internet, suscripciones…" },
       { href: "#/reportes", icon: "chart", title: "Reportes", sub: "Tu mes de un vistazo" },
       ] },
       { title: "Ajustes", items: [
-      { href: "#/categorias", icon: "tag", title: "Categorías", sub: `${state.categories.length} categorías` },
-      { href: "#/monedas", icon: "coins", title: "País y monedas", sub: `Principal: ${main}` },
+      { href: "#/categorias", icon: "tag", title: "Categorías", sub: msg`${state.categories.length} categorías` },
+      { href: "#/monedas", icon: "coins", title: "Idioma y monedas", sub: msg`Principal: ${main}` },
       { href: "#/ajustes", icon: "settings", title: "Configuración", sub: "Apariencia, tus datos, instalar la app" },
       ] },
       { title: "Ayuda", items: [
@@ -76,7 +77,7 @@ export default {
  * primero.
  */
 export async function shareApp() {
-  const data = { title: "Neko Finanzas", text: "Neko Finanzas: tus finanzas claras, gratis y privadas. Sin cuentas ni publicidad.", url: SHARE_URL };
+  const data = { title: "Neko Finanzas", text: tr("Neko Finanzas: tus finanzas claras, gratis y privadas. Sin cuentas ni publicidad."), url: SHARE_URL };
   if (navigator.share) {
     try {
       await navigator.share(data);

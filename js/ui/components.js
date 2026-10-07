@@ -2,6 +2,7 @@
 // tienen lógica propia: los eventos se manejan por delegación con
 // atributos data-action (ver app.js).
 
+import { msg, tr, dateLocale } from "../core/i18n.js";
 import { html } from "./dom.js";
 import { icon, nekoArt } from "./icons.js";
 import { formatMoney, CURRENCIES, currencyChoices, symbolOf } from "../core/money.js";
@@ -122,11 +123,11 @@ export function txRow(state, tx, { withDate = false, hideAccount = false } = {})
   const isIncome = tx.type === "income";
   const title = tx.description || sub?.name || category?.name || (isIncome ? "Ingreso" : "Gasto");
   // "Hogar · Alquiler", salvo que el título ya sea el nombre de la subcategoría.
-  const where = sub && title !== sub.name ? `${category.name} · ${sub.name}` : category?.name;
-  const when = withDate ? [shortDay(tx.date), tx.time].filter(Boolean).join(" ") : tx.time;
+  const where = sub && title !== sub.name ? `${tr(category.name)} · ${tr(sub.name)}` : tr(category?.name);
+  const when = withDate ? [tr(shortDay(tx.date)), tx.time].filter(Boolean).join(" ") : tx.time;
   // Con más de una cuenta, se ve de dónde salió o a dónde entró el dinero.
   const account = state.accounts.length > 1 && !hideAccount ? state.accounts.find((a) => a.id === tx.accountId) : null;
-  const meta = [where, account && `${account.icon} ${account.name}`, when].filter(Boolean).join(" · ");
+  const meta = [where, account && `${account.icon} ${tr(account.name)}`, tr(when)].filter(Boolean).join(" · ");
   // Recién cargado: entra con la animación de "producto nuevo" de Neko Lista.
   const isNew = tx.createdAt.includes("T") && Date.now() - Date.parse(tx.createdAt) < 2500;
   return html`<button type="button" class="tx-row ${isNew ? "is-new" : ""}" data-action="edit-tx" data-id="${tx.id}">
@@ -171,8 +172,8 @@ function tableCells({ date, category, account, amount }) {
 function transferRow(state, tx, { withDate }) {
   const from = state.accounts.find((a) => a.id === tx.accountId);
   const to = state.accounts.find((a) => a.id === tx.toAccountId);
-  const when = withDate ? [shortDay(tx.date), tx.time].filter(Boolean).join(" ") : tx.time;
-  const meta = [`${from?.name || "?"} → ${to?.name || "?"}`, when].filter(Boolean).join(" · ");
+  const when = withDate ? [tr(shortDay(tx.date)), tx.time].filter(Boolean).join(" ") : tx.time;
+  const meta = [`${tr(from?.name) || "?"} → ${tr(to?.name) || "?"}`, tr(when)].filter(Boolean).join(" · ");
   const isNew = tx.createdAt.includes("T") && Date.now() - Date.parse(tx.createdAt) < 2500;
   const fx = tx.currency !== tx.toCurrency ? html`<span class="approx">→ ${formatMoney(tx.toAmount, tx.toCurrency)}</span>` : "";
   return html`<button type="button" class="tx-row tx-transfer ${isNew ? "is-new" : ""}" data-action="edit-transfer" data-id="${tx.id}">
@@ -196,8 +197,8 @@ function transferRow(state, tx, { withDate }) {
 /** Dinero de un préstamo: entra o sale de la cuenta, pero no es ingreso ni gasto. */
 function loanRow(state, tx, { withDate, hideAccount }) {
   const account = state.accounts.length > 1 && !hideAccount ? state.accounts.find((a) => a.id === tx.accountId) : null;
-  const when = withDate ? [shortDay(tx.date), tx.time].filter(Boolean).join(" ") : tx.time;
-  const meta = ["Préstamo", account && `${account.icon} ${account.name}`, when].filter(Boolean).join(" · ");
+  const when = withDate ? [tr(shortDay(tx.date)), tx.time].filter(Boolean).join(" ") : tx.time;
+  const meta = [tr("Préstamo"), account && `${account.icon} ${tr(account.name)}`, tr(when)].filter(Boolean).join(" · ");
   const isNew = tx.createdAt.includes("T") && Date.now() - Date.parse(tx.createdAt) < 2500;
   return html`<button type="button" class="tx-row tx-loan ${isNew ? "is-new" : ""}" data-action="loan-detail" data-id="${tx.loanId}">
     <span class="cat-bubble cat-bubble-md loan-bubble" aria-hidden="true">🤝</span>
@@ -231,7 +232,7 @@ function shortDay(iso) {
 export function dueTile(dueDate, status, today = todayISO()) {
   const tone = status === "paid" ? "paid" : status === "overdue" ? "overdue" : daysBetween(today, dueDate) <= 7 ? "soon" : "later";
   const d = parseISO(dueDate);
-  const month = d.toLocaleDateString("es-AR", { month: "short" }).replace(".", "");
+  const month = d.toLocaleDateString(dateLocale(), { month: "short" }).replace(".", "");
   return html`<span class="due-tile due-tile-${tone}" aria-hidden="true">
     <span class="due-tile-month">${month}</span>
     <span class="due-tile-day">${d.getDate()}</span>
@@ -245,7 +246,7 @@ export function billRow(state, bill, { today = todayISO(), dueDate = bill.dueDat
   // Pagada: la hojita muestra el próximo vencimiento y el texto lo aclara.
   const sub =
     status === "paid"
-      ? isCurrent || bill.dueDate <= dueDate ? `Pagada · próxima ${formatDate(bill.dueDate)}` : "Pagada"
+      ? isCurrent || bill.dueDate <= dueDate ? msg`Pagada · próxima ${formatDate(bill.dueDate)}` : "Pagada"
       : formatDue(dueDate, today);
   const freq = bill.recurring ? FREQUENCIES[bill.frequency]?.label : "Única vez";
   return html`<div class="row row-bill status-${status}">
@@ -272,11 +273,11 @@ export function goalCard(state, goal, { compact = false } = {}) {
       <span class="cat-bubble cat-bubble-md is-tinted" style="--c:${goal.color}" aria-hidden="true">${goal.icon}</span>
       <span class="row-main">
         <span class="row-title">${goal.name}</span>
-        <span class="row-meta">${p.done ? "¡Meta cumplida! 🎉" : goal.targetDate ? `Para el ${formatDate(goal.targetDate, { withYear: true })}` : `Faltan ${formatMoney(p.remaining, goal.currency)}`}</span>
+        <span class="row-meta">${p.done ? "¡Meta cumplida! 🎉" : goal.targetDate ? msg`Para el ${formatDate(goal.targetDate, { withYear: true })}` : msg`Faltan ${formatMoney(p.remaining, goal.currency)}`}</span>
       </span>
       <span class="goal-pct">${Math.floor(p.pct)}%</span>
     </span>
-    ${progressBar(p.pct, { color: goal.color, level: p.done ? "done" : "ok", label: `Progreso de ${goal.name}` })}
+    ${progressBar(p.pct, { color: goal.color, level: p.done ? "done" : "ok", label: msg`Progreso de ${goal.name}` })}
     <span class="goal-amounts">
       <span><strong>${formatMoney(p.saved, goal.currency)}</strong> / ${formatMoney(goal.target, goal.currency)}</span>
       ${approx(state, goal.target, goal.currency)}

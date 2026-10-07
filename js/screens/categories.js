@@ -1,5 +1,6 @@
 // Categorías: predeterminadas y propias, para gastos e ingresos.
 
+import { tr } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { catBubble, segmented } from "../ui/components.js";
@@ -24,7 +25,7 @@ export default {
               <span class="row-title">${c.name}</span>
               <span class="row-meta">${c.builtin ? "Predeterminada" : "Personalizada"} · ${countCategoryUsage(c.id)} movimientos</span>
               ${c.subcategories.length
-                ? html`<span class="sub-preview">${c.subcategories.slice(0, 4).map((sub) => sub.name).join(" · ")}${c.subcategories.length > 4 ? ` · +${c.subcategories.length - 4}` : ""}</span>`
+                ? html`<span class="sub-preview">${c.subcategories.slice(0, 4).map((sub) => tr(sub.name)).join(" · ")}${c.subcategories.length > 4 ? ` · +${c.subcategories.length - 4}` : ""}</span>`
                 : ""}
             </span>
             ${icon("edit", 18, "row-chevron")}

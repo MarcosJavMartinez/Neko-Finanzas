@@ -1,6 +1,7 @@
 // Categorías y subcategorías: formularios y la lógica compartida por los
 // selectores de categoría de otros formularios (movimientos, facturas).
 
+import { msg, tr } from "../../core/i18n.js";
 import { html, setHTML } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
@@ -71,7 +72,7 @@ export function openCategoryForm({ category, type = "expense", onSaved } = {}) {
         const name = input.value.trim();
         if (!name) return input.focus();
         if (subs.some((sub) => sub.name.toLowerCase() === name.toLowerCase())) {
-          toast(`Ya existe “${name}”`, { type: "info" });
+          toast(msg`Ya existe “${name}”`, { type: "info" });
           return;
         }
         // Id provisorio: el definitivo lo mantiene el store al guardar.
@@ -109,8 +110,8 @@ export function openCategoryForm({ category, type = "expense", onSaved } = {}) {
           if (uses) {
             const sub = subs.find((x) => x.id === removeId);
             const ok = await confirmDialog({
-              title: `¿Quitar “${sub.name}”?`,
-              text: `Tiene ${uses} movimiento${uses === 1 ? "" : "s"}. No se borran: quedan en la categoría, sin subcategoría.`,
+              title: msg`¿Quitar “${sub.name}”?`,
+              text: msg`Tiene ${uses} movimiento${uses === 1 ? "" : "s"}. No se borran: quedan en la categoría, sin subcategoría.`,
               confirmLabel: "Quitar",
               danger: true,
             });
@@ -144,9 +145,9 @@ export function openCategoryForm({ category, type = "expense", onSaved } = {}) {
       form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
         const uses = store.countCategoryUsage(category.id);
         const ok = await confirmDialog({
-          title: `¿Eliminar “${category.name}”?`,
+          title: msg`¿Eliminar “${category.name}”?`,
           text: uses
-            ? `Tiene ${uses} movimiento${uses === 1 ? "" : "s"}. No se borran: pasan a “Otros”.`
+            ? msg`Tiene ${uses} movimiento${uses === 1 ? "" : "s"}. No se borran: pasan a “Otros”.`
             : "No tiene movimientos asociados.",
           confirmLabel: "Eliminar",
           danger: true,
@@ -168,7 +169,7 @@ export function openCategoryForm({ category, type = "expense", onSaved } = {}) {
 export function openSubcategoryForm({ sub, parentName = "", onSubmit }) {
   const isEdit = Boolean(sub);
   openSheet({
-    title: isEdit ? "Editar subcategoría" : `Nueva subcategoría${parentName ? ` en ${parentName}` : ""}`,
+    title: isEdit ? "Editar subcategoría" : msg`Nueva subcategoría${parentName ? ` en ${parentName}` : ""}`,
     body: html`<form class="form" novalidate>
       ${textField({ name: "name", label: "Nombre", value: sub?.name || "", required: true, placeholder: "Ej.: Carnicería", maxlength: 30 })}
       ${emojiPicker(sub?.icon || "")}
@@ -204,7 +205,7 @@ export function bindCategoryPickers(form, getType) {
       const picker = toggle.closest(".field").querySelector(".cat-picker");
       const expanded = picker.classList.toggle("is-collapsed") === false;
       toggle.setAttribute("aria-expanded", String(expanded));
-      toggle.querySelector("span").textContent = expanded ? "Ver menos" : "Ver todas las categorías";
+      toggle.querySelector("span").textContent = tr(expanded ? "Ver menos" : "Ver todas las categorías");
       return;
     }
     if (event.target.closest("[data-new-category]")) {
@@ -225,7 +226,7 @@ export function bindCategoryPickers(form, getType) {
         onSubmit: (values) => {
           const sub = store.saveSubcategory(categoryId, values);
           replaceSubcategoryPicker(form, store.getState(), categoryId, sub?.id);
-          toast(`Subcategoría “${values.name}” creada`);
+          toast(msg`Subcategoría “${values.name}” creada`);
         },
       });
     }
