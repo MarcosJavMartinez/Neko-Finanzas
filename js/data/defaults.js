@@ -1,6 +1,8 @@
 // Valores iniciales: categorías predeterminadas, paleta, íconos y el estado
 // vacío de la app.
 
+import { DEFAULT_RATES, REGIONS, detectRegion, startingCurrencies } from "../core/money.js";
+
 export const SCHEMA_VERSION = 5; // 3: cuentas y transferencias · 4 y 5: extras del sueldo
 
 /** Paleta de la versión 1 (verde menta), para migrar colores viejos. */
@@ -142,10 +144,14 @@ export function defaultAccount(currency = "ARS", opening = 0) {
 export const FALLBACK_CATEGORY = { expense: "exp-otros", income: "inc-otros" };
 
 export function createEmptyState() {
+  // Una instalación nueva arranca con la región del dispositivo y su moneda.
+  const region = detectRegion();
   return {
     version: SCHEMA_VERSION,
     settings: {
-      mainCurrency: "ARS",
+      region,
+      mainCurrency: REGIONS[region].currency,
+      currencies: startingCurrencies(region),
       reserveHorizon: "30d", // "30d" | "month"
       budgetReference: 0,
       billCushion: false, // guardar lo que sobra de las facturas para las próximas
@@ -154,7 +160,7 @@ export function createEmptyState() {
       demoEdited: false,
       createdAt: new Date().toISOString(),
     },
-    rates: { ARS: 1, USD: 1350, EUR: 1470 },
+    rates: { ...DEFAULT_RATES },
     ratesUpdatedAt: new Date().toISOString(),
     categories: DEFAULT_CATEGORIES.map((c) => ({ ...c, subcategories: c.subcategories.map((sub) => ({ ...sub })) })),
     accounts: [defaultAccount()],

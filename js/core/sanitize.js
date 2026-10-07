@@ -6,7 +6,7 @@
 // manipulado no puede romper la app ni inyectar estilos: por ejemplo, los
 // colores solo pueden ser "#rrggbb" porque se usan dentro de atributos style.
 
-import { CURRENCY_CODES } from "./money.js";
+import { CURRENCY_CODES, DEFAULT_REGION, REGIONS } from "./money.js";
 import { FREQUENCIES } from "./dates.js";
 import { ACCOUNT_KINDS, DEFAULT_CATEGORIES, FALLBACK_CATEGORY, createEmptyState, defaultAccount } from "../data/defaults.js";
 
@@ -64,10 +64,15 @@ export function sanitizeState(input) {
   rates.ARS = 1;
 
   const s = isObj(data.settings) ? data.settings : {};
-  const main = currency(s.mainCurrency, "ARS");
+  // Datos de antes de que existieran las regiones: eran de Argentina (pesos,
+  // dólares y euros). Sin datos (instalación nueva) vale lo detectado.
+  const legacy = isObj(data.settings) && !REGIONS[s.region];
+  const main = currency(s.mainCurrency, legacy ? "ARS" : base.settings.mainCurrency);
   const settings = {
     ...base.settings,
+    region: REGIONS[s.region] ? s.region : legacy ? DEFAULT_REGION : base.settings.region,
     mainCurrency: main,
+    currencies: Array.isArray(s.currencies) ? s.currencies.filter((c) => CURRENCY_CODES.includes(c)) : legacy ? ["ARS", "USD", "EUR"] : base.settings.currencies,
     reserveHorizon: s.reserveHorizon === "month" ? "month" : "30d",
     budgetReference: positive(s.budgetReference) || 0,
     billCushion: bool(s.billCushion),
@@ -263,7 +268,7 @@ export function sanitizeState(input) {
         .filter((p) => isObj(p) && id(p.txId) && isISODate(p.dueDate) && isISODate(p.paidAt))
         .map((p) => {
           const payment = { txId: p.txId, dueDate: p.dueDate, paidAt: p.paidAt };
-          // Lo que se esperaba pagar (para el colchón de facturas).
+          // Lo que se esperaba pagar (para el fondo de facturas).
           if (positive(p.expected)) Object.assign(payment, { expected: positive(p.expected), expectedCurrency: currency(p.expectedCurrency, main) });
           return payment;
         }),
@@ -361,6 +366,10 @@ export function sanitizeState(input) {
     if (typeof b.settledMonth === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(b.settledMonth)) budget.settledMonth = b.settledMonth;
     budgets.push(budget);
   }
+
+  // Monedas en uso: la principal y cualquiera que ya aparezca en los datos.
+  const usedCurrencies = [main, ...accounts, ...transactions, ...bills, ...goals, ...loans, ...budgets].map((x) => (typeof x === "string" ? x : x.currency)).filter((c) => CURRENCY_CODES.includes(c));
+  settings.currencies = CURRENCY_CODES.filter((c) => settings.currencies.includes(c) || usedCurrencies.includes(c));
 
   return {
     version: base.version,

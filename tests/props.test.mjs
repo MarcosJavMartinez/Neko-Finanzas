@@ -1,5 +1,7 @@
 // Pruebas de propiedades: miles de estados y operaciones aleatorias sobre la
 // lógica, verificando invariantes que siempre tienen que cumplirse.
+// Las pruebas corren como un dispositivo de Argentina (Node se presenta como en-US).
+Object.defineProperty(globalThis, "navigator", { value: { language: "es-AR", languages: ["es-AR"] }, configurable: true });
 const base = new URL("../js/", import.meta.url).href;
 const F = await import(base + "core/finance.js");
 const D = await import(base + "core/dates.js");

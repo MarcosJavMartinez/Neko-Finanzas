@@ -11,6 +11,7 @@ import { PALETTE } from "../data/defaults.js";
 import { formatMoney, CURRENCIES, isMasked } from "../core/money.js";
 import { daysBetween, formatDate, formatMonth, currentMonthKey, shiftMonthKey, todayISO } from "../core/dates.js";
 import { accountRow } from "./accounts.js";
+import { ratePair } from "./currencies.js";
 import { loanRow } from "./loans.js";
 import {
   accountBalances,
@@ -279,14 +280,15 @@ export default {
     const ratesCard = !usesOtherCurrency ? "" : html`<section class="card home-rates reveal">
       ${sectionHeader("Tipo de cambio", { href: "#/monedas", linkText: "Editar" })}
       <div class="rates-row">
-        ${Object.values(CURRENCIES)
-          .filter((c) => c.code !== main)
-          .map(
-            (c) => html`<a class="rate-pill" href="#/monedas">
-              <span class="cur-badge">${c.symbol}</span>
-              <span class="rate-text">1 ${c.code} = <strong>${formatMoney(state.rates[c.code] / (state.rates[main] || 1), main)}</strong></span>
-            </a>`
-          )}
+        ${state.settings.currencies
+          .filter((code) => code !== main)
+          .map((code) => {
+            const pair = ratePair(state, code);
+            return html`<a class="rate-pill" href="#/monedas">
+              <span class="cur-badge">${CURRENCIES[code].symbol}</span>
+              <span class="rate-text">1 ${pair.from} = <strong>${formatMoney(pair.value, pair.to)}</strong></span>
+            </a>`;
+          })}
       </div>
       <p class="fine-print">${icon("info", 14)} Valores que cargaste vos. Se usan para convertir montos a ${main}.</p>
     </section>`;

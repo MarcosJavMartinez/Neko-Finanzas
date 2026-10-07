@@ -63,6 +63,10 @@ export function buildDemoState(today = todayISO()) {
   };
 
   state.settings.isDemo = true;
+  // Los datos de ejemplo están pensados en pesos argentinos; el formato de
+  // los números sí sigue la región del dispositivo.
+  state.settings.mainCurrency = "ARS";
+  state.settings.currencies = ["ARS", "USD", "EUR"];
 
   // --- Ingresos y gastos de los últimos 5 meses -------------------------
   const months = lastMonthKeys(5);

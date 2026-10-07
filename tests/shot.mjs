@@ -41,6 +41,8 @@ try {
     } catch { ws = null; await sleep(250); }
   }
   await send("Page.enable");
+  // Región del dispositivo simulado: Argentina, o la que diga REGION (por ejemplo REGION=en-US).
+  await send("Page.addScriptToEvaluateOnNewDocument", { source: `try{Object.defineProperty(Navigator.prototype,"language",{get:()=>"${process.env.REGION || "es-AR"}"});Object.defineProperty(Navigator.prototype,"languages",{get:()=>["${process.env.REGION || "es-AR"}"]});}catch(e){}` });
   // Las descargas van a la carpeta temporal, no a Descargas.
   await send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: profile });
   // Ancho del celular simulado: 390 px, o el que diga ANCHO (por ejemplo ANCHO=320).

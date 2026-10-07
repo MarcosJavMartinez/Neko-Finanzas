@@ -1,4 +1,6 @@
 // Pruebas unitarias de la lógica (node unit.mjs)
+// Las pruebas corren como un dispositivo de Argentina (Node se presenta como en-US).
+Object.defineProperty(globalThis, "navigator", { value: { language: "es-AR", languages: ["es-AR"] }, configurable: true });
 const base = new URL("../js/", import.meta.url).href;
 const M = await import(base + "core/money.js");
 const D = await import(base + "core/dates.js");
@@ -77,7 +79,7 @@ const evil = sanitizeState({
   goals: [{ id: "g", target: 0 }, { id: "h", name: "Viaje", target: 1000, color: "url(https://evil)", movements: "no" }],
   budgets: [{ id: "q", mode: "percent", value: 250, target: { kind: "rest" } }, { id: "r", mode: "fixed", value: 10, target: { kind: "goal", goalId: "zzz" } }],
 });
-eq("tipos de cambio", evil.rates, { ARS: 1, USD: 1350, EUR: 1470 });
+eq("tipos de cambio", [evil.rates.ARS, evil.rates.USD, evil.rates.EUR, Object.keys(evil.rates).length], [1, 1350, 1470, 8]);
 eq("moneda principal inválida", evil.settings.mainCurrency, "ARS");
 eq("saldo inicial inválido", evil.accounts[0].opening, 0);
 eq("sin saldo inicial en configuración", "openingBalance" in evil.settings, false);
@@ -321,17 +323,17 @@ store.restore(env([]));
 const made = store.saveBudget({ name: "Gustos", icon: "☕", color: "#d99a2b", mode: "daily", value: 100, currency: "ARS", target: { kind: "categories", categoryIds: ["exp-comida"] }, reserve: true });
 eq("al crear uno reservado se anota desde cuándo cuenta", [made.reserve, /^\d{4}-\d{2}-\d{2}$/.test(made.since)], [true, true]);
 
-// Colchón de facturas
+// Fondo de facturas
 const cushionState = (on) => sanitizeState({ settings: { billCushion: on, billCushionSince: "2026-01-01", reserveHorizon: "month" }, categories: buildDemoState().categories, accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 300000 }], bills: [{ id: "luz", name: "Luz", amount: 40000, currency: "ARS", dueDate: "2026-03-10", dueDay: 10, recurring: true, frequency: "monthly", categoryId: "exp-servicios" }] });
 store.restore(cushionState(true));
 const before = F.balanceSummary(store.getState(), "2026-03-09").available;
 store.payBill("luz", { date: "2026-03-09", amount: 30000 });
-eq("vino por menos: la diferencia queda en el colchón", [F.billCushion(store.getState()).amount, store.getState().bills[0].payments[0].expected], [10000, 40000]);
+eq("vino por menos: la diferencia queda en el fondo", [F.billCushion(store.getState()).amount, store.getState().bills[0].payments[0].expected], [10000, 40000]);
 eq("y el disponible no cambia", F.balanceSummary(store.getState(), "2026-03-09").available, before);
 store.payBill("luz", { date: "2026-04-09", amount: 46000 });
-eq("vino por más: sale del colchón", F.billCushion(store.getState()).amount, 4000);
+eq("vino por más: sale del fondo", F.billCushion(store.getState()).amount, 4000);
 store.payBill("luz", { date: "2026-05-09", amount: 50000 });
-eq("el colchón nunca es negativo", F.billCushion(store.getState()).amount, 0);
+eq("el fondo nunca es negativo", F.billCushion(store.getState()).amount, 0);
 store.undoLastPayment("luz");
 eq("deshacer un pago lo recalcula", F.billCushion(store.getState()).amount, 4000);
 store.releaseBillCushion(4000);
@@ -339,14 +341,53 @@ eq("liberar: vuelve al disponible", [F.billCushion(store.getState()).amount, sto
 store.restore({ ...cushionState(true), goals: [{ id: "meta", name: "Viaje", target: 100000, currency: "ARS", movements: [] }] });
 store.payBill("luz", { date: "2099-01-09", amount: 25000 });
 store.moveCushionToGoal("meta", 10000);
-eq("colchón a una meta: sale del colchón y queda apartado", [F.billCushion(store.getState()).amount, F.goalSaved(store.getState().goals[0]), store.getState().goals[0].movements[0].note], [5000, 10000, "Colchón de facturas"]);
+eq("fondo a una meta: sale del fondo y queda apartado", [F.billCushion(store.getState()).amount, F.goalSaved(store.getState().goals[0]), store.getState().goals[0].movements[0].note], [5000, 10000, "Fondo de facturas"]);
 store.moveCushionToGoal("no-existe", 5000);
-eq("meta inexistente: no se pierde plata del colchón", F.billCushion(store.getState()).amount, 5000);
+eq("meta inexistente: no se pierde plata del fondo", F.billCushion(store.getState()).amount, 5000);
 store.restore(cushionState(false));
 store.payBill("luz", { date: "2026-03-09", amount: 30000 });
 eq("desactivado: no reserva nada", [F.billCushion(store.getState()).amount, F.balanceSummary(store.getState(), "2026-03-09").available], [0, 270000]);
 store.setBillCushion(true);
 eq("al activarlo no cuenta los pagos anteriores", F.billCushion(store.getState()).amount, 0);
+
+// Regiones: formato de números, monedas y tipos de cambio
+{
+  const fmt = (region, fn) => { M.configureMoney({ region }); const out = fn(); M.configureMoney({ region: "es-AR", currencies: ["ARS", "USD", "EUR"] }); return out; };
+  const clean = (s) => s.replace(/[  ]/g, " ");
+  eq("formato por región", ["es-AR", "es-ES", "pt-BR", "en-US", "en-GB", "ja-JP", "ru-RU", "tr-TR"].map((r) => fmt(r, () => clean(M.formatNumber(1234567.5, 2)))), ["1.234.567,50", "1.234.567,50", "1.234.567,50", "1,234,567.50", "1,234,567.50", "1,234,567.50", "1 234 567,50", "1.234.567,50"]);
+  eq("leer montos con punto decimal (EE. UU.)", fmt("en-US", () => ["1,350.75", "470,250", "20.5", "1,5", "1,350,000", "1500"].map(M.parseAmount)), [1350.75, 470250, 20.5, 1.5, 1350000, 1500]);
+  eq("leer montos con coma decimal (Brasil)", fmt("pt-BR", () => ["1.350,75", "470.250", "20,5", "1500"].map(M.parseAmount)), [1350.75, 470250, 20.5, 1500]);
+  eq("leer montos en Rusia (espacio de miles)", fmt("ru-RU", () => M.parseAmount(M.amountToInput(1234567.5))), 1234567.5);
+  eq("ida y vuelta por el campo en cada región", ["es-AR", "es-ES", "pt-BR", "en-US", "en-GB", "ru-RU", "tr-TR"].map((r) => fmt(r, () => M.parseAmount(M.amountToInput(98765.43)))), Array(7).fill(98765.43));
+  eq("Japón: sin centavos", fmt("ja-JP", () => [M.usesCents(), M.zeroAmount(), M.amountToInput(1500), M.formatMoney(1500.4, "JPY")]), [false, "0", "1,500", "¥ 1,500"]);
+  eq("el cero de un campo sigue a la región", [fmt("es-AR", M.zeroAmount), fmt("en-US", M.zeroAmount)], ["0,00", "0.00"]);
+  eq("símbolos", fmt("pt-BR", () => [M.formatMoney(10, "BRL"), M.formatMoney(10, "GBP"), M.formatMoney(10, "RUB"), M.formatMoney(10, "TRY")]), ["R$ 10", "£ 10", "₽ 10", "₺ 10"]);
+  const langs = (list) => { Object.defineProperty(globalThis, "navigator", { value: { language: list[0], languages: list }, configurable: true }); const r = M.detectRegion(); Object.defineProperty(globalThis, "navigator", { value: { language: "es-AR", languages: ["es-AR"] }, configurable: true }); return r; };
+  eq("región según el idioma del dispositivo", [["pt-BR"], ["pt"], ["en-GB"], ["en-AU"], ["es-MX"], ["es-ES"], ["ja"], ["ru-RU"], ["tr"], ["de-DE"], ["de", "tr-TR"]].map(langs), ["pt-BR", "pt-BR", "en-GB", "en-US", "es-AR", "es-ES", "ja-JP", "ru-RU", "tr-TR", "es-AR", "tr-TR"]);
+  Object.defineProperty(globalThis, "navigator", { value: { language: "pt-BR", languages: ["pt-BR"] }, configurable: true });
+  const br = sanitizeState(undefined);
+  Object.defineProperty(globalThis, "navigator", { value: { language: "es-AR", languages: ["es-AR"] }, configurable: true });
+  eq("instalación nueva en Brasil: reales y dólares", [br.settings.region, br.settings.mainCurrency, br.settings.currencies], ["pt-BR", "BRL", ["USD", "BRL"]]);
+  const old = sanitizeState({ settings: { mainCurrency: "USD", createdAt: "2026-01-01T00:00:00Z" }, accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank" }] });
+  eq("datos de antes de las regiones: Argentina, sus tres monedas", [old.settings.region, old.settings.mainCurrency, old.settings.currencies], ["es-AR", "USD", ["ARS", "USD", "EUR"]]);
+  const mixed = sanitizeState({ settings: { region: "tr-TR", mainCurrency: "TRY", currencies: ["XXX", "USD"], createdAt: "2026-01-01T00:00:00Z" }, accounts: [{ id: "a", name: "A", currency: "GBP", kind: "bank" }] });
+  eq("las monedas en uso incluyen la principal y las de los datos", mixed.settings.currencies, ["USD", "GBP", "TRY"]);
+  // Tipos de cambio cargados en la moneda principal
+  store.restore(sanitizeState({ settings: { region: "pt-BR", mainCurrency: "BRL", currencies: ["BRL", "USD", "ARS"], createdAt: "2026-01-01T00:00:00Z" } }));
+  store.setRateInMain("USD", 5.4);
+  const r1 = store.getState().rates;
+  eq("1 USD = 5,40 BRL", Math.round((r1.USD / r1.BRL) * 100) / 100, 5.4);
+  store.setRateInMain("ARS", 1 / 250); // 1 BRL = 250 ARS
+  const r2 = store.getState().rates;
+  eq("cambiar el peso (pivote) no mueve el dólar contra el real", [Math.round((r2.BRL / r2.ARS) * 100) / 100, Math.round((r2.USD / r2.BRL) * 100) / 100, r2.ARS], [250, 5.4, 1]);
+  store.toggleCurrency("EUR", true);
+  store.toggleCurrency("BRL", false);
+  eq("sumar una moneda; la principal no se puede sacar", store.getState().settings.currencies, ["ARS", "USD", "EUR", "BRL"]);
+  store.setRegion("en-US");
+  eq("cambiar la región cambia el formato, no los montos", [M.getRegion(), M.formatMoney(1234.5, "BRL"), store.getState().settings.mainCurrency], ["en-US", "R$ 1,234.50", "BRL"]);
+  store.setRegion("es-AR");
+  M.configureMoney({ region: "es-AR", currencies: ["ARS", "USD", "EUR"] });
+}
 
 // Gastos que se repiten (gimnasio): recordatorio, reserva y registro
 store.restore(sanitizeState({ accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }], categories: buildDemoState().categories, settings: { reserveHorizon: "month" }, transactions: [

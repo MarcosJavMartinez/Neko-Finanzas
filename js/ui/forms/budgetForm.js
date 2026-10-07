@@ -18,7 +18,7 @@ import {
   clearErrors,
 } from "./fields.js";
 import * as store from "../../core/store.js";
-import { amountToInput, parseAmount } from "../../core/money.js";
+import { amountToInput, parseAmount, zeroAmount } from "../../core/money.js";
 
 const BUDGET_ICONS = ["🧾", "🛒", "🍔", "✈️", "👕", "🛟", "🎮", "🏠", "🚗", "💊", "🎁", "📚", "🐱", "💰", "🎯", "✨"];
 
@@ -54,7 +54,7 @@ export function openBudgetForm({ budget, preset } = {}) {
         <label class="field-label" for="f-value" data-value-label>${VALUE_LABEL[current.mode]}</label>
         <div class="amount-input">
           <select name="currency" class="amount-currency" aria-label="Moneda" data-fixed-only ${current.mode !== "percent" ? "" : "hidden"}>${currencyOptions(current.currency)}</select>
-          <input id="f-value" name="value" type="text" inputmode="decimal" autocomplete="off" placeholder="${current.mode === "percent" ? "25" : "0,00"}" value="${current.value ? (current.mode === "percent" ? String(current.value).replace(".", ",") : amountToInput(current.value)) : ""}" ${current.mode === "percent" ? "data-plain" : ""} required />
+          <input id="f-value" name="value" type="text" inputmode="decimal" autocomplete="off" placeholder="${current.mode === "percent" ? "25" : zeroAmount()}" value="${current.value ? (current.mode === "percent" ? String(current.value).replace(".", ",") : amountToInput(current.value)) : ""}" ${current.mode === "percent" ? "data-plain" : ""} required />
           <span class="amount-suffix" data-percent-only ${current.mode === "percent" ? "" : "hidden"}>%</span>
         </div>
         <p class="field-error" data-error-for="value"></p>
@@ -112,7 +112,7 @@ export function openBudgetForm({ budget, preset } = {}) {
           form.querySelector("[data-daily-only]").hidden = event.target.value !== "daily";
           form.querySelector("[data-value-label]").textContent = VALUE_LABEL[event.target.value];
           const field = form.elements.value;
-          field.placeholder = fixed ? "0,00" : "25";
+          field.placeholder = fixed ? zeroAmount() : "25";
           // El porcentaje se escribe tal cual; el monto, con centavos.
           const typed = parseAmount(field.value);
           if (fixed === field.hasAttribute("data-plain") && typed > 0) field.value = fixed ? amountToInput(typed) : String(typed).replace(".", ",");

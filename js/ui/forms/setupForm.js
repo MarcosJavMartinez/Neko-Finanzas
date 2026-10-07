@@ -9,7 +9,7 @@ import { icon } from "../icons.js";
 import { openSheet, whenHistorySettled } from "../sheet.js";
 import { toast } from "../toast.js";
 import { segmented } from "../components.js";
-import { parseAmount, formatMoney, convert, CURRENCY_CODES } from "../../core/money.js";
+import { parseAmount, formatMoney, convert, CURRENCY_CODES, zeroAmount } from "../../core/money.js";
 import { MAX_AMOUNT, isISODate } from "../../core/sanitize.js";
 import { addMonths, currentMonthKey, todayISO } from "../../core/dates.js";
 import * as store from "../../core/store.js";
@@ -63,7 +63,7 @@ function initialAnswers(state) {
 
 const money = (name, value, currency, label) => html`<span class="amount-input">
   <span class="amount-currency amount-currency-static">${currency}</span>
-  <input name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${value}" aria-label="${label}" />
+  <input name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" value="${value}" aria-label="${label}" />
 </span>`;
 
 const textInput = (name, label, value, placeholder) => html`<label class="field">
@@ -94,7 +94,7 @@ const RENDER = {
     <p class="sheet-text">Son unas preguntas cortas sobre tu plata. Lo que no tengas, dejalo vacío y seguí. Al final cargo todo junto${additive ? " y se suma a lo que ya tenés" : ""}, y después lo podés cambiar cuando quieras.</p>
     <div class="field">
       <span class="field-label">¿En qué moneda manejás tu plata?</span>
-      ${segmented("currency", CURRENCY_CODES.map((c) => ({ value: c, label: c })), a.currency)}
+      ${segmented("currency", CURRENCY_CODES.map((c) => ({ value: c, label: c })), a.currency, { size: "segmented-wrap" })}
       <p class="field-hint">Los totales se van a mostrar en esta moneda.</p>
     </div>
     ${moneyField("salary", "¿Cuánto cobrás por mes? (opcional)", a.salary, a.currency)}
@@ -133,7 +133,7 @@ const RENDER = {
           ${textInput(`pur-what-${i}`, "Qué compraste", p.what, "Ej.: Heladera")}
           <div class="field-row">
             ${moneyField(`pur-per-${i}`, "Cada cuota", p.per, a.currency)}
-            <label class="field"><span class="field-label">Cuotas que faltan</span><input name="pur-left-${i}" type="text" inputmode="numeric" value="${p.left}" placeholder="0,00" autocomplete="off" /></label>
+            <label class="field"><span class="field-label">Cuotas que faltan</span><input name="pur-left-${i}" type="text" inputmode="numeric" value="${p.left}" placeholder="${zeroAmount()}" autocomplete="off" /></label>
           </div>
         </div>`
       )}

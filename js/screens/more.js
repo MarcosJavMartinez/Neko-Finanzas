@@ -37,7 +37,7 @@ export default {
       ] },
       { title: "Ajustes", items: [
       { href: "#/categorias", icon: "tag", title: "Categorías", sub: `${state.categories.length} categorías` },
-      { href: "#/monedas", icon: "coins", title: "Monedas", sub: `Principal: ${main}` },
+      { href: "#/monedas", icon: "coins", title: "País y monedas", sub: `Principal: ${main}` },
       { href: "#/ajustes", icon: "settings", title: "Configuración", sub: "Apariencia, tus datos, instalar la app" },
       ] },
       { title: "Ayuda", items: [

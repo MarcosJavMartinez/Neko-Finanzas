@@ -22,7 +22,7 @@ import {
 import * as store from "../../core/store.js";
 import { formatDate, todayISO } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
-import { amountToInput, formatMoney, convert } from "../../core/money.js";
+import { amountToInput, formatMoney, convert, zeroAmount } from "../../core/money.js";
 import { balanceSummary, goalMonthlyNeeded, goalProgress } from "../../core/finance.js";
 
 const GOAL_ICONS = ["✈️", "🏖️", "🎮", "💻", "📱", "👕", "👟", "🛟", "🏠", "🚗", "🎓", "💍", "🎸", "📷", "🐱", "🎁", "🏋️", "🎯"];
@@ -114,7 +114,7 @@ export function openGoalMove(goalId, direction = "deposit") {
         <label class="field-label" for="f-amount">Monto en ${goal.currency}</label>
         <div class="amount-input">
           <span class="amount-currency amount-currency-static">${goal.currency}</span>
-          <input id="f-amount" name="amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" data-autofocus required />
+          <input id="f-amount" name="amount" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" data-autofocus required />
         </div>
         <p class="field-error" data-error-for="amount"></p>
         ${isDeposit ? html`<p class="field-hint">Disponible ahora: ${formatMoney(availableInGoal, goal.currency)}</p>` : ""}

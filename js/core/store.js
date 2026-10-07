@@ -11,7 +11,7 @@ import { ACCOUNT_KINDS, DEFAULT_ACCOUNT_ID, createEmptyState, DEFAULT_CATEGORIES
 import { buildDemoState } from "../data/demo.js";
 import { sanitizeState } from "./sanitize.js";
 import { addMonths, nextDate, todayISO } from "./dates.js";
-import { convert, CURRENCY_CODES } from "./money.js";
+import { convert, configureMoney, CURRENCY_CODES, PIVOT, REGIONS } from "./money.js";
 
 let state = null;
 const listeners = new Set();
@@ -20,6 +20,7 @@ const saveErrorListeners = new Set();
 export async function initStore() {
   const saved = await initStorage();
   state = migrate(saved || buildDemoState());
+  syncFormat();
   if (!saved) saveData(state);
   maybeDailySnapshot();
   return state;
@@ -73,6 +74,11 @@ export function getState() {
   return state;
 }
 
+/** La región y las monedas en uso definen cómo se escriben y ofrecen los montos. */
+function syncFormat() {
+  if (state) configureMoney({ region: state.settings.region, currencies: state.settings.currencies });
+}
+
 export function subscribe(fn) {
   listeners.add(fn);
   return () => listeners.delete(fn);
@@ -85,6 +91,14 @@ export function onSaveError(fn) {
 }
 
 function commit(mutator) {
+  try {
+    return commitInner(mutator);
+  } finally {
+    syncFormat();
+  }
+}
+
+function commitInner(mutator) {
   const before = state;
   const result = mutator(state);
   // Cambios propios sobre los datos de ejemplo: desde ahí ya hay algo tuyo
@@ -104,6 +118,7 @@ export async function reloadFromStorage() {
   const saved = await loadData();
   if (!saved) return false;
   state = migrate(saved);
+  syncFormat();
   listeners.forEach((fn) => fn(state));
   return true;
 }
@@ -116,6 +131,7 @@ export function snapshot() {
 export function restore(saved) {
   commit(() => {
     state = migrate(saved);
+    syncFormat();
   });
 }
 
@@ -710,7 +726,7 @@ export function payBill(id, { date = todayISO(), amount, currency, accountId } =
       createdAt: new Date().toISOString(),
     });
     s.transactions.push(tx);
-    // Se anota lo que se esperaba pagar: la diferencia alimenta (o usa) el colchón.
+    // Se anota lo que se esperaba pagar: la diferencia alimenta (o usa) el fondo.
     bill.payments.push({ txId: tx.id, dueDate: bill.dueDate, paidAt: date, expected: bill.amount, expectedCurrency: bill.currency });
     if (bill.recurring) bill.dueDate = nextDate(bill.dueDate, bill.frequency, bill.dueDay);
     else bill.status = "paid";
@@ -921,6 +937,44 @@ export function setRate(code, value) {
 }
 
 /**
+ * Guarda un tipo de cambio expresado en la moneda principal ("1 USD = 5,40
+ * BRL"). Por dentro todo se guarda contra una moneda pivote; si la que se
+ * edita es justamente esa, se reescalan las demás para que no cambien.
+ */
+export function setRateInMain(code, valueInMain) {
+  commit((s) => {
+    const main = s.settings.mainCurrency;
+    if (!CURRENCY_CODES.includes(code) || code === main || !(valueInMain > 0)) return;
+    if (code === PIVOT) {
+      const factor = 1 / valueInMain / s.rates[main];
+      for (const c of CURRENCY_CODES) if (c !== PIVOT) s.rates[c] *= factor;
+    } else {
+      s.rates[code] = valueInMain * s.rates[main];
+    }
+    s.ratesUpdatedAt = new Date().toISOString();
+  });
+}
+
+/** Región: cambia cómo se escriben los números (no toca los montos ni la moneda). */
+export function setRegion(code) {
+  if (!REGIONS[code]) return;
+  commit((s) => {
+    s.settings.region = code;
+  });
+}
+
+/** Agrega o quita una moneda de las que se ofrecen en los formularios. */
+export function toggleCurrency(code, on) {
+  if (!CURRENCY_CODES.includes(code)) return;
+  commit((s) => {
+    const list = new Set(s.settings.currencies || []);
+    if (on) list.add(code);
+    else if (code !== s.settings.mainCurrency) list.delete(code);
+    s.settings.currencies = CURRENCY_CODES.filter((c) => list.has(c));
+  });
+}
+
+/**
  * Cambia la moneda principal. El "ingreso de referencia" está guardado en la
  * moneda principal, así que se convierte: $ 800.000 no pasan a ser US$ 800.000.
  */
@@ -931,11 +985,12 @@ export function setMainCurrency(code) {
     if (previous === code) return;
     s.settings.budgetReference = Math.round(convert(s.settings.budgetReference || 0, previous, code, s.rates) * 100) / 100;
     s.settings.mainCurrency = code;
+    if (!(s.settings.currencies || []).includes(code)) s.settings.currencies = [...(s.settings.currencies || []), code];
   });
 }
 
 /**
- * Colchón de facturas: lo que sobra cuando una factura viene por menos de lo
+ * Fondo de facturas: lo que sobra cuando una factura viene por menos de lo
  * esperado queda guardado para las próximas (y cubre las que vengan por más).
  * Cuenta los pagos hechos desde que se activa.
  */
@@ -950,14 +1005,14 @@ export function setBillCushion(on) {
   });
 }
 
-/** Libera lo guardado en el colchón: vuelve a contar como disponible. */
+/** Libera lo guardado en el fondo: vuelve a contar como disponible. */
 export function releaseBillCushion(amount) {
   commit((s) => {
     if (amount > 0) s.settings.billCushionReleased = Math.round(((s.settings.billCushionReleased || 0) + amount) * 100) / 100;
   });
 }
 
-/** Pasa plata del colchón de facturas a una meta (amount en la moneda principal). */
+/** Pasa plata del fondo de facturas a una meta (amount en la moneda principal). */
 export function moveCushionToGoal(goalId, amount) {
   commit((s) => {
     const goal = find(s.goals, goalId);
@@ -965,7 +1020,7 @@ export function moveCushionToGoal(goalId, amount) {
     const inGoal = Math.round(convert(amount, s.settings.mainCurrency, goal.currency, s.rates) * 100) / 100;
     if (!(inGoal > 0)) return;
     s.settings.billCushionReleased = Math.round(((s.settings.billCushionReleased || 0) + amount) * 100) / 100;
-    goal.movements.push({ id: uid("mov"), date: todayISO(), amount: inGoal, note: "Colchón de facturas" });
+    goal.movements.push({ id: uid("mov"), date: todayISO(), amount: inGoal, note: "Fondo de facturas" });
   });
 }
 
@@ -983,6 +1038,7 @@ export function loadDemo() {
   snapshotBefore("Antes de cargar el ejemplo");
   commit(() => {
     state = migrate(buildDemoState());
+    syncFormat();
   });
 }
 
@@ -1001,6 +1057,7 @@ export function startFresh({ keepSetup = true } = {}) {
       else fresh.accounts[0].currency = s.settings.mainCurrency;
     }
     state = fresh;
+    syncFormat();
   });
 }
 
@@ -1009,6 +1066,7 @@ export async function resetEverything() {
   await clearData();
   commit(() => {
     state = createEmptyState();
+    syncFormat();
   });
 }
 

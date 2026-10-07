@@ -31,7 +31,7 @@
  *                      + lo que debés de un préstamo que vence en ese plazo
  *                      + lo que falta gastar este mes de los presupuestos
  *                      marcados "reservar" (supermercado, gustos por día)
- *                      + el colchón de facturas, si está activado: lo que
+ *                      + el fondo de facturas, si está activado: lo que
  *                      sobró de facturas que vinieron por menos.
  *
  *  Préstamos: prestar plata la saca de tu cuenta (no es un gasto) y lo que
@@ -252,7 +252,7 @@ export function scheduledReserve(state, today = todayISO()) {
 }
 
 /**
- * Colchón de facturas (opcional): la suma de lo que sobró al pagar facturas
+ * Fondo de facturas (opcional): la suma de lo que sobró al pagar facturas
  * por menos de lo esperado, menos lo que hubo que poner de más cuando
  * vinieron más caras, menos lo que se liberó a mano. Nunca es negativo.
  * Mientras tenga saldo, queda reservado para las próximas facturas.

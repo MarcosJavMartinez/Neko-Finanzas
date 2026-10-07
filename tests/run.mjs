@@ -18,6 +18,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { startServer, virtualFiles } from "./serve.mjs";
 
+// Las pruebas corren como un dispositivo de Argentina (Chrome headless se
+// presenta como en-US y la app elige la región por el idioma).
+const REGION_SCRIPT = 'try{Object.defineProperty(Navigator.prototype,"language",{get:()=>"es-AR"});Object.defineProperty(Navigator.prototype,"languages",{get:()=>["es-AR"]});}catch(e){}';
+
 const HERE = fileURLToPath(new URL(".", import.meta.url));
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const PORT = 5199;
@@ -86,7 +90,7 @@ const server = await startServer(PORT);
  */
 async function runBrowserTest(file, { query = "", onboarding = false, pre = "", offer = false } = {}) {
   // showSaveFilePicker se apaga: abriría un diálogo del sistema que nadie puede contestar.
-  const head = `<script>window.showSaveFilePicker=undefined;try{sessionStorage.setItem("nekoFinanzas.splash","1");localStorage.setItem("nekoFinanzas.theme","light");${onboarding ? "" : 'localStorage.setItem("nekoFinanzas.onboardingSeen","1");'}${onboarding || offer ? "" : 'localStorage.setItem("nekoFinanzas.setupOffered","1");'}${pre}}catch(e){}</script>`;
+  const head = `<script>${REGION_SCRIPT}window.showSaveFilePicker=undefined;try{sessionStorage.setItem("nekoFinanzas.splash","1");localStorage.setItem("nekoFinanzas.theme","light");${onboarding ? "" : 'localStorage.setItem("nekoFinanzas.onboardingSeen","1");'}${onboarding || offer ? "" : 'localStorage.setItem("nekoFinanzas.setupOffered","1");'}${pre}}catch(e){}</script>`;
   const html = readFileSync(join(ROOT, "index.html"), "utf8")
     .replace("<head>", `<head>${head}`)
     .replace(
@@ -203,6 +207,8 @@ async function withDevTools(fn) {
     await send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: profile });
     // Permiso de notificaciones (los avisos igual vienen apagados hasta que se prenden).
     await send("Browser.grantPermissions", { permissions: ["notifications"], origin: BASE });
+    await send("Page.enable");
+    await send("Page.addScriptToEvaluateOnNewDocument", { source: REGION_SCRIPT });
     return await fn({ send, evaluate, on });
   } finally {
     try { ws?.close(); } catch {}

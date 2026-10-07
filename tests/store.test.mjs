@@ -1,4 +1,6 @@
 // Operaciones aleatorias sobre el store real (con un localStorage simulado)
+// Las pruebas corren como un dispositivo de Argentina (Node se presenta como en-US).
+Object.defineProperty(globalThis, "navigator", { value: { language: "es-AR", languages: ["es-AR"] }, configurable: true });
 const mem = new Map();
 globalThis.localStorage = {
   getItem: (k) => (mem.has(k) ? mem.get(k) : null),

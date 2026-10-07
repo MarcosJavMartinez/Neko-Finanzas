@@ -4,7 +4,7 @@
 
 import { html } from "./dom.js";
 import { icon, nekoArt } from "./icons.js";
-import { formatMoney, CURRENCIES } from "../core/money.js";
+import { formatMoney, CURRENCIES, currencyChoices } from "../core/money.js";
 import { currentMonthKey, daysBetween, formatDate, formatDue, formatMonth, parseISO, todayISO, FREQUENCIES } from "../core/dates.js";
 import { billStatus, findCategory, findSubcategory, goalProgress, toMain } from "../core/finance.js";
 
@@ -285,7 +285,7 @@ export function goalCard(state, goal, { compact = false } = {}) {
 }
 
 export function currencyOptions(selected) {
-  return Object.values(CURRENCIES).map(
+  return currencyChoices(selected).map((code) => CURRENCIES[code]).map(
     (c) => html`<option value="${c.code}" ${c.code === selected ? "selected" : ""}>${c.code}</option>`
   );
 }

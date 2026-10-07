@@ -10,7 +10,7 @@ import { textField, emojiPicker, colorPicker, formActions, readForm, fieldError,
 import * as store from "../../core/store.js";
 import { todayISO, formatDate } from "../../core/dates.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
-import { formatMoney, amountToInput, parseAmount, convert, CURRENCY_CODES } from "../../core/money.js";
+import { formatMoney, amountToInput, parseAmount, convert, CURRENCY_CODES, zeroAmount } from "../../core/money.js";
 import { accountBalance, cardStatus, findAccount, findCategory } from "../../core/finance.js";
 import { ACCOUNT_KINDS } from "../../data/defaults.js";
 
@@ -36,7 +36,7 @@ function fixedAmountField({ name, label, currency, value, hint = "" }) {
     <label class="field-label" for="f-${name}">${label}</label>
     <div class="amount-input">
       <span class="amount-currency amount-currency-static" data-currency-for="${name}">${currency}</span>
-      <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${value ? amountToInput(value) : ""}" />
+      <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" value="${value ? amountToInput(value) : ""}" />
     </div>
     ${hint ? html`<p class="field-hint" data-hint-for="${name}">${hint}</p>` : ""}
     <p class="field-error" data-error-for="${name}"></p>
@@ -85,7 +85,7 @@ export function openAccountForm({ account, kind: presetKind } = {}) {
         <span class="field-label">Moneda</span>
         ${used
           ? html`<p class="field-hint">${icon("lock", 14)} ${current.currency}: no se puede cambiar porque la cuenta ya tiene movimientos.</p>`
-          : segmented("currency", CURRENCY_CODES.map((c) => ({ value: c, label: c })), current.currency)}
+          : segmented("currency", CURRENCY_CODES.map((c) => ({ value: c, label: c })), current.currency, { size: "segmented-wrap" })}
       </div>
       <div data-opening-normal ${isCard ? "hidden" : ""}>
         ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: isCard ? 0 : Math.abs(current.opening || 0), hint: "Lo que tenía esta cuenta antes de cargar movimientos." })}

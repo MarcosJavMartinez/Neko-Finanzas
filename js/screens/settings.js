@@ -7,7 +7,7 @@ import { icon } from "../ui/icons.js";
 import { toast } from "../ui/toast.js";
 import { confirmDialog, whenHistorySettled } from "../ui/sheet.js";
 import { segmented } from "../ui/components.js";
-import { amountToInput, parseAmount } from "../core/money.js";
+import { amountToInput, parseAmount, zeroAmount } from "../core/money.js";
 import { MAX_AMOUNT } from "../core/sanitize.js";
 import * as store from "../core/store.js";
 import { openSnapshots } from "../ui/snapshots.js";
@@ -214,7 +214,7 @@ const handlers = {
     },
     "set-bill-cushion"(el) {
       store.setBillCushion(el.checked);
-      toast(el.checked ? "Listo: lo que sobre de tus facturas queda guardado para las próximas" : "Colchón de facturas desactivado", { type: "info" });
+      toast(el.checked ? "Listo: lo que sobre de tus facturas queda guardado para las próximas" : "Fondo de facturas desactivado", { type: "info" });
     },
     "set-horizon"(el) {
       store.updateSettings({ reserveHorizon: el.value });
@@ -296,7 +296,7 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
           <span class="field-hint">Se usa para los presupuestos en % mientras el mes no tenga ingresos cargados.</span>
           <span class="amount-input">
             <span class="amount-currency amount-currency-static">${s.mainCurrency}</span>
-            <input type="text" inputmode="decimal" value="${s.budgetReference ? amountToInput(s.budgetReference) : ""}" placeholder="0,00" data-change="set-reference" aria-label="Ingreso de referencia" />
+            <input type="text" inputmode="decimal" value="${s.budgetReference ? amountToInput(s.budgetReference) : ""}" placeholder="${zeroAmount()}" data-change="set-reference" aria-label="Ingreso de referencia" />
           </span>
         </label>
       </section>

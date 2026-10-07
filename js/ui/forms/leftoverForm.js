@@ -69,7 +69,7 @@ export function openLeftoverSheet(budgetId) {
   });
 }
 
-/** Pasar a una meta lo guardado en el colchón de facturas (todo o una parte). */
+/** Pasar a una meta lo guardado en el fondo de facturas (todo o una parte). */
 export function openCushionSheet() {
   const state = store.getState();
   const main = state.settings.mainCurrency;
@@ -77,7 +77,7 @@ export function openCushionSheet() {
   if (!(amount > 0)) return;
 
   openSheet({
-    title: "Colchón de facturas",
+    title: "Fondo de facturas",
     body: state.goals.length
       ? html`<form class="form" novalidate>
           <p class="sheet-text">Tenés <strong>${formatMoney(amount, main)}</strong> guardados de facturas que vinieron por menos. Lo que pases a una meta deja de cubrir tus próximas facturas y queda apartado como ahorro.</p>
@@ -93,12 +93,12 @@ export function openCushionSheet() {
               <span class="amount-currency amount-currency-static">${main}</span>
               <input id="f-amount" name="amount" type="text" inputmode="decimal" autocomplete="off" value="${amountToInput(amount)}" />
             </div>
-            <p class="field-hint">Si pasás menos, el resto sigue en el colchón.</p>
+            <p class="field-hint">Si pasás menos, el resto sigue en el fondo.</p>
             <p class="field-error" data-error-for="amount"></p>
           </div>
           ${formActions({ submitLabel: "Pasar a la meta" })}
         </form>`
-      : html`<p class="sheet-text">Tenés <strong>${formatMoney(amount, main)}</strong> en el colchón. Para pasarlos a tus ahorros, primero creá una meta.</p>
+      : html`<p class="sheet-text">Tenés <strong>${formatMoney(amount, main)}</strong> en el fondo. Para pasarlos a tus ahorros, primero creá una meta.</p>
           <div class="form-actions">
             <button type="button" class="btn btn-ghost" data-sheet-close>Ahora no</button>
             <button type="button" class="btn btn-primary btn-grow" data-new-goal>${icon("plus", 18)}Crear una meta</button>
@@ -114,12 +114,12 @@ export function openCushionSheet() {
         clearErrors(form);
         const value = parseAmount(form.elements.amount.value);
         if (!(value > 0) || value > MAX_AMOUNT) return fieldError(form, "amount", "Ingresá un monto mayor a cero.");
-        if (value > amount + 0.005) return fieldError(form, "amount", `Es más de lo que hay en el colchón (${formatMoney(amount, main)}).`);
+        if (value > amount + 0.005) return fieldError(form, "amount", `Es más de lo que hay en el fondo (${formatMoney(amount, main)}).`);
         const goal = store.getState().goals.find((g) => g.id === form.elements.goalId.value);
         const backup = store.snapshot();
         store.moveCushionToGoal(goal.id, Math.round(value * 100) / 100);
         close();
-        toast(`${formatMoney(value, main)} del colchón pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast(`${formatMoney(value, main)} del fondo pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });

@@ -2431,3 +2431,58 @@ details[open] > :not(summary) {
   background: var(--expense-soft);
   color: var(--expense);
 }
+
+/* Selector de moneda con las ocho opciones: en grilla de cuatro */
+.segmented.segmented-wrap {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Casillas tipo ficha (monedas que usás) */
+.currency-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip-check {
+  position: relative;
+  cursor: pointer;
+}
+
+.chip-check input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chip-check span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.chip-check input:checked + span {
+  border-color: var(--action);
+  background: var(--action-soft);
+  color: var(--brand-ink);
+}
+
+.chip-check input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.chip-check.is-locked {
+  cursor: default;
+}
+
+.chip-check.is-locked span {
+  opacity: 0.75;
+}

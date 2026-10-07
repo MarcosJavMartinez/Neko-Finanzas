@@ -12,7 +12,7 @@ import { segmented } from "../components.js";
 import * as store from "../../core/store.js";
 import { formatMonth, monthKey, todayISO } from "../../core/dates.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
-import { formatMoney, parseAmount, CURRENCY_CODES } from "../../core/money.js";
+import { formatMoney, parseAmount, CURRENCY_CODES, zeroAmount, currencyChoices } from "../../core/money.js";
 import { toMain } from "../../core/finance.js";
 import { INCOME_EXTRAS } from "../../data/defaults.js";
 import { getLastAccount, setLastAccount } from "../../core/prefs.js";
@@ -45,18 +45,18 @@ export function openIncomeExtras() {
       <p class="sheet-text">Lo que cobraste además del sueldo. Son variables: cargá solo los que tuviste, cuando los tengas.${loadedTotal > 0 ? html` En ${formatMonth(month).split(" ")[0].toLowerCase()} ya llevás <strong>${formatMoney(loadedTotal, main)}</strong> en extras.` : ""}</p>
       <div class="field">
         <span class="field-label">Moneda</span>
-        ${segmented("currency", CURRENCY_CODES.map((c) => ({ value: c, label: c })), main)}
+        ${segmented("currency", currencyChoices(main).map((c) => ({ value: c, label: c })), main)}
       </div>
       <div class="setup-list">
         ${loaded.filter((e) => e.key !== OTHER.key).map(
           (e) => html`<label class="setup-item">
             <span class="setup-check extra-name"><span>${e.icon} ${e.name}</span>${e.total > 0 ? html`<span class="extra-loaded">ya cargaste ${formatMoney(e.total, main)}</span>` : ""}</span>
-            <span class="amount-input"><input name="extra-${e.key}" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-label="${e.name}" /></span>
+            <span class="amount-input"><input name="extra-${e.key}" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" aria-label="${e.name}" /></span>
           </label>`
         )}
         <div class="setup-item">
           <span class="amount-input"><input name="other-name" type="text" maxlength="40" autocomplete="off" placeholder="Otro (ej.: viáticos)" aria-label="Nombre de otro extra" /></span>
-          <span class="amount-input"><input name="other-amount" data-other type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-label="Monto de otro extra" /></span>
+          <span class="amount-input"><input name="other-amount" data-other type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" aria-label="Monto de otro extra" /></span>
         </div>
         ${loaded.find((e) => e.key === OTHER.key).total > 0 ? html`<span class="extra-loaded">otros extras: ya cargaste ${formatMoney(loaded.find((e) => e.key === OTHER.key).total, main)}</span>` : ""}
       </div>

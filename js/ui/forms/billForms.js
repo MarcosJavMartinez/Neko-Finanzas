@@ -158,11 +158,11 @@ export function openPayBill(billId) {
         const backup = store.snapshot();
         store.payBill(bill.id, { date, amount, currency, accountId });
         close();
-        // Con el colchón activado, se cuenta qué pasó con la diferencia.
+        // Con el fondo activado, se cuenta qué pasó con la diferencia.
         const after = store.getState();
         const diff = after.settings.billCushion ? toMain(after, bill.amount, bill.currency) - toMain(after, amount, currency) : 0;
         const main = after.settings.mainCurrency;
-        const extra = diff > 0.005 ? ` · ${formatMoney(diff, main)} menos de lo esperado: quedan guardados para tus próximas facturas` : diff < -0.005 ? ` · ${formatMoney(-diff, main)} más de lo esperado${billCushion(after).saved - (after.settings.billCushionReleased || 0) >= 0 ? ": salieron del colchón" : ""}` : "";
+        const extra = diff > 0.005 ? ` · ${formatMoney(diff, main)} menos de lo esperado: quedan guardados para tus próximas facturas` : diff < -0.005 ? ` · ${formatMoney(-diff, main)} más de lo esperado${billCushion(after).saved - (after.settings.billCushionReleased || 0) >= 0 ? ": salieron del fondo" : ""}` : "";
         toast(`${bill.name} pagada · se registró el gasto${extra}`, { duration: extra ? 7000 : undefined, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },

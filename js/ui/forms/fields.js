@@ -2,7 +2,7 @@
 
 import { html, setHTML } from "../dom.js";
 import { icon } from "../icons.js";
-import { amountToInput, parseAmount, CURRENCY_CODES } from "../../core/money.js";
+import { amountToInput, parseAmount, CURRENCY_CODES, zeroAmount, currencyChoices } from "../../core/money.js";
 import { MAX_AMOUNT } from "../../core/sanitize.js";
 import { EMOJI_OPTIONS, LISTA_ICONS, PALETTE } from "../../data/defaults.js";
 
@@ -12,13 +12,13 @@ export function amountField({ name = "amount", value, currency, label = "Monto",
     <div class="amount-head">
       <label class="field-label" for="f-${name}">${label}</label>
       <div class="currency-seg" role="radiogroup" aria-label="Moneda">
-        ${CURRENCY_CODES.map(
+        ${currencyChoices(currency).map(
           (code) => html`<label class="currency-seg-option"><input type="radio" name="currency" value="${code}" ${code === currency ? "checked" : ""} /><span>${code}</span></label>`
         )}
       </div>
     </div>
     <div class="amount-input amount-input-xl">
-      <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"
+      <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}"
         value="${value ? amountToInput(value) : ""}" ${autofocus ? "data-autofocus" : ""} required />
     </div>
     <p class="field-error" data-error-for="${name}"></p>

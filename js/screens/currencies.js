@@ -1,22 +1,55 @@
-// Monedas: moneda principal y tipos de cambio manuales.
+// País y monedas: cómo se escriben los números, la moneda principal, las
+// otras monedas que se usan y sus tipos de cambio (cargados a mano).
 
 import { html } from "../ui/dom.js";
 import { art } from "../ui/components.js";
 import { icon } from "../ui/icons.js";
 import { toast } from "../ui/toast.js";
-import { CURRENCIES, PIVOT, amountToInput, formatMoney, parseAmount } from "../core/money.js";
+import { CURRENCIES, REGIONS, amountToInput, formatMoney, formatNumber, parseAmount } from "../core/money.js";
 import { formatDate, toISO } from "../core/dates.js";
 import * as store from "../core/store.js";
+
+/**
+ * Un tipo de cambio se muestra en el sentido en que el número es cómodo de
+ * leer: "1 USD = 1.350 ARS", no "1 ARS = 0,0007 USD". `inverse` indica que
+ * la moneda principal va a la izquierda.
+ */
+export function ratePair(state, code) {
+  const main = state.settings.mainCurrency;
+  const inMain = state.rates[code] / state.rates[main];
+  return inMain >= 1 ? { from: code, to: main, value: inMain, inverse: false } : { from: main, to: code, value: 1 / inMain, inverse: true };
+}
+
+/** Monedas que no se pueden sacar: la principal y las que ya tienen datos. */
+function lockedCurrencies(state) {
+  const used = [...state.accounts, ...state.transactions, ...state.bills, ...state.goals, ...(state.loans || []), ...state.budgets].map((x) => x.currency);
+  return new Set([state.settings.mainCurrency, ...used]);
+}
 
 export default {
   id: "monedas",
   tab: "mas",
-  title: "Monedas",
+  title: "País y monedas",
   back: "#/mas",
   render(state) {
     const main = state.settings.mainCurrency;
+    const active = state.settings.currencies;
+    const locked = lockedCurrencies(state);
+    const others = active.filter((c) => c !== main);
     const updated = state.ratesUpdatedAt ? formatDate(toISO(new Date(state.ratesUpdatedAt)), { withYear: true }) : "";
     return html`
+      <section class="card reveal">
+        <h2 class="section-title">País</h2>
+        <p class="section-sub">Define cómo se escriben los números. No cambia tus montos ni tu moneda.</p>
+        <div class="field form">
+          <label class="field-label" for="f-region">¿Dónde usás la app?</label>
+          <select id="f-region" name="region" data-change="set-region">
+            ${Object.values(REGIONS).map((r) => html`<option value="${r.code}" ${r.code === state.settings.region ? "selected" : ""}>${r.name}</option>`)}
+          </select>
+          <p class="field-hint">Así se ve un monto: <strong>${formatNumber(1234567.5, 2)}</strong></p>
+        </div>
+      </section>
+
       <section class="card reveal">
         <h2 class="section-title section-title-art">${art("ilus-monedas", 48)}Moneda principal</h2>
         <p class="section-sub">Todos los totales se muestran en esta moneda.</p>
@@ -33,46 +66,65 @@ export default {
       </section>
 
       <section class="card reveal">
-        <h2 class="section-title">Tipo de cambio</h2>
-        <p class="section-sub">Cargalo a mano, con el valor que uses vos (oficial, MEP, blue…).</p>
-        <form class="rates-form" data-rates-form novalidate>
+        <h2 class="section-title">Otras monedas que usás</h2>
+        <p class="section-sub">Las que marques aparecen al cargar un movimiento, una cuenta o una meta.</p>
+        <div class="currency-toggles">
           ${Object.values(CURRENCIES)
-            .filter((c) => c.code !== PIVOT)
+            .filter((c) => c.code !== main)
             .map(
-              (c) => html`<label class="rate-edit">
-                <span class="rate-edit-left"><span class="cur-badge">${c.symbol}</span><span>1 ${c.code} =</span></span>
-                <span class="amount-input amount-input-sm">
-                  <span class="amount-currency amount-currency-static">$</span>
-                  <input name="${c.code}" type="text" inputmode="decimal" value="${amountToInput(state.rates[c.code])}" aria-label="Valor de 1 ${c.code} en pesos" data-change="save-rate" />
-                  <span class="amount-suffix">ARS</span>
-                </span>
+              (c) => html`<label class="chip-check ${locked.has(c.code) ? "is-locked" : ""}" title="${locked.has(c.code) ? "Ya tenés algo cargado en esta moneda" : c.name}">
+                <input type="checkbox" value="${c.code}" ${active.includes(c.code) ? "checked" : ""} ${locked.has(c.code) ? "disabled" : ""} data-change="toggle-currency" />
+                <span>${c.symbol} ${c.code}</span>
               </label>`
             )}
-        </form>
-        <p class="fine-print">${icon("info", 14)} Las conversiones (≈) usan estos valores. No consultamos ningún servidor: si cambia la cotización, actualizala acá.${updated ? ` Última actualización: ${updated}.` : ""}</p>
-        ${main !== PIVOT
-          ? html`<p class="fine-print">${icon("swap", 14)} Equivale a 1 ${main} = ${formatMoney(state.rates[main], PIVOT)}${Object.keys(CURRENCIES)
-              .filter((c) => c !== main && c !== PIVOT)
-              .map((c) => ` · 1 ${c} = ${formatMoney(state.rates[c] / state.rates[main], main)}`)
-              .join("")}</p>`
-          : ""}
+        </div>
       </section>
+
+      ${others.length
+        ? html`<section class="card reveal">
+            <h2 class="section-title">Tipo de cambio</h2>
+            <p class="section-sub">Cargalo a mano, con el valor que uses vos.</p>
+            <form class="rates-form" data-rates-form novalidate>
+              ${others.map((code) => {
+                const pair = ratePair(state, code);
+                return html`<label class="rate-edit">
+                  <span class="rate-edit-left"><span class="cur-badge">${CURRENCIES[code].symbol}</span><span>1 ${pair.from} =</span></span>
+                  <span class="amount-input amount-input-sm">
+                    <input name="${code}" type="text" inputmode="decimal" value="${amountToInput(Math.round(pair.value * 100) / 100)}" aria-label="Valor de 1 ${pair.from} en ${pair.to}" data-inverse="${pair.inverse ? "1" : ""}" data-change="save-rate" />
+                    <span class="amount-suffix">${pair.to}</span>
+                  </span>
+                </label>`;
+              })}
+            </form>
+            <p class="fine-print">${icon("info", 14)} Las conversiones (≈) usan estos valores. No consultamos ningún servidor: si cambia la cotización, actualizala acá.${updated ? ` Última actualización: ${updated}.` : ""}</p>
+          </section>`
+        : ""}
     `;
   },
   changes: {
+    "set-region"(el) {
+      store.setRegion(el.value);
+      toast(`Formato de ${REGIONS[el.value]?.name || ""}: ${formatNumber(1234567.5, 2)}`);
+    },
     "set-main"(el) {
       store.setMainCurrency(el.value);
       toast(`Moneda principal: ${el.value}`);
     },
+    "toggle-currency"(el) {
+      store.toggleCurrency(el.value, el.checked);
+    },
     "save-rate"(el) {
       const value = parseAmount(el.value);
+      const state = store.getState();
       if (!(value > 0)) {
         toast("Ingresá un valor mayor a cero", { type: "error" });
-        el.value = amountToInput(store.getState().rates[el.name]);
+        el.value = amountToInput(Math.round(ratePair(state, el.name).value * 100) / 100);
         return;
       }
-      store.setRate(el.name, value);
-      toast(`1 ${el.name} = ${formatMoney(value, PIVOT)} guardado`);
+      const main = state.settings.mainCurrency;
+      const inverse = el.dataset.inverse === "1";
+      store.setRateInMain(el.name, inverse ? 1 / value : value);
+      toast(inverse ? `1 ${main} = ${formatMoney(value, el.name)} guardado` : `1 ${el.name} = ${formatMoney(value, main)} guardado`);
     },
   },
 };

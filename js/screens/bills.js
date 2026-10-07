@@ -140,7 +140,7 @@ export default {
         ? html`<section class="card cushion-card reveal">
             <span class="mini-icon">${icon("shield", 20)}</span>
             <div class="row-main">
-              <span class="row-title">Colchón de facturas: <strong data-pulse="cushion">${formatMoney(cushion.amount, main)}</strong></span>
+              <span class="row-title">Fondo de facturas: <strong data-pulse="cushion">${formatMoney(cushion.amount, main)}</strong></span>
               <span class="row-meta">${cushion.amount > 0 ? "Lo que sobró de facturas que vinieron por menos. Está reservado para las próximas." : "Cuando una factura venga por menos de lo esperado, la diferencia se guarda acá."}</span>
             </div>
             ${cushion.amount > 0

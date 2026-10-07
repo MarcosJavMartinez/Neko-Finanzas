@@ -11,7 +11,7 @@ import { amountField, textField, dateField, formActions, readForm, readAmount, f
 import * as store from "../../core/store.js";
 import { addMonths, formatDate, formatDue, todayISO } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
-import { amountToInput, formatMoney, parseAmount } from "../../core/money.js";
+import { amountToInput, formatMoney, parseAmount, zeroAmount } from "../../core/money.js";
 import { findAccount, loanOutstanding, loanPlanStatus, percent } from "../../core/finance.js";
 import { getLastAccount } from "../../core/prefs.js";
 
@@ -171,7 +171,7 @@ export function openCreditLoanForm() {
         </div>
         <div class="field">
           <label class="field-label" for="f-installment">Valor de cada cuota</label>
-          <div class="amount-input"><input id="f-installment" name="installment" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" /></div>
+          <div class="amount-input"><input id="f-installment" name="installment" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" /></div>
           <p class="field-error" data-error-for="installment"></p>
         </div>
       </div>
@@ -242,7 +242,7 @@ function openCreditLoanEdit(loanId) {
         </div>
         <div class="field">
           <label class="field-label" for="f-installment">Valor de las que faltan</label>
-          <div class="amount-input"><input id="f-installment" name="installment" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${amountToInput(plan.amount)}" /></div>
+          <div class="amount-input"><input id="f-installment" name="installment" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" value="${amountToInput(plan.amount)}" /></div>
           <p class="field-error" data-error-for="installment"></p>
         </div>
       </div>
