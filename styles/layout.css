@@ -241,7 +241,8 @@
     padding-right: clamp(20px, 3vw, 44px);
   }
 
-  .header-logo {
+  .header-logo,
+  .header-back[href="#/mas"] {
     display: none;
   }
 

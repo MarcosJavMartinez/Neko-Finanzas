@@ -2433,3 +2433,9 @@ button.inline-link {
 .loan-payment.is-done .row-title {
   color: var(--text-2);
 }
+
+/* El enlace a lo reservado, con alto suficiente para tocarlo con el dedo */
+.avail-reserve {
+  min-height: 32px;
+  margin-top: 2px;
+}

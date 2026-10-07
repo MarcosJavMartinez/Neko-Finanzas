@@ -339,8 +339,9 @@ export function balanceSummary(state, today = todayISO()) {
  *   perDay    = (disponible + lo gastado hoy) / días que faltan (hoy incluido)
  *   leftToday = perDay − lo gastado hoy   (negativo: hoy te pasaste)
  *
- * Lo gastado hoy no cuenta los pagos de facturas ni las cuotas que caen hoy
- * (de la 2 en adelante): esa plata ya estaba reservada, no cambia el disponible.
+ * Lo gastado hoy no cuenta los pagos de facturas, las cuotas de una compra que
+ * caen hoy (de la 2 en adelante) ni las cuotas de un préstamo: esa plata ya
+ * estaba reservada, no cambia el disponible.
  */
 export function dailyAllowance(state, today = todayISO()) {
   const { available } = balanceSummary(state, today);
@@ -351,7 +352,9 @@ export function dailyAllowance(state, today = todayISO()) {
   const monthEnd = monthRange(monthKey(today)).end;
   // Hasta el día anterior al cobro, o hasta el último día del mes inclusive.
   const days = Math.max(1, nextIncome ? daysBetween(today, nextIncome) : daysBetween(today, monthEnd) + 1);
-  const spentToday = sumMain(state, state.transactions.filter((tx) => tx.type === "expense" && tx.date === today && !tx.billId && !(tx.installment && tx.installment.n > 1)));
+  const loanGroups = new Set((state.loans || []).map((l) => l.plan?.group).filter(Boolean));
+  const reservedBefore = (tx) => tx.billId || (tx.installment && (tx.installment.n > 1 || loanGroups.has(tx.installment.group)));
+  const spentToday = sumMain(state, state.transactions.filter((tx) => tx.type === "expense" && tx.date === today && !reservedBefore(tx)));
   const perDay = Math.max(0, (available + spentToday) / days);
   return { perDay, leftToday: perDay - spentToday, spentToday, days, until: nextIncome || monthEnd, reason: nextIncome ? "income" : "month", available };
 }

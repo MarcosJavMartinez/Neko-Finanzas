@@ -364,6 +364,7 @@ eq("préstamo en cuotas: al terminar no se debe nada", [F.loanPlanStatus(cs, cs.
 const csBack = sanitizeState(JSON.parse(JSON.stringify(cs)));
 eq("préstamo en cuotas: sobrevive a un backup", [csBack.loans[0].plan.count, csBack.loans[0].plan.amount, csBack.transactions.filter((t) => t.installment?.group === csBack.loans[0].plan.group).length], [6, 25000, 6]);
 eq("préstamo en cuotas: un plan inválido se descarta", sanitizeState({ ...JSON.parse(JSON.stringify(cs)), loans: [{ ...cs.loans[0], plan: { group: "x", count: 1, amount: 5 } }] }).loans[0].plan, undefined);
+eq("préstamo en cuotas: la cuota que vence hoy no cuenta como gasto del día", F.dailyAllowance(cs, "2099-02-10").spentToday, 0);
 store.deleteLoan(credit.id);
 eq("préstamo en cuotas: borrarlo se lleva la plata y las cuotas", [store.getState().loans.length, store.getState().transactions.length], [0, 0]);
 

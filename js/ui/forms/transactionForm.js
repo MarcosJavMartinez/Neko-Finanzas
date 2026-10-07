@@ -58,13 +58,14 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
   const showAccount = activeAccounts.length > 1 || (current.accountId && !activeAccounts.some((a) => a.id === current.accountId));
   const isCardAccount = (id) => state.accounts.find((a) => a.id === id)?.kind === "credit";
   const plan = current.installment;
+  const planLoan = plan && (state.loans || []).find((l) => l.plan?.group === plan.group);
 
   openSheet({
     title: isEdit ? (current.type === "income" ? "Editar ingreso" : "Editar gasto") : "Nuevo movimiento",
     body: html`<form class="form" novalidate data-type="${current.type}">
       ${bill ? "" : segmented("type", [{ value: "income", label: "Ingreso", icon: "arrowDown" }, { value: "expense", label: "Gasto", icon: "arrowUp" }], current.type, { size: "segmented-lg" })}
       ${bill ? html`<p class="notice notice-info">${icon("receipt", 16)}Es el pago de la factura “${bill.name}”. Si lo borrás, la factura vuelve a quedar pendiente.</p>` : ""}
-      ${plan ? html`<p class="notice notice-info">${icon("calendar", 16)}Es la cuota ${plan.n} de ${plan.of} de una compra en cuotas. Los cambios se aplican solo a esta cuota.</p>` : ""}
+      ${plan ? html`<p class="notice notice-info">${icon("calendar", 16)}Es la cuota ${plan.n} de ${plan.of} ${planLoan ? `del préstamo de ${planLoan.person}` : "de una compra en cuotas"}. Los cambios se aplican solo a esta cuota.</p>` : ""}
       ${amountField({ value: current.amount, currency: current.currency, autofocus: !isEdit, tone: `tone-${current.type}` })}
       ${showAccount ? accountSelect(state, { value: accountId, label: current.type === "income" ? "Cuenta" : "Cuenta o medio de pago" }) : ""}
       ${isEdit
@@ -206,6 +207,19 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
       form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
         const backup = store.snapshot();
         // Una cuota: se puede borrar sola o toda la compra.
+        if (planLoan) {
+          const all = await confirmDialog({
+            title: `¿Borrar el préstamo de ${planLoan.person}?`,
+            text: `Es la cuota ${plan.n} de ${plan.of}. Las cuotas no se borran de a una: se borra el préstamo entero, con la plata recibida y todas sus cuotas.`,
+            confirmLabel: "Borrar el préstamo",
+            danger: true,
+          });
+          if (!all) return;
+          store.deleteLoan(planLoan.id);
+          close();
+          toast("Préstamo borrado", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+          return;
+        }
         if (plan) {
           const all = await confirmDialog({
             title: "¿Borrar toda la compra?",
