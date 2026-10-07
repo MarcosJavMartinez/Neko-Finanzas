@@ -17,6 +17,7 @@
 export const LANGUAGES = {
   es: { name: "Español", locale: "es-AR" },
   en: { name: "English", locale: "en-US" },
+  pt: { name: "Português", locale: "pt-BR" },
 };
 
 const KEY = "nekoFinanzas.language";
