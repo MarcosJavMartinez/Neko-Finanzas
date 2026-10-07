@@ -146,6 +146,7 @@ export default {
         : ""}
       ${txs.length
         ? html`<section class="card tx-card reveal">
+            <div class="tx-thead" aria-hidden="true"><span>Fecha</span><span>Descripción</span><span>Categoría</span><span>Cuenta</span><span>Monto</span></div>
             ${[...groups.entries()].map(([date, items]) => {
               // Las transferencias no suman ni restan: solo cambian de cuenta.
               const net = items.reduce((s, t) => s + (t.type === "transfer" || t.type === "loan" ? 0 : (t.type === "income" ? 1 : -1) * toMain(state, t.amount, t.currency)), 0);

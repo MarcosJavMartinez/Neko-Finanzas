@@ -56,6 +56,47 @@ const DEFAULT_ROUTE = "inicio";
 
 const viewEl = $("#view");
 const headerEl = $("#app-header");
+const sidebarEl = $("#app-sidebar");
+
+// Barra lateral (tablet y escritorio): todas las secciones a un clic. En
+// celular no se ve: ahí siguen las cuatro pestañas de abajo.
+const SIDE_NAV = [
+  ["inicio", "home", "Inicio"],
+  ["transacciones", "swap", "Transacciones"],
+  ["metas", "target", "Metas"],
+  ["facturas", "receipt", "Facturas"],
+  ["reportes", "chart", "Reportes"],
+  ["presupuestos", "pie", "Presupuestos"],
+  ["cuentas", "wallet", "Cuentas"],
+  ["categorias", "tag", "Categorías"],
+  ["prestamos", "coinStack", "Préstamos"],
+  ["monedas", "coins", "Monedas"],
+];
+
+function renderSidebar() {
+  if (!sidebarEl) return;
+  const here = currentScreen.id;
+  const link = ([id, glyph, label]) => {
+    const active = here === id || (id === "ajustes" && here.startsWith("ajustes"));
+    return html`<a class="side-link ${active ? "is-active" : ""}" href="#/${id}" ${active ? html`aria-current="page"` : ""} title="${label}">${icon(glyph, 20)}<span>${label}</span></a>`;
+  };
+  setHTML(
+    sidebarEl,
+    html`<a class="side-brand" href="#/inicio" aria-label="Neko Finanzas, ir al inicio">
+        <img src="img/logo-header.png" alt="" width="40" height="40" />
+        <span class="side-brand-text"><strong>Neko Finanzas</strong><span>by Neko Tools</span></span>
+      </a>
+      <nav class="side-nav" aria-label="Navegación principal">${SIDE_NAV.map(link)}</nav>
+      <div class="side-foot">
+        ${link(["ajustes", "settings", "Configuración"])}
+        <button type="button" class="side-link" data-action="show-onboarding" title="Cómo funciona">${icon("help", 20)}<span>Cómo funciona</span></button>
+        <div class="side-neko" aria-hidden="true">
+          <img src="img/neko-hola.webp" alt="" width="72" height="72" loading="lazy" />
+          <p>Pequeños hábitos,<br />grandes logros</p>
+        </div>
+      </div>`
+  );
+}
 let currentScreen = null;
 
 // ---------------------------------------------------------------------------
@@ -193,11 +234,12 @@ function renderHeader() {
           : html`<img src="img/logo-header.png" alt="" class="header-logo" width="44" height="44" />`}
         <div class="header-text">
           ${isHome || !screen.back
-            ? html`<h1 class="header-title">${isHome ? "Neko Finanzas" : screen.title}</h1><span class="header-by">${isHome ? "by Neko Tools" : "Neko Finanzas"}</span>`
+            ? html`<h1 class="header-title">${isHome ? html`<span class="only-compact">Neko Finanzas</span><span class="only-wide">Inicio</span>` : screen.title}</h1><span class="header-by">${isHome ? "by Neko Tools" : "Neko Finanzas"}</span>`
             : html`<h1 class="header-title">${screen.title}</h1><span class="header-by">Neko Finanzas</span>`}
         </div>
       </div>
       <div class="header-actions">
+        <button type="button" class="btn btn-primary header-new" data-action="add-expense">${icon("plus", 18)}Nuevo movimiento</button>
         ${canPromptInstall() ? html`<button type="button" class="header-btn" data-action="install-app" aria-label="Instalar app" title="Instalar app">${icon("download", 18)}</button>` : ""}
         ${screen.id !== "reportes" ? html`<a class="header-btn" href="#/reportes" aria-label="Reportes" title="Reportes">${icon("chart", 18)}</a>` : ""}
         ${!screen.id.startsWith("ajustes") ? html`<a class="header-btn" href="#/ajustes" aria-label="Configuración" title="Configuración">${icon("settings", 18)}</a>` : ""}
@@ -236,6 +278,7 @@ function render({ animate = false } = {}) {
   document.body.classList.toggle("is-wide", Boolean(currentScreen.wide));
   renderHeader();
   renderTabs();
+  renderSidebar();
   try {
     setHTML(viewEl, currentScreen.render(state));
   } catch (error) {
@@ -510,6 +553,10 @@ async function start() {
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     navigator.serviceWorker.register("sw.js").catch((error) => console.warn("[sw] registro fallido", error));
   }
+}
+
+for (const query of ["(min-width: 768px)", "(min-width: 1024px)", "(min-width: 1280px)"]) {
+  window.matchMedia(query).addEventListener?.("change", () => render());
 }
 
 start();

@@ -40,6 +40,16 @@ export function sectionHeader(title, { href, linkText = "Ver todo", action } = {
   </div>`;
 }
 
+/**
+ * Proporción de los gráficos según el ancho de la pantalla: en escritorio
+ * son más apaisados, para no crecer en alto al ocupar una tarjeta ancha.
+ */
+export function chartSize(kind) {
+  const desktop = typeof window !== "undefined" && window.matchMedia?.("(min-width: 1024px)").matches;
+  if (!desktop) return {};
+  return kind === "line" ? { width: 900, height: 230 } : { width: 620, height: 250 };
+}
+
 /** Ilustración de la mascota o de una sección (img/<nombre>.webp, 320 px). */
 export function art(name, size = 120, extraClass = "") {
   return html`<img class="art ${extraClass}" src="img/${name}.webp" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" />`;
@@ -136,7 +146,25 @@ export function txRow(state, tx, { withDate = false, hideAccount = false } = {})
         ${approx(state, tx.amount, tx.currency)}
       </span>
     </span>
+    ${tableCells({ date: tx.date, category: where, account: accountOf(state, tx.accountId), amount: html`<span class="tx-amount ${isIncome ? "is-income" : "is-expense"}">${formatMoney(isIncome ? tx.amount : -tx.amount, tx.currency, { sign: true })}</span>${approx(state, tx.amount, tx.currency)}` })}
   </button>`;
+}
+
+const accountOf = (state, id) => {
+  const account = state.accounts.find((a) => a.id === id);
+  return account ? `${account.icon} ${account.name}` : "";
+};
+
+/**
+ * Celdas que solo se ven en la tabla de Transacciones en escritorio (fecha,
+ * categoría, cuenta y monto en columnas). En celular quedan ocultas y la fila
+ * se lee como siempre.
+ */
+function tableCells({ date, category, account, amount }) {
+  return html`<span class="tx-cell tx-cell-date">${formatDate(date)}</span>
+    <span class="tx-cell tx-cell-cat">${category || ""}</span>
+    <span class="tx-cell tx-cell-acc">${account || ""}</span>
+    <span class="tx-cell tx-cell-amount">${amount}</span>`;
 }
 
 /** Transferencia entre cuentas: no es ingreso ni gasto (monto en neutro). */
@@ -161,6 +189,7 @@ function transferRow(state, tx, { withDate }) {
         ${fx}
       </span>
     </span>
+    ${tableCells({ date: tx.date, category: "Transferencia", account: `${from?.name || "?"} → ${to?.name || "?"}`, amount: html`<span class="tx-amount is-transfer">${formatMoney(tx.amount, tx.currency)}</span>${fx}` })}
   </button>`;
 }
 
@@ -183,6 +212,7 @@ function loanRow(state, tx, { withDate, hideAccount }) {
         ${approx(state, tx.amount, tx.currency)}
       </span>
     </span>
+    ${tableCells({ date: tx.date, category: "Préstamo", account: accountOf(state, tx.accountId), amount: html`<span class="tx-amount is-transfer">${formatMoney(tx.flow === "in" ? tx.amount : -tx.amount, tx.currency, { sign: true })}</span>${approx(state, tx.amount, tx.currency)}` })}
   </button>`;
 }
 

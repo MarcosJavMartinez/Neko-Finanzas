@@ -85,8 +85,10 @@ export default {
         </div>
       </section>
       ${actions}
-      ${lent.length ? html`<h2 class="section-title section-title-spaced">Te deben</h2><section class="card card-flush rows reveal">${lent.map((i) => loanRow(i, today))}</section>` : ""}
-      ${borrowed.length ? html`<h2 class="section-title section-title-spaced">Debés</h2><section class="card card-flush rows reveal">${borrowed.map((i) => loanRow(i, today))}</section>` : ""}
+      <div class="loan-cols">
+        ${lent.length ? html`<div class="loan-col"><h2 class="section-title section-title-spaced">Te deben</h2><section class="card card-flush rows reveal">${lent.map((i) => loanRow(i, today))}</section></div>` : ""}
+        ${borrowed.length ? html`<div class="loan-col"><h2 class="section-title section-title-spaced">Debés</h2><section class="card card-flush rows reveal">${borrowed.map((i) => loanRow(i, today))}</section></div>` : ""}
+      </div>
       <p class="fine-print center">${icon("info", 14)} Prestar o devolver plata no es un gasto ni un ingreso. Lo que debés con fecha de devolución se reserva de tu disponible cuando se acerca. En un préstamo en cuotas, cada cuota sí es un gasto y se reserva antes de que venza.</p>
     `;
   },

@@ -151,10 +151,14 @@ export default {
               : ""}
           </section>`
         : ""}
-      ${calendar(state, today)}
-      ${group("Vencidas", overdue)}
-      ${group("Pendientes", pending)}
-      ${group("Pagadas este período", paid)}
+      <div class="bills-layout">
+        <div class="bills-side">${calendar(state, today)}</div>
+        <div class="bills-main">
+          ${group("Vencidas", overdue)}
+          ${group("Pendientes", pending)}
+          ${group("Pagadas este período", paid)}
+        </div>
+      </div>
       <p class="fine-print center">${icon("repeat", 14)} Tus servicios recurrentes suman ≈ ${formatMoney(monthlyTotal, main)} por mes.</p>
       <section class="card ics-card reveal">
         <span class="mini-icon">${icon("calendar", 20)}</span>

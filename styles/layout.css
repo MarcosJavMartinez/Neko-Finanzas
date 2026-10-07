@@ -1,0 +1,750 @@
+/* ===========================================================================
+   Responsive: la misma app en celular, tablet y escritorio.
+
+   Celular  (< 640px)        una columna y las pestañas de abajo (los estilos
+                             base; acá no se tocan).
+   Tablet   (640 – 1023px)   más ancho y grillas de 2 columnas; desde 768px la
+                             navegación pasa a una barra lateral angosta.
+   Escritorio (≥ 1024px)     barra lateral completa, barra superior y tableros
+                             de varias columnas.
+
+   Todo usa los tokens de tokens.css, así el tema oscuro sale solo.
+   =========================================================================== */
+
+.sidebar,
+.header-new,
+.only-wide,
+.home-chart,
+.tx-cell,
+.tx-thead {
+  display: none;
+}
+
+/* El Inicio en una columna (celular): mismos bloques, uno debajo del otro */
+.home-top,
+.home-main,
+.home-side,
+.home-board,
+.loan-cols,
+.bills-layout,
+.bills-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loan-col,
+.bills-side {
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 6px;
+  font-size: 0.86rem;
+  color: var(--text-2);
+}
+
+/* ---------------------------------------------------------------------------
+   Tablet: más aire y dos columnas donde hay listas de tarjetas
+--------------------------------------------------------------------------- */
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 22px;
+    --max-width: 860px;
+    --max-width-wide: 860px;
+  }
+
+  .view {
+    gap: 18px;
+  }
+
+  .view[data-screen="metas"] .goal-list,
+  .view[data-screen="cuentas"] > .rows,
+  .view[data-screen="categorias"] > .rows {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  /* Cuentas y categorías: cada fila pasa a ser una tarjeta chica */
+  .view[data-screen="cuentas"] > .rows,
+  .view[data-screen="categorias"] > .rows {
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .view[data-screen="cuentas"] > .rows > .row,
+  .view[data-screen="categorias"] > .rows > .row {
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: var(--shadow-xs);
+    padding: 14px 16px;
+    border: 0;
+  }
+
+  .view[data-screen="cuentas"] > .rows > .row::before,
+  .view[data-screen="categorias"] > .rows > .row::before,
+  .view[data-screen="cuentas"] > .rows > .row::after,
+  .view[data-screen="categorias"] > .rows > .row::after {
+    display: none;
+  }
+
+  /* Presupuestos: las tarjetas en grilla */
+  .budget-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    align-items: start;
+    gap: 16px;
+  }
+
+  .loan-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    align-items: start;
+    gap: 20px;
+  }
+
+  .home-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .home-recents {
+    grid-column: 1 / -1;
+  }
+
+  .quick-actions.card {
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  .more-grid + .more-heading {
+    margin-top: 6px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Desde 768px: barra lateral. Angosta (solo íconos) en tablet, completa en
+   escritorio. Las pestañas de abajo dejan de mostrarse.
+--------------------------------------------------------------------------- */
+
+@media (min-width: 768px) {
+  :root {
+    --side-w: 96px;
+  }
+
+  body {
+    padding-left: var(--side-w);
+    padding-bottom: 48px;
+  }
+
+  .tabbar {
+    display: none;
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 25;
+    width: var(--side-w);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 8px 14px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .side-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 2px 4px 12px;
+  }
+
+  .side-brand img {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    flex-shrink: 0;
+  }
+
+  .side-brand-text,
+  .side-neko {
+    display: none;
+  }
+
+  .side-nav,
+  .side-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .side-foot {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .side-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 100%;
+    padding: 9px 4px;
+    border-radius: 14px;
+    color: var(--text-2);
+    font-size: 0.62rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    text-align: center;
+    transition: background var(--dur-fast), color var(--dur-fast);
+  }
+
+  .side-link span {
+    max-width: 100%;
+  }
+
+  .side-link:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+
+  .side-link.is-active {
+    background: var(--brand-soft);
+    color: var(--brand-ink);
+    font-weight: 800;
+  }
+
+  /* Barra superior: el encabezado cian se achica y se despega de los bordes */
+  .app-header {
+    border-radius: 0 0 24px 24px;
+  }
+
+  .app-header-inner,
+  body.is-wide .app-header-inner {
+    max-width: none;
+    padding-left: clamp(20px, 3vw, 44px);
+    padding-right: clamp(20px, 3vw, 44px);
+  }
+
+  .header-logo {
+    display: none;
+  }
+
+  .header-by {
+    display: none;
+  }
+
+  .only-compact {
+    display: none;
+  }
+
+  .only-wide {
+    display: inline;
+  }
+
+  .header-title {
+    font-size: 1.5rem;
+  }
+
+  .header-actions {
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--tab-active-ink);
+    box-shadow: 0 4px 12px rgba(0, 50, 70, 0.18);
+    font-size: 0.92rem;
+    white-space: nowrap;
+  }
+
+  .header-new:hover {
+    filter: none;
+    background: #f1fbfd;
+  }
+
+  .header-toolbar {
+    max-width: 720px;
+  }
+
+  .view,
+  body.is-wide .view {
+    max-width: 1560px;
+    padding: 24px clamp(20px, 3vw, 44px) 0;
+    gap: 20px;
+  }
+
+  /* El botón de agregar ya está siempre arriba */
+  .view[data-screen="transacciones"] > .btn-add {
+    display: none;
+  }
+
+  .toast-host {
+    left: var(--side-w);
+    bottom: 24px;
+  }
+
+  /* Pantallas de lectura (configuración, monedas): un ancho cómodo */
+  .view[data-screen^="ajustes"],
+  .view[data-screen="monedas"],
+  .view[data-screen="mas"] {
+    max-width: 980px;
+    margin-left: 0;
+  }
+
+  .view[data-screen="ajustes"] > .more-grid,
+  .view[data-screen="mas"] > .more-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0 24px;
+  }
+
+  .view[data-screen="ajustes"] > .more-grid > .more-item + .more-item,
+  .view[data-screen="mas"] > .more-grid > .more-item + .more-item {
+    border-top: 0;
+  }
+
+  /* Facturas: el calendario a un costado, las listas al otro */
+  .bills-layout {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.3fr);
+    align-items: start;
+    gap: 20px;
+  }
+
+  .bills-side {
+    position: sticky;
+    top: 96px;
+  }
+
+  .bills-main > .section-title-spaced:first-child {
+    margin-top: 0;
+  }
+
+  /* Reportes: resumen arriba, gráficos lado a lado */
+  .view[data-screen="reportes"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .view[data-screen="reportes"] > * {
+    grid-column: 1 / -1;
+  }
+
+  .view[data-screen="reportes"] > .report-bars {
+    grid-column: 1;
+  }
+
+  .view[data-screen="reportes"] > .report-donut {
+    grid-column: 2;
+    grid-row: 3 / span 2;
+  }
+
+  .view[data-screen="reportes"] > .report-line {
+    grid-column: 1;
+  }
+
+  .report-donut .donut-wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-donut .donut-wrap > svg,
+  .home-donut > svg {
+    align-self: center;
+  }
+
+  .report-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 14px 24px;
+  }
+
+  .report-summary > .report-tiles {
+    grid-row: span 4;
+  }
+
+  .report-summary > .report-verdict {
+    margin: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Escritorio: barra lateral con nombres y tableros de varias columnas
+--------------------------------------------------------------------------- */
+
+@media (min-width: 1024px) {
+  :root {
+    --side-w: 236px;
+  }
+
+  /* El patrón de fondo acompaña, sin competir con el contenido */
+  body::before {
+    opacity: calc(var(--pattern-opacity) * 0.45);
+  }
+
+  .sidebar {
+    padding: 20px 14px 16px;
+  }
+
+  .side-brand {
+    justify-content: flex-start;
+    padding: 2px 8px 16px;
+  }
+
+  .side-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    min-width: 0;
+  }
+
+  .side-brand-text strong {
+    font-family: var(--font-brand);
+    font-weight: 900;
+    font-size: 1.12rem;
+    color: var(--brand-ink);
+  }
+
+  .side-brand-text span {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+
+  .side-link {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 0.94rem;
+    text-align: left;
+  }
+
+  .side-link span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .side-neko {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 12px 10px 6px;
+    border-radius: 18px;
+    background: var(--brand-soft);
+    color: var(--brand-ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+
+  .side-neko img {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  /* En ventanas bajas la tarjeta del gatito deja lugar a los enlaces */
+  @media (max-height: 760px) {
+    .side-neko {
+      display: none;
+    }
+  }
+
+  /* Inicio como tablero.
+     Arriba: saldo (principal) + lo de hoy al costado.
+     Después: acciones, gráficos (2/3 + 1/3), recientes + próximos pagos,
+     y el resto de las tarjetas de a tres. */
+  .home-grid {
+    gap: 20px;
+  }
+
+  .home-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 20px;
+  }
+
+  .home-main > .hero-card {
+    height: 100%;
+  }
+
+  .home-side {
+    justify-content: flex-start;
+  }
+
+  .home-side > .daily-card {
+    flex: 1;
+  }
+
+  .home-chart {
+    display: block;
+  }
+
+  .home-board {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .home-board > * {
+    grid-column: span 4;
+  }
+
+  .home-bars {
+    grid-column: span 7;
+    order: -6;
+  }
+
+  .home-donut {
+    grid-column: span 5;
+    order: -5;
+  }
+
+  .home-recents {
+    grid-column: span 7;
+    order: -4;
+  }
+
+  .home-bills {
+    grid-column: span 5;
+    order: -3;
+  }
+
+  .home-donut > svg {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .home-donut .cat-breakdown {
+    margin-top: 12px;
+  }
+
+  /* Jerarquía: las tarjetas del tablero pesan menos que el saldo */
+  .home-board > .card {
+    border-radius: 22px;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .hero-amount {
+    font-size: clamp(2.4rem, 3.4vw, 3.1rem);
+  }
+
+  .hero-art {
+    width: 150px;
+  }
+
+  /* Transacciones como tabla: Fecha · Descripción · Categoría · Cuenta · Monto */
+  .view[data-screen="transacciones"] .tx-card {
+    padding: 6px 22px 12px;
+  }
+
+  .view[data-screen="transacciones"] .tx-thead,
+  .view[data-screen="transacciones"] .tx-row {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(130px, auto);
+    align-items: center;
+    column-gap: 18px;
+  }
+
+  .view[data-screen="transacciones"] .tx-thead {
+    padding: 14px 0 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  .view[data-screen="transacciones"] .tx-thead > :last-child {
+    text-align: right;
+  }
+
+  .view[data-screen="transacciones"] .tx-row {
+    grid-template-columns: 92px 40px minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(130px, auto);
+    column-gap: 0;
+    padding: 9px 0;
+  }
+
+  .view[data-screen="transacciones"] .tx-row > * {
+    margin-right: 18px;
+  }
+
+  .view[data-screen="transacciones"] .tx-row > .cat-bubble {
+    grid-column: 2;
+    grid-row: 1;
+    margin-right: 12px;
+  }
+
+  .view[data-screen="transacciones"] .tx-row > .tx-body {
+    grid-column: 3;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .view[data-screen="transacciones"] .tx-cell {
+    display: block;
+    grid-row: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.92rem;
+    color: var(--text-2);
+  }
+
+  .view[data-screen="transacciones"] .tx-cell-date {
+    grid-column: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .view[data-screen="transacciones"] .tx-cell-cat {
+    grid-column: 4;
+  }
+
+  .view[data-screen="transacciones"] .tx-cell-acc {
+    grid-column: 5;
+  }
+
+  .view[data-screen="transacciones"] .tx-cell-amount {
+    grid-column: 6;
+    margin-right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    color: var(--text);
+    font-size: 1rem;
+  }
+
+  /* Lo que en celular iba dentro de la fila ahora tiene su columna */
+  .view[data-screen="transacciones"] .tx-top > .tx-amount,
+  .view[data-screen="transacciones"] .tx-top > .tx-leader,
+  .view[data-screen="transacciones"] .tx-bottom {
+    display: none;
+  }
+
+  /* La fecha ya está en cada fila: el título del día queda como separador */
+  .view[data-screen="transacciones"] .day-head {
+    padding: 12px 0 0;
+    font-size: 0.78rem;
+    color: var(--text-2);
+  }
+
+  .view[data-screen="transacciones"] .tx-row:hover {
+    background: var(--surface-2);
+  }
+
+  /* Más meses de un vistazo: totales y filtros en una línea */
+  .view[data-screen="transacciones"] {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .view[data-screen="transacciones"] > * {
+    grid-column: 1 / -1;
+  }
+
+  .view[data-screen="transacciones"] > .month-nav {
+    grid-column: 1;
+    min-width: 320px;
+  }
+
+  .view[data-screen="transacciones"] > .month-totals {
+    grid-column: 2;
+    justify-content: flex-end;
+  }
+
+  .view[data-screen="metas"] .goal-list {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .budget-list {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .summary-card {
+    max-width: 760px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Escritorio grande: más margen y un poco más de aire entre tarjetas
+--------------------------------------------------------------------------- */
+
+@media (min-width: 1280px) {
+  :root {
+    --side-w: 248px;
+  }
+
+  .side-link {
+    letter-spacing: 0;
+  }
+
+  .view,
+  body.is-wide .view {
+    padding: 28px clamp(32px, 3.2vw, 48px) 0;
+    gap: 24px;
+  }
+
+  .home-grid,
+  .home-top,
+  .home-board {
+    gap: 24px;
+  }
+
+  .view[data-screen="categorias"] > .rows {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+/* Pantallas muy anchas: la torta del Inicio con su lista al costado */
+@media (min-width: 1536px) {
+  .home-donut {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 4px 20px;
+  }
+
+  .home-donut > .section-head,
+  .home-donut > .muted-text {
+    grid-column: 1 / -1;
+  }
+
+  .home-donut .cat-breakdown {
+    margin-top: 0;
+  }
+}

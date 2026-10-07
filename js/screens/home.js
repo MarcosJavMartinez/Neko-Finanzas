@@ -1,10 +1,13 @@
 // Inicio: responde en segundos "¿cuánto puedo gastar realmente?". El saldo
 // disponible es el protagonista; después el resumen del mes, las acciones
-// rápidas y lo reciente. En escritorio se reparte en dos columnas.
+// rápidas y lo reciente. En escritorio es un tablero: el saldo arriba, los
+// gráficos del mes y el resto en una grilla (ver styles/layout.css).
 
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
-import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, txRow } from "../ui/components.js";
+import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, txRow, chartSize } from "../ui/components.js";
+import { barChart, donutChart } from "../ui/charts.js";
+import { PALETTE } from "../data/defaults.js";
 import { formatMoney, CURRENCIES, isMasked } from "../core/money.js";
 import { formatDate, formatMonth, currentMonthKey, todayISO } from "../core/dates.js";
 import { accountRow } from "./accounts.js";
@@ -21,6 +24,8 @@ import {
   upcomingBills,
   budgetsOverview,
   percent,
+  monthlySeries,
+  expensesByCategory,
 } from "../core/finance.js";
 import { backupReminderDue, daysSinceBackup, getLastBackup, iosNoticeSnoozed } from "../core/prefs.js";
 import { needsIosInstall } from "../ui/install.js";
@@ -198,7 +203,7 @@ export default {
       </div>`
     );
 
-    const recents = html`<section class="card reveal">
+    const recents = html`<section class="card home-recents reveal">
       ${sectionHeader("Recientes", { href: "#/transacciones", linkText: "Ver todos" })}
       ${recent.length
         ? html`<div class="tx-list">${recent.map((tx) => txRow(state, tx, { withDate: true }))}</div>`
@@ -208,7 +213,7 @@ export default {
     // Con más de una cuenta: cuánto hay en cada una.
     const activeAccounts = accountBalances(state, today).filter((e) => !e.account.archived);
     const accountsCard = activeAccounts.length > 1
-      ? html`<section class="card reveal">
+      ? html`<section class="card home-accounts reveal">
           ${sectionHeader("Tus cuentas", { href: "#/cuentas", linkText: "Ver todas" })}
           <div class="rows rows-plain">${activeAccounts.slice(0, 6).map((e) => accountRow(state, e))}</div>
           <button type="button" class="btn btn-soft btn-sm btn-block" data-action="add-transfer">${icon("swap", 16)} Mover plata entre cuentas</button>
@@ -218,13 +223,13 @@ export default {
     // Préstamos abiertos: quién te debe y a quién le debés.
     const openLoans = loansSummary(state).items.filter((i) => i.outstanding > 0);
     const loansCard = openLoans.length
-      ? html`<section class="card reveal">
+      ? html`<section class="card home-loans reveal">
           ${sectionHeader("Préstamos", { href: "#/prestamos", linkText: "Ver todos" })}
           <div class="rows rows-plain">${openLoans.slice(0, 3).map((i) => loanRow(i, today))}</div>
         </section>`
       : "";
 
-    const billsCard = html`<section class="card reveal">
+    const billsCard = html`<section class="card home-bills reveal">
       ${sectionHeader("Próximas facturas", { href: "#/facturas", linkText: "Ver todas" })}
       ${bills.length
         ? html`<div class="rows">${bills.map((b) => billRow(state, b, { today, compact: true }))}</div>`
@@ -232,7 +237,7 @@ export default {
     </section>`;
 
     const budgetsCard = budgetAlerts.length
-      ? html`<section class="card reveal">
+      ? html`<section class="card home-budgets reveal">
           ${sectionHeader("Presupuestos para mirar", { href: "#/presupuestos", linkText: "Ver" })}
           ${budgetAlerts.slice(0, 3).map(
             (b) => html`<div class="budget-mini">
@@ -244,14 +249,14 @@ export default {
         </section>`
       : "";
 
-    const goalsCard = html`<section class="card reveal">
+    const goalsCard = html`<section class="card home-goals reveal">
       ${sectionHeader("Metas de ahorro", { href: "#/metas", linkText: "Ver todas" })}
       ${state.goals.length
         ? html`<div class="goal-list">${state.goals.slice(0, 3).map((g) => goalCard(state, g, { compact: true }))}</div>`
         : emptyState({ art: "neko-ahorrando", title: "Todavía no tenés metas", text: "Creá una y empezá a separar dinero para eso que querés.", actionLabel: "Crear meta", action: "add-goal", compact: true })}
     </section>`;
 
-    const ratesCard = html`<section class="card reveal">
+    const ratesCard = html`<section class="card home-rates reveal">
       ${sectionHeader("Tipo de cambio", { href: "#/monedas", linkText: "Editar" })}
       <div class="rates-row">
         ${Object.values(CURRENCIES)
@@ -264,6 +269,36 @@ export default {
           )}
       </div>
       <p class="fine-print">${icon("info", 14)} Valores que cargaste vos. Se usan para convertir montos a ${main}.</p>
+    </section>`;
+
+    // En escritorio el Inicio es un tablero: suma el resumen de los últimos
+    // meses y en qué se fue la plata este mes (los mismos datos de Reportes).
+    const series = monthlySeries(state, 6, currentMonthKey());
+    const byCategory = expensesByCategory(state, currentMonthKey());
+    const topCats = byCategory.slice(0, 5);
+    const restCats = byCategory.slice(5).reduce((s, x) => s + x.amount, 0);
+    const usedColors = new Set();
+    const slices = [
+      ...topCats.map((x) => {
+        const base = x.category?.color || "#8b958e";
+        const color = usedColors.has(base) ? PALETTE.find((c) => !usedColors.has(c)) || base : base;
+        usedColors.add(color);
+        return { label: `${x.category?.icon || ""} ${x.category?.name || "Sin categoría"}`, value: x.amount, color };
+      }),
+      ...(restCats > 0 ? [{ label: "Otras", value: restCats, color: "#9aa39d" }] : []),
+    ];
+    const barsCard = html`<section class="card home-chart home-bars reveal">
+      ${sectionHeader("Resumen de los últimos meses", { href: "#/reportes", linkText: "Ver reportes" })}
+      ${barChart(series.map((s) => ({ label: formatMonth(s.key, { short: true }), income: s.income, expense: s.expense, current: s.key === currentMonthKey() })), { currency: main, ...chartSize("bars") })}
+    </section>`;
+    const donutCard = html`<section class="card home-chart home-donut reveal">
+      ${sectionHeader("Gastos por categoría", { href: "#/reportes", linkText: "Ver detalle" })}
+      ${slices.length
+        ? html`${donutChart(slices, { currency: main, centerLabel: "Este mes", centerValue: formatMoney(month.expense, main) })}
+            <ul class="cat-breakdown">
+              ${slices.map((s) => html`<li class="cb-row"><span class="legend-swatch" style="--c:${s.color}"></span><span class="cb-name">${s.label}</span><span class="cb-pct">${Math.round(percent(s.value, month.expense))}%</span><span class="cb-amount">${m(s.value)}</span></li>`)}
+            </ul>`
+        : html`<p class="muted-text">Cuando registres gastos este mes, vas a ver acá cómo se reparten.</p>`}
     </section>`;
 
     return html`
@@ -296,8 +331,12 @@ export default {
           </div>`
         : ""}
       <div class="home-grid">
-        <div class="home-col">${hero}${dailyCard}${savings}${actions}${leftovers}${pending}${isEmpty ? "" : extrasLine}</div>
-        <div class="home-col">${accountsCard}${recents}${billsCard}${loansCard}${budgetsCard}${goalsCard}${ratesCard}</div>
+        <div class="home-top">
+          <div class="home-main">${hero}</div>
+          <div class="home-side">${dailyCard}${savings}${isEmpty ? "" : extrasLine}</div>
+        </div>
+        ${actions}${leftovers}${pending}
+        <div class="home-board">${isEmpty ? "" : barsCard}${isEmpty ? "" : donutCard}${accountsCard}${recents}${billsCard}${loansCard}${budgetsCard}${goalsCard}${ratesCard}</div>
       </div>
       <p class="privacy-note">${icon("lock", 14)} Tus datos se guardan solo en este dispositivo.</p>
       ${appFooter()}

@@ -43,8 +43,7 @@ export function donutChart(segments, { size = 168, thickness = 22, centerLabel =
  * Barras agrupadas ingresos vs gastos por mes.
  * months: [{ label, income, expense }]
  */
-export function barChart(months, { currency, height = 180 } = {}) {
-  const width = 320;
+export function barChart(months, { currency, height = 180, width = 320 } = {}) {
   const padTop = 12;
   const padBottom = 24;
   const padLeft = 44;
@@ -52,7 +51,7 @@ export function barChart(months, { currency, height = 180 } = {}) {
   const plotW = width - padLeft - 4;
   const max = niceMax(Math.max(1, ...months.flatMap((m) => [m.income, m.expense])));
   const groupW = plotW / months.length;
-  const barW = Math.min(14, (groupW - 12) / 2);
+  const barW = Math.min(width > 400 ? 24 : 14, (groupW - 12) / 2);
   const y = (v) => padTop + plotH - (v / max) * plotH;
 
   const grid = [0, 0.5, 1].map((t) => {
@@ -90,8 +89,7 @@ export function barChart(months, { currency, height = 180 } = {}) {
  * Línea con área para la evolución del dinero total.
  * points: [{ label, value }]
  */
-export function lineChart(points, { currency, height = 160, color = "var(--brand)" } = {}) {
-  const width = 320;
+export function lineChart(points, { currency, height = 160, color = "var(--brand)", width = 320 } = {}) {
   const padTop = 16;
   const padBottom = 24;
   const padLeft = 44;

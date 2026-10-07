@@ -3,7 +3,7 @@
 
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
-import { art, emptyState, monthNav } from "../ui/components.js";
+import { art, chartSize, emptyState, monthNav } from "../ui/components.js";
 import { donutChart, barChart, lineChart } from "../ui/charts.js";
 import { formatMoney } from "../core/money.js";
 import { currentMonthKey, formatMonth, shiftMonthKey } from "../core/dates.js";
@@ -52,7 +52,7 @@ export default {
     return html`
       ${monthNav(view.month, "report-month")}
 
-      <section class="card reveal">
+      <section class="card report-summary reveal">
         <div class="report-tiles">
           <div class="stat stat-income"><span class="stat-label">${icon("arrowDown", 15)}Ingresos</span><span class="stat-value" data-pulse="income">${m(totals.income)}</span></div>
           <div class="stat stat-expense"><span class="stat-label">${icon("arrowUp", 15)}Gastos</span><span class="stat-value" data-pulse="expense">${m(totals.expense)}</span></div>
@@ -73,7 +73,7 @@ export default {
           : ""}
       </section>
 
-      <section class="card reveal">
+      <section class="card report-donut reveal">
         <h2 class="section-title section-title-art">${art("ilus-grafico", 48)}¿En qué se fue la plata?</h2>
         ${slices.length
           ? html`<div class="donut-wrap">
@@ -105,19 +105,19 @@ export default {
           : emptyState({ art: "neko-grafico", title: "Sin gastos este mes", text: "Cuando registres gastos vas a ver cómo se reparten.", compact: true, mood: "sleepy" })}
       </section>
 
-      <section class="card reveal">
+      <section class="card report-bars reveal">
         <h2 class="section-title">Ingresos y gastos</h2>
         <p class="section-sub">Últimos 6 meses</p>
         ${barChart(
           series.map((s) => ({ label: formatMonth(s.key, { short: true }), income: s.income, expense: s.expense, current: s.key === view.month })),
-          { currency: main }
+          { currency: main, ...chartSize("bars") }
         )}
       </section>
 
-      <section class="card reveal">
+      <section class="card report-line reveal">
         <h2 class="section-title">Evolución de tu dinero</h2>
         <p class="section-sub">Dinero total a fin de cada mes</p>
-        ${lineChart(series.map((s) => ({ label: formatMonth(s.key, { short: true }), value: s.balanceEnd })), { currency: main })}
+        ${lineChart(series.map((s) => ({ label: formatMonth(s.key, { short: true }), value: s.balanceEnd })), { currency: main, ...chartSize("line") })}
       </section>
 
       <details class="card reveal table-toggle">
