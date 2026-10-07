@@ -2,6 +2,7 @@
 // aplicados a categorías de gasto, a una meta (ahorro) o "al resto".
 
 import { html } from "../dom.js";
+import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
 import { toast } from "../toast.js";
 import { segmented, currencyOptions } from "../components.js";
@@ -21,6 +22,8 @@ import { amountToInput, parseAmount } from "../../core/money.js";
 
 const BUDGET_ICONS = ["🧾", "🛒", "🍔", "✈️", "👕", "🛟", "🎮", "🏠", "🚗", "💊", "🎁", "📚", "🐱", "💰", "🎯", "✨"];
 
+const VALUE_LABEL = { fixed: "¿Cuánto por mes?", percent: "¿Qué porcentaje de tus ingresos?", daily: "¿Cuánto por día?" };
+
 /** Presupuesto sugerido para "gustos por día". */
 const TREATS_PRESET = { name: "Gustos", icon: "☕", color: "#d99a2b", mode: "daily", reserve: true, target: { kind: "categories", categoryIds: ["exp-comida", "exp-entretenimiento"] } };
 
@@ -31,7 +34,7 @@ export function openBudgetForm({ budget, preset } = {}) {
     name: "",
     icon: "🎯",
     color: "#4a63dd",
-    mode: "percent",
+    mode: "fixed",
     value: null,
     currency: state.settings.mainCurrency,
     target: { kind: "categories", categoryIds: [] },
@@ -39,36 +42,22 @@ export function openBudgetForm({ budget, preset } = {}) {
     ...(preset === "daily" ? TREATS_PRESET : {}),
   };
   const hasRest = state.budgets.some((b) => b.target.kind === "rest" && b.id !== budget?.id);
+  // Lo simple a la vista (nombre, cuánto por mes y en qué); el resto queda en
+  // "Más opciones", que se abre sola si el presupuesto ya usa algo de eso.
+  const advanced = current.mode !== "fixed" || current.target.kind !== "categories" || current.reserve;
 
   openSheet({
     title: isEdit ? "Editar presupuesto" : "Nuevo presupuesto",
     body: html`<form class="form" novalidate>
       ${textField({ name: "name", label: "Nombre", value: current.name, required: true, placeholder: "Ej.: Salidas" })}
-      <div class="field">
-        <span class="field-label">¿Cómo lo querés definir?</span>
-        ${segmented("mode", [{ value: "percent", label: "% de ingresos" }, { value: "fixed", label: "Por mes" }, { value: "daily", label: "Por día" }], current.mode)}
-        <p class="field-hint" data-daily-only ${current.mode === "daily" ? "" : "hidden"}>Para gustos (un café, un alfajor): un monto por día. Lo que no gastás un día se acumula para los siguientes.</p>
-      </div>
       <div class="field field-amount">
-        <label class="field-label" for="f-value">Valor</label>
+        <label class="field-label" for="f-value" data-value-label>${VALUE_LABEL[current.mode]}</label>
         <div class="amount-input">
           <select name="currency" class="amount-currency" aria-label="Moneda" data-fixed-only ${current.mode !== "percent" ? "" : "hidden"}>${currencyOptions(current.currency)}</select>
           <input id="f-value" name="value" type="text" inputmode="decimal" autocomplete="off" placeholder="${current.mode === "percent" ? "25" : "0,00"}" value="${current.value ? (current.mode === "percent" ? String(current.value).replace(".", ",") : amountToInput(current.value)) : ""}" ${current.mode === "percent" ? "data-plain" : ""} required />
           <span class="amount-suffix" data-percent-only ${current.mode === "percent" ? "" : "hidden"}>%</span>
         </div>
         <p class="field-error" data-error-for="value"></p>
-      </div>
-      <div class="field">
-        <span class="field-label">Se aplica a</span>
-        ${segmented(
-          "kind",
-          [
-            { value: "categories", label: "Categorías" },
-            { value: "goal", label: "Una meta" },
-            ...(hasRest ? [] : [{ value: "rest", label: "Todo lo demás" }]),
-          ],
-          current.target.kind
-        )}
       </div>
       <div data-kind-panel="categories" ${current.target.kind === "categories" ? "" : "hidden"}>
         ${categoryPicker(state, "expense", null, { name: "categoryIds", multiple: true, selectedIds: current.target.categoryIds || [] })}
@@ -83,12 +72,34 @@ export function openBudgetForm({ budget, preset } = {}) {
       <div data-kind-panel="rest" ${current.target.kind === "rest" ? "" : "hidden"}>
         <p class="field-hint">Incluye todos los gastos cuyas categorías no estén en otro presupuesto.</p>
       </div>
-      <label class="toggle-field" data-reserve-box ${current.target.kind === "goal" ? "hidden" : ""}>
-        <span><span class="toggle-label">Reservar esta plata</span><span class="field-hint">Lo que te falta gastar este mes se descuenta de tu disponible. Si a fin de mes sobra, te ofrecemos pasarlo a una meta. Usalo para gastos que no son facturas (súper, nafta, gustos).</span></span>
-        <input type="checkbox" name="reserve" class="switch" ${current.reserve ? "checked" : ""} />
-      </label>
-      ${emojiPicker(current.icon, { choices: current.icon && !BUDGET_ICONS.includes(current.icon) ? [current.icon, ...BUDGET_ICONS] : BUDGET_ICONS })}
-      ${colorPicker(current.color)}
+      <details class="more-options" ${advanced ? "open" : ""}>
+        <summary>${icon("settings", 16)} Más opciones</summary>
+        <div class="more-options-body">
+          <div class="field">
+            <span class="field-label">¿Cómo lo querés definir?</span>
+            ${segmented("mode", [{ value: "fixed", label: "Por mes" }, { value: "percent", label: "% de ingresos" }, { value: "daily", label: "Por día" }], current.mode)}
+            <p class="field-hint" data-daily-only ${current.mode === "daily" ? "" : "hidden"}>Para gustos (un café, un alfajor): un monto por día. Lo que no gastás un día se acumula para los siguientes.</p>
+          </div>
+          <div class="field">
+            <span class="field-label">Se aplica a</span>
+            ${segmented(
+              "kind",
+              [
+                { value: "categories", label: "Categorías" },
+                { value: "goal", label: "Una meta" },
+                ...(hasRest ? [] : [{ value: "rest", label: "Todo lo demás" }]),
+              ],
+              current.target.kind
+            )}
+          </div>
+          <label class="toggle-field" data-reserve-box ${current.target.kind === "goal" ? "hidden" : ""}>
+            <span><span class="toggle-label">Reservar esta plata</span><span class="field-hint">Lo que te falta gastar este mes se descuenta de tu disponible. Si a fin de mes sobra, te ofrecemos pasarlo a una meta. Usalo para gastos que no son facturas (súper, nafta, gustos).</span></span>
+            <input type="checkbox" name="reserve" class="switch" ${current.reserve ? "checked" : ""} />
+          </label>
+          ${emojiPicker(current.icon, { choices: current.icon && !BUDGET_ICONS.includes(current.icon) ? [current.icon, ...BUDGET_ICONS] : BUDGET_ICONS })}
+          ${colorPicker(current.color)}
+        </div>
+      </details>
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Crear presupuesto", deletable: isEdit })}
     </form>`,
     onMount(panel, close) {
@@ -99,6 +110,7 @@ export function openBudgetForm({ budget, preset } = {}) {
           form.querySelector("[data-fixed-only]").hidden = !fixed;
           form.querySelector("[data-percent-only]").hidden = fixed;
           form.querySelector("[data-daily-only]").hidden = event.target.value !== "daily";
+          form.querySelector("[data-value-label]").textContent = VALUE_LABEL[event.target.value];
           const field = form.elements.value;
           field.placeholder = fixed ? "0,00" : "25";
           // El porcentaje se escribe tal cual; el monto, con centavos.

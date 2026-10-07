@@ -121,9 +121,6 @@
     grid-column: 1 / -1;
   }
 
-  .quick-actions.card {
-    grid-template-columns: repeat(8, 1fr);
-  }
 
   .more-grid + .more-heading {
     margin-top: 6px;

@@ -11,6 +11,7 @@ import { requestPersistence, STORAGE_KEY, onRemoteChange } from "./core/storage.
 import { html, setHTML, $, prefersReducedMotion } from "./ui/dom.js";
 import { icon } from "./ui/icons.js";
 import { toast } from "./ui/toast.js";
+import { openAddChooser } from "./ui/forms/addChooser.js";
 import { confirmDialog, whenHistorySettled } from "./ui/sheet.js";
 import { initChartTooltips } from "./ui/charts.js";
 import { formatMoney, setMasked, isMasked } from "./core/money.js";
@@ -106,6 +107,8 @@ let currentScreen = null;
 const byId = (list, id) => list.find((x) => x.id === id);
 
 const GLOBAL_ACTIONS = {
+  // "Agregar": se elige qué es y recién ahí se abre su formulario.
+  "add-any": () => openAddChooser((name, dataset) => GLOBAL_ACTIONS[name]?.({ dataset })),
   "add-income": () => openTransactionForm({ type: "income" }),
   "add-expense": () => openTransactionForm({ type: "expense" }),
   // Compra con tarjeta: un gasto con la tarjeta ya elegida (y sus cuotas a la
@@ -239,7 +242,7 @@ function renderHeader() {
         </div>
       </div>
       <div class="header-actions">
-        <button type="button" class="btn btn-primary header-new" data-action="add-expense">${icon("plus", 18)}Nuevo movimiento</button>
+        <button type="button" class="btn btn-primary header-new" data-action="add-any">${icon("plus", 18)}Nuevo movimiento</button>
         ${canPromptInstall() ? html`<button type="button" class="header-btn" data-action="install-app" aria-label="Instalar app" title="Instalar app">${icon("download", 18)}</button>` : ""}
         ${screen.id !== "reportes" ? html`<a class="header-btn" href="#/reportes" aria-label="Reportes" title="Reportes">${icon("chart", 18)}</a>` : ""}
         ${!screen.id.startsWith("ajustes") ? html`<a class="header-btn" href="#/ajustes" aria-label="Configuración" title="Configuración">${icon("settings", 18)}</a>` : ""}

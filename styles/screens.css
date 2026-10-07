@@ -2439,3 +2439,56 @@ button.inline-link {
   min-height: 32px;
   margin-top: 2px;
 }
+
+/* Acciones rápidas: "Agregar" abre todo; al lado, los atajos de cada día */
+.qa-expense {
+  background: var(--expense-soft);
+  color: var(--expense-ink);
+}
+
+.qa-expense .qa-icon {
+  color: var(--expense);
+}
+
+/* El ahorro del mes, dentro de la tarjeta del saldo */
+.savings-in-hero {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  box-shadow: none;
+}
+
+/* "¿Qué querés anotar?" */
+.chooser {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chooser .more-heading {
+  margin: 6px 4px -4px;
+}
+
+.chooser-group {
+  padding: 2px 14px;
+  box-shadow: none;
+  background: var(--surface-2);
+}
+
+.chooser-item {
+  width: 100%;
+  text-align: left;
+}
+
+.more-icon.tone-expense { background: var(--expense-soft); color: var(--expense); }
+.more-icon.tone-income { background: var(--income-soft); color: var(--income); }
+.more-icon.tone-bill { background: var(--bill-soft); color: var(--bill); }
+.more-icon.tone-goal { background: var(--goal-soft); color: var(--goal); }
+
+@media (min-width: 720px) {
+  .chooser {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

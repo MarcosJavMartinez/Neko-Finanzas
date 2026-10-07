@@ -126,7 +126,7 @@ export default {
     const filters = state.accounts.length > 1 ? [...FILTERS, { value: "transfer", label: "Transferencias" }] : FILTERS;
 
     return html`
-      <button type="button" class="btn btn-primary btn-block btn-add reveal" data-action="add-expense">${icon("plus", 20)}Agregar transacción</button>
+      <button type="button" class="btn btn-primary btn-block btn-add reveal" data-action="add-any">${icon("plus", 20)}Agregar</button>
       ${monthNav(view.month, "tx-month", lastMonth)}
       ${view.month > currentMonthKey() ? html`<p class="active-filter">${icon("calendar", 14)} Mes futuro: son movimientos programados, todavía no cuentan en tu saldo. <button type="button" class="chip chip-action" data-action="tx-today">Volver a este mes</button></p>` : ""}
       <div class="month-totals">

@@ -9,7 +9,7 @@ import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, t
 import { barChart, donutChart } from "../ui/charts.js";
 import { PALETTE } from "../data/defaults.js";
 import { formatMoney, CURRENCIES, isMasked } from "../core/money.js";
-import { formatDate, formatMonth, currentMonthKey, todayISO } from "../core/dates.js";
+import { daysBetween, formatDate, formatMonth, currentMonthKey, todayISO } from "../core/dates.js";
 import { accountRow } from "./accounts.js";
 import { loanRow } from "./loans.js";
 import {
@@ -90,6 +90,13 @@ export default {
 
     // Sueldo y extras son dos líneas distintas: lo fijo y lo variable del mes.
     const extrasTotal = extrasOfMonth(state, currentMonthKey()).reduce((s, e) => s + e.total, 0);
+    const nearPayday = state.transactions.some((t) => {
+      if (t.type !== "income" || !t.recurrence) return false;
+      const sinceLast = daysBetween(t.date, today);
+      const untilNext = daysBetween(today, t.recurrence.nextDate);
+      return (sinceLast >= 0 && sinceLast <= 7) || (untilNext >= 0 && untilNext <= 3) || t.recurrence.nextDate <= today;
+    });
+    const showExtras = !isEmpty && (extrasTotal > 0 || nearPayday);
     const extrasLine = html`<p class="extras-line reveal">
       ${icon("sparkle", 15)}
       <span>${extrasTotal > 0 ? html`Extras de este mes: <strong>${m(extrasTotal)}</strong>` : "¿Tuviste aguinaldo, horas extra, comisión o propinas?"}</span>
@@ -97,7 +104,7 @@ export default {
     </p>`;
 
     const savings = html`${month.income || month.expense
-      ? html`<p class="savings-pill reveal ${month.saved < 0 ? "is-negative" : ""}">
+      ? html`<p class="savings-pill savings-in-hero ${month.saved < 0 ? "is-negative" : ""}">
           ${icon(month.saved >= 0 ? "sparkle" : "alert", 15)}
           ${month.saved >= 0 ? "Este mes estás ahorrando" : "Este mes gastaste más de lo que entró:"}
           <strong>${m(Math.abs(month.saved))}</strong>${month.income > 0 && month.saved > 0 ? html` <span>(${Math.round(month.savingsRate)}%)</span>` : ""}
@@ -128,6 +135,7 @@ export default {
               <a href="#/facturas" class="avail-reserve" data-pulse="reserve" title="Lo que vence en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${reserveLabel(summary)}</a>
             </div>`}
       ${trio}
+      ${savings}
     </section>`;
 
     // Para los gustos del día (un café, un alfajor). Con un presupuesto "por
@@ -179,14 +187,10 @@ export default {
     );
 
     const actions = html`<nav class="quick-actions card reveal" aria-label="Acciones rápidas">
-      <button type="button" class="qa qa-primary" data-action="add-expense"><span class="qa-icon">${icon("plus", 22)}</span><span>Agregar<br />transacción</span></button>
-      <button type="button" class="qa qa-income" data-action="add-income"><span class="qa-icon">${icon("arrowDown", 20)}</span><span>Ingresar<br />dinero</span></button>
-      <a class="qa qa-bill" href="#/facturas"><span class="qa-icon">${icon("receipt", 20)}</span><span>Pago de<br />factura</span></a>
-      <button type="button" class="qa qa-goal" data-action="add-goal"><span class="qa-icon">${icon("flag", 20)}</span><span>Nueva<br />meta</span></button>
-      <button type="button" class="qa qa-more" data-action="add-card-purchase"><span class="qa-icon">${icon("card", 20)}</span><span>Tarjeta<br />y cuotas</span></button>
-      <button type="button" class="qa qa-more" data-action="add-loan" data-direction="lent"><span class="qa-icon">${icon("arrowUp", 20)}</span><span>Le<br />presté</span></button>
-      <button type="button" class="qa qa-more" data-action="add-loan" data-direction="borrowed"><span class="qa-icon">${icon("arrowDown", 20)}</span><span>Me<br />prestaron</span></button>
-      <button type="button" class="qa qa-more" data-action="add-credit-loan"><span class="qa-icon">${icon("coinStack", 20)}</span><span>Préstamo<br />en cuotas</span></button>
+      <button type="button" class="qa qa-primary" data-action="add-any"><span class="qa-icon">${icon("plus", 22)}</span><span>Agregar</span></button>
+      <button type="button" class="qa qa-expense" data-action="add-expense"><span class="qa-icon">${icon("arrowUp", 20)}</span><span>Gasto</span></button>
+      <button type="button" class="qa qa-income" data-action="add-income"><span class="qa-icon">${icon("arrowDown", 20)}</span><span>Ingreso</span></button>
+      <a class="qa qa-bill" href="#/facturas"><span class="qa-icon">${icon("receipt", 20)}</span><span>Pagar<br />factura</span></a>
     </nav>`;
 
     const pending = pendingIncomes.map(
@@ -256,7 +260,8 @@ export default {
         : emptyState({ art: "neko-ahorrando", title: "Todavía no tenés metas", text: "Creá una y empezá a separar dinero para eso que querés.", actionLabel: "Crear meta", action: "add-goal", compact: true })}
     </section>`;
 
-    const ratesCard = html`<section class="card home-rates reveal">
+    const usesOtherCurrency = [...state.accounts, ...state.transactions, ...state.bills, ...state.goals, ...(state.loans || [])].some((x) => x.currency && x.currency !== main);
+    const ratesCard = !usesOtherCurrency ? "" : html`<section class="card home-rates reveal">
       ${sectionHeader("Tipo de cambio", { href: "#/monedas", linkText: "Editar" })}
       <div class="rates-row">
         ${Object.values(CURRENCIES)
@@ -333,7 +338,7 @@ export default {
       <div class="home-grid">
         <div class="home-top">
           <div class="home-main">${hero}</div>
-          <div class="home-side">${dailyCard}${savings}${isEmpty ? "" : extrasLine}</div>
+          <div class="home-side">${dailyCard}${showExtras ? extrasLine : ""}</div>
         </div>
         ${actions}${leftovers}${pending}
         <div class="home-board">${isEmpty ? "" : barsCard}${isEmpty ? "" : donutCard}${accountsCard}${recents}${billsCard}${loansCard}${budgetsCard}${goalsCard}${ratesCard}</div>

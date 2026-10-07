@@ -2397,3 +2397,32 @@ details[open] > :not(summary) {
   align-items: center;
   gap: 10px;
 }
+
+/* Opciones avanzadas de un formulario, plegadas */
+.more-options {
+  border-top: 1px solid var(--border);
+  padding-top: 4px;
+}
+
+.more-options > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--brand-ink);
+  list-style: none;
+}
+
+.more-options > summary::-webkit-details-marker {
+  display: none;
+}
+
+.more-options-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0 4px;
+}

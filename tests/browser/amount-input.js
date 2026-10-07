@@ -79,6 +79,8 @@ return (async () => {
     openBudgetForm(); await wait(500);
     const form = sheet().querySelector("form");
     input = form.elements.value;
+    log(`presupuesto nuevo: modo=${form.querySelector("input[name=mode]:checked").value} · opciones avanzadas plegadas=${!form.querySelector(".more-options").open}${form.querySelector("input[name=mode]:checked").value === "fixed" ? "" : " ✗"}`);
+    form.querySelector("input[name=mode][value=percent]").click(); await wait(150);
     const pct = fresh("25");
     const pctDec = fresh("12,5");
     log(`porcentaje: "25" → "${pct}" · "12,5" → "${pctDec}"${pct === "25" && pctDec === "12,5" ? "" : " ✗"}`);
