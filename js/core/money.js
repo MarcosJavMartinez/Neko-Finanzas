@@ -55,6 +55,17 @@ export function detectRegion() {
   return DEFAULT_REGION;
 }
 
+/**
+ * Símbolo de una moneda, como se escribe en la región de la persona: "$" son
+ * pesos en Argentina y dólares en Estados Unidos, así que la otra lleva su
+ * prefijo ("US$" o "AR$") para que nunca se confundan.
+ */
+export function symbolOf(code) {
+  if (code === "ARS") return region === "es-AR" ? "$" : "AR$";
+  if (code === "USD") return region === "en-US" ? "$" : "US$";
+  return CURRENCIES[code]?.symbol ?? code;
+}
+
 /** Monedas con las que se arranca en una región: la propia, dólares y, en Argentina, euros. */
 export function startingCurrencies(region) {
   const own = REGIONS[region]?.currency || "ARS";
@@ -129,7 +140,7 @@ export function formatMoney(amount, currency = PIVOT, { sign = false, reveal = f
   const abs = Math.abs(value);
   const rounded = Math.round(abs * 100) / 100;
   const decimals = CURRENCIES[currency]?.decimals === 0 || Number.isInteger(rounded) || rounded >= 10000 ? 0 : 2;
-  const symbol = CURRENCIES[currency]?.symbol ?? currency;
+  const symbol = symbolOf(currency);
   // Sin decimales se redondea el valor original (no el ya redondeado a
   // centavos): 733.562,4996 es "$ 733.562", no "$ 733.563".
   const number = numberFormatter(decimals).format(decimals ? rounded : Math.round(abs));
@@ -152,13 +163,13 @@ export function setMasked(value) {
 export const isMasked = () => masked;
 
 function maskedMoney(currency) {
-  return `${CURRENCIES[currency]?.symbol ?? currency} •••••`;
+  return `${symbolOf(currency)} •••••`;
 }
 
 /** Versión compacta para ejes de gráficos: "$ 1,2 M", "$ 850 mil". */
 export function formatCompact(amount, currency = PIVOT) {
   if (masked) return maskedMoney(currency);
-  const symbol = CURRENCIES[currency]?.symbol ?? currency;
+  const symbol = symbolOf(currency);
   const abs = Math.abs(amount);
   const sign = amount < 0 ? "−" : "";
   if (abs >= 1e6) return `${sign}${symbol} ${numberFormatter(1).format(abs / 1e6).replace(/[.,]0$/, "")} M`;

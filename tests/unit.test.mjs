@@ -362,6 +362,7 @@ eq("al activarlo no cuenta los pagos anteriores", F.billCushion(store.getState()
   eq("Japón: sin centavos", fmt("ja-JP", () => [M.usesCents(), M.zeroAmount(), M.amountToInput(1500), M.formatMoney(1500.4, "JPY")]), [false, "0", "1,500", "¥ 1,500"]);
   eq("el cero de un campo sigue a la región", [fmt("es-AR", M.zeroAmount), fmt("en-US", M.zeroAmount)], ["0,00", "0.00"]);
   eq("símbolos", fmt("pt-BR", () => [M.formatMoney(10, "BRL"), M.formatMoney(10, "GBP"), M.formatMoney(10, "RUB"), M.formatMoney(10, "TRY")]), ["R$ 10", "£ 10", "₽ 10", "₺ 10"]);
+  eq("el signo $ es de la moneda del país; la otra lleva prefijo", [fmt("es-AR", () => [M.symbolOf("ARS"), M.symbolOf("USD")]), fmt("en-US", () => [M.symbolOf("ARS"), M.symbolOf("USD")]), fmt("pt-BR", () => [M.symbolOf("ARS"), M.symbolOf("USD")])], [["$", "US$"], ["AR$", "$"], ["AR$", "US$"]]);
   const langs = (list) => { Object.defineProperty(globalThis, "navigator", { value: { language: list[0], languages: list }, configurable: true }); const r = M.detectRegion(); Object.defineProperty(globalThis, "navigator", { value: { language: "es-AR", languages: ["es-AR"] }, configurable: true }); return r; };
   eq("región según el idioma del dispositivo", [["pt-BR"], ["pt"], ["en-GB"], ["en-AU"], ["es-MX"], ["es-ES"], ["ja"], ["ru-RU"], ["tr"], ["de-DE"], ["de", "tr-TR"]].map(langs), ["pt-BR", "pt-BR", "en-GB", "en-US", "es-AR", "es-ES", "ja-JP", "ru-RU", "tr-TR", "es-AR", "tr-TR"]);
   Object.defineProperty(globalThis, "navigator", { value: { language: "pt-BR", languages: ["pt-BR"] }, configurable: true });

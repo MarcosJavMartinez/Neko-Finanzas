@@ -4,7 +4,7 @@
 
 import { html } from "./dom.js";
 import { icon, nekoArt } from "./icons.js";
-import { formatMoney, CURRENCIES, currencyChoices } from "../core/money.js";
+import { formatMoney, CURRENCIES, currencyChoices, symbolOf } from "../core/money.js";
 import { currentMonthKey, daysBetween, formatDate, formatDue, formatMonth, parseISO, todayISO, FREQUENCIES } from "../core/dates.js";
 import { billStatus, findCategory, findSubcategory, goalProgress, toMain } from "../core/finance.js";
 
@@ -284,8 +284,11 @@ export function goalCard(state, goal, { compact = false } = {}) {
   </button>`;
 }
 
+/** Opciones de moneda para un selector con todas a la vista: símbolo arriba, código abajo. */
+export const currencyTiles = (codes) => codes.map((c) => ({ value: c, label: html`<span class="cur-tile"><strong>${symbolOf(c)}</strong><small>${c}</small></span>` }));
+
 export function currencyOptions(selected) {
   return currencyChoices(selected).map((code) => CURRENCIES[code]).map(
-    (c) => html`<option value="${c.code}" ${c.code === selected ? "selected" : ""}>${c.code}</option>`
+    (c) => html`<option value="${c.code}" ${c.code === selected ? "selected" : ""}>${symbolOf(c.code)}</option>`
   );
 }

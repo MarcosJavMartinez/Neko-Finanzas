@@ -5,12 +5,12 @@ import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
 import { toast } from "../toast.js";
-import { art, segmented, txRow } from "../components.js";
+import { art, currencyTiles, segmented, txRow } from "../components.js";
 import { textField, emojiPicker, colorPicker, formActions, readForm, fieldError, clearErrors } from "./fields.js";
 import * as store from "../../core/store.js";
 import { todayISO, formatDate } from "../../core/dates.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
-import { formatMoney, amountToInput, parseAmount, convert, CURRENCY_CODES, zeroAmount } from "../../core/money.js";
+import { formatMoney, amountToInput, parseAmount, convert, CURRENCY_CODES, zeroAmount, symbolOf } from "../../core/money.js";
 import { accountBalance, cardStatus, findAccount, findCategory } from "../../core/finance.js";
 import { ACCOUNT_KINDS } from "../../data/defaults.js";
 
@@ -35,7 +35,7 @@ function fixedAmountField({ name, label, currency, value, hint = "" }) {
   return html`<div class="field">
     <label class="field-label" for="f-${name}">${label}</label>
     <div class="amount-input">
-      <span class="amount-currency amount-currency-static" data-currency-for="${name}">${currency}</span>
+      <span class="amount-currency amount-currency-static" data-currency-for="${name}">${symbolOf(currency)}</span>
       <input id="f-${name}" name="${name}" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" value="${value ? amountToInput(value) : ""}" />
     </div>
     ${hint ? html`<p class="field-hint" data-hint-for="${name}">${hint}</p>` : ""}
@@ -85,7 +85,7 @@ export function openAccountForm({ account, kind: presetKind } = {}) {
         <span class="field-label">Moneda</span>
         ${used
           ? html`<p class="field-hint">${icon("lock", 14)} ${current.currency}: no se puede cambiar porque la cuenta ya tiene movimientos.</p>`
-          : segmented("currency", CURRENCY_CODES.map((c) => ({ value: c, label: c })), current.currency, { size: "segmented-wrap" })}
+          : segmented("currency", currencyTiles(CURRENCY_CODES), current.currency, { size: "segmented-wrap" })}
       </div>
       <div data-opening-normal ${isCard ? "hidden" : ""}>
         ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: isCard ? 0 : Math.abs(current.opening || 0), hint: "Lo que tenía esta cuenta antes de cargar movimientos." })}
@@ -111,7 +111,7 @@ export function openAccountForm({ account, kind: presetKind } = {}) {
       const form = panel.querySelector("form");
       // La moneda del saldo inicial sigue a la elegida.
       form.addEventListener("change", (event) => {
-        if (event.target.name === "currency") form.querySelectorAll('[data-currency-for^="opening"]').forEach((el) => (el.textContent = event.target.value));
+        if (event.target.name === "currency") form.querySelectorAll('[data-currency-for^="opening"]').forEach((el) => (el.textContent = symbolOf(event.target.value)));
         if (event.target.name === "kind") {
           const card = event.target.value === "credit";
           form.querySelector("[data-card-fields]").hidden = !card;

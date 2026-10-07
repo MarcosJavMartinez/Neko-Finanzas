@@ -7,7 +7,7 @@ import { icon } from "../ui/icons.js";
 import { toast } from "../ui/toast.js";
 import { confirmDialog, whenHistorySettled } from "../ui/sheet.js";
 import { segmented } from "../ui/components.js";
-import { amountToInput, parseAmount, zeroAmount } from "../core/money.js";
+import { amountToInput, parseAmount, zeroAmount, symbolOf } from "../core/money.js";
 import { MAX_AMOUNT } from "../core/sanitize.js";
 import * as store from "../core/store.js";
 import { openSnapshots } from "../ui/snapshots.js";
@@ -295,7 +295,7 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
           <span class="setting-label">Ingreso de referencia <span class="optional">(opcional)</span></span>
           <span class="field-hint">Se usa para los presupuestos en % mientras el mes no tenga ingresos cargados.</span>
           <span class="amount-input">
-            <span class="amount-currency amount-currency-static">${s.mainCurrency}</span>
+            <span class="amount-currency amount-currency-static">${symbolOf(s.mainCurrency)}</span>
             <input type="text" inputmode="decimal" value="${s.budgetReference ? amountToInput(s.budgetReference) : ""}" placeholder="${zeroAmount()}" data-change="set-reference" aria-label="Ingreso de referencia" />
           </span>
         </label>

@@ -12,7 +12,7 @@ import { segmented } from "../components.js";
 import * as store from "../../core/store.js";
 import { formatMonth, monthKey, todayISO } from "../../core/dates.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
-import { formatMoney, parseAmount, CURRENCY_CODES, zeroAmount, currencyChoices } from "../../core/money.js";
+import { formatMoney, parseAmount, CURRENCY_CODES, zeroAmount, currencyChoices, symbolOf } from "../../core/money.js";
 import { toMain } from "../../core/finance.js";
 import { INCOME_EXTRAS } from "../../data/defaults.js";
 import { getLastAccount, setLastAccount } from "../../core/prefs.js";
@@ -45,7 +45,7 @@ export function openIncomeExtras() {
       <p class="sheet-text">Lo que cobraste además del sueldo. Son variables: cargá solo los que tuviste, cuando los tengas.${loadedTotal > 0 ? html` En ${formatMonth(month).split(" ")[0].toLowerCase()} ya llevás <strong>${formatMoney(loadedTotal, main)}</strong> en extras.` : ""}</p>
       <div class="field">
         <span class="field-label">Moneda</span>
-        ${segmented("currency", currencyChoices(main).map((c) => ({ value: c, label: c })), main)}
+        ${segmented("currency", currencyChoices(main).map((c) => ({ value: c, label: symbolOf(c) })), main)}
       </div>
       <div class="setup-list">
         ${loaded.filter((e) => e.key !== OTHER.key).map(

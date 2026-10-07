@@ -5,7 +5,7 @@ import { html } from "../ui/dom.js";
 import { art } from "../ui/components.js";
 import { icon } from "../ui/icons.js";
 import { toast } from "../ui/toast.js";
-import { CURRENCIES, REGIONS, amountToInput, formatMoney, formatNumber, parseAmount } from "../core/money.js";
+import { CURRENCIES, REGIONS, amountToInput, formatMoney, formatNumber, parseAmount, symbolOf } from "../core/money.js";
 import { formatDate, toISO } from "../core/dates.js";
 import * as store from "../core/store.js";
 
@@ -57,7 +57,7 @@ export default {
           ${Object.values(CURRENCIES).map(
             (c) => html`<label class="currency-choice">
               <input type="radio" name="main-currency" value="${c.code}" ${c.code === main ? "checked" : ""} data-change="set-main" />
-              <span class="cur-badge">${c.symbol}</span>
+              <span class="cur-badge">${symbolOf(c.code)}</span>
               <span class="currency-text"><strong>${c.code}</strong><span>${c.name}</span></span>
               ${icon("check", 18, "currency-check")}
             </label>`
@@ -74,7 +74,7 @@ export default {
             .map(
               (c) => html`<label class="chip-check ${locked.has(c.code) ? "is-locked" : ""}" title="${locked.has(c.code) ? "Ya tenés algo cargado en esta moneda" : c.name}">
                 <input type="checkbox" value="${c.code}" ${active.includes(c.code) ? "checked" : ""} ${locked.has(c.code) ? "disabled" : ""} data-change="toggle-currency" />
-                <span>${c.symbol} ${c.code}</span>
+                <span>${symbolOf(c.code)} ${c.code}</span>
               </label>`
             )}
         </div>
@@ -88,7 +88,7 @@ export default {
               ${others.map((code) => {
                 const pair = ratePair(state, code);
                 return html`<label class="rate-edit">
-                  <span class="rate-edit-left"><span class="cur-badge">${CURRENCIES[code].symbol}</span><span>1 ${pair.from} =</span></span>
+                  <span class="rate-edit-left"><span class="cur-badge">${symbolOf(code)}</span><span>1 ${pair.from} =</span></span>
                   <span class="amount-input amount-input-sm">
                     <input name="${code}" type="text" inputmode="decimal" value="${amountToInput(Math.round(pair.value * 100) / 100)}" aria-label="Valor de 1 ${pair.from} en ${pair.to}" data-inverse="${pair.inverse ? "1" : ""}" data-change="save-rate" />
                     <span class="amount-suffix">${pair.to}</span>

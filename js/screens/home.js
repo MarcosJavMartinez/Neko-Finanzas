@@ -8,7 +8,7 @@ import { icon } from "../ui/icons.js";
 import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, txRow, chartSize } from "../ui/components.js";
 import { barChart, donutChart } from "../ui/charts.js";
 import { PALETTE } from "../data/defaults.js";
-import { formatMoney, CURRENCIES, isMasked } from "../core/money.js";
+import { formatMoney, CURRENCIES, isMasked, symbolOf } from "../core/money.js";
 import { daysBetween, formatDate, formatMonth, currentMonthKey, shiftMonthKey, todayISO } from "../core/dates.js";
 import { accountRow } from "./accounts.js";
 import { ratePair } from "./currencies.js";
@@ -285,7 +285,7 @@ export default {
           .map((code) => {
             const pair = ratePair(state, code);
             return html`<a class="rate-pill" href="#/monedas">
-              <span class="cur-badge">${CURRENCIES[code].symbol}</span>
+              <span class="cur-badge">${symbolOf(code)}</span>
               <span class="rate-text">1 ${pair.from} = <strong>${formatMoney(pair.value, pair.to)}</strong></span>
             </a>`;
           })}

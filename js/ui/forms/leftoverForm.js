@@ -10,7 +10,7 @@ import { openGoalForm } from "./goalForms.js";
 import * as store from "../../core/store.js";
 import { formatMonth } from "../../core/dates.js";
 import { MAX_AMOUNT } from "../../core/sanitize.js";
-import { amountToInput, formatMoney, parseAmount } from "../../core/money.js";
+import { amountToInput, formatMoney, parseAmount, symbolOf } from "../../core/money.js";
 import { billCushion, budgetLeftovers, goalProgress } from "../../core/finance.js";
 
 export function openLeftoverSheet(budgetId) {
@@ -34,7 +34,7 @@ export function openLeftoverSheet(budgetId) {
           <div class="field">
             <label class="field-label" for="f-amount">¿Cuánto?</label>
             <div class="amount-input">
-              <span class="amount-currency amount-currency-static">${main}</span>
+              <span class="amount-currency amount-currency-static">${symbolOf(main)}</span>
               <input id="f-amount" name="amount" type="text" inputmode="decimal" autocomplete="off" value="${amountToInput(amount)}" />
             </div>
             <p class="field-hint">Si pasás menos, el resto queda en tu disponible.</p>
@@ -90,7 +90,7 @@ export function openCushionSheet() {
           <div class="field">
             <label class="field-label" for="f-amount">¿Cuánto?</label>
             <div class="amount-input">
-              <span class="amount-currency amount-currency-static">${main}</span>
+              <span class="amount-currency amount-currency-static">${symbolOf(main)}</span>
               <input id="f-amount" name="amount" type="text" inputmode="decimal" autocomplete="off" value="${amountToInput(amount)}" />
             </div>
             <p class="field-hint">Si pasás menos, el resto sigue en el fondo.</p>

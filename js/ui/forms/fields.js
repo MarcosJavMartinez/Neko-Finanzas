@@ -2,7 +2,7 @@
 
 import { html, setHTML } from "../dom.js";
 import { icon } from "../icons.js";
-import { amountToInput, parseAmount, CURRENCY_CODES, zeroAmount, currencyChoices } from "../../core/money.js";
+import { amountToInput, parseAmount, CURRENCY_CODES, zeroAmount, currencyChoices, symbolOf, CURRENCIES } from "../../core/money.js";
 import { MAX_AMOUNT } from "../../core/sanitize.js";
 import { EMOJI_OPTIONS, LISTA_ICONS, PALETTE } from "../../data/defaults.js";
 
@@ -13,7 +13,7 @@ export function amountField({ name = "amount", value, currency, label = "Monto",
       <label class="field-label" for="f-${name}">${label}</label>
       <div class="currency-seg" role="radiogroup" aria-label="Moneda">
         ${currencyChoices(currency).map(
-          (code) => html`<label class="currency-seg-option"><input type="radio" name="currency" value="${code}" ${code === currency ? "checked" : ""} /><span>${code}</span></label>`
+          (code) => html`<label class="currency-seg-option"><input type="radio" name="currency" value="${code}" ${code === currency ? "checked" : ""} aria-label="${CURRENCIES[code].name}" /><span title="${CURRENCIES[code].name}">${symbolOf(code)}</span></label>`
         )}
       </div>
     </div>
