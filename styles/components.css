@@ -2504,3 +2504,10 @@ details[open] > :not(summary) {
   font-weight: 600;
   opacity: 0.75;
 }
+
+/* Asistente: idioma y país, lado a lado */
+.setup-locale {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}

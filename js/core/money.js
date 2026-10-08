@@ -7,14 +7,23 @@ import { setDateRegion, msg } from "./i18n.js";
 // la moneda principal puede ser cualquiera sin cambiar el formato guardado.
 
 export const CURRENCIES = {
-  ARS: { code: "ARS", name: "Peso argentino", symbol: "$" },
-  USD: { code: "USD", name: "Dólar estadounidense", symbol: "US$" },
+  // `local` es el símbolo dentro del propio país ("$"); afuera se usa `symbol`, que no se confunde.
+  ARS: { code: "ARS", name: "Peso argentino", symbol: "AR$", local: "$" },
+  USD: { code: "USD", name: "Dólar estadounidense", symbol: "US$", local: "$" },
   EUR: { code: "EUR", name: "Euro", symbol: "€" },
   BRL: { code: "BRL", name: "Real brasileño", symbol: "R$" },
   GBP: { code: "GBP", name: "Libra esterlina", symbol: "£" },
   JPY: { code: "JPY", name: "Yen japonés", symbol: "¥", decimals: 0 },
   RUB: { code: "RUB", name: "Rublo ruso", symbol: "₽" },
   TRY: { code: "TRY", name: "Lira turca", symbol: "₺" },
+  MXN: { code: "MXN", name: "Peso mexicano", symbol: "MX$", local: "$" },
+  CLP: { code: "CLP", name: "Peso chileno", symbol: "CLP$", local: "$", decimals: 0 },
+  COP: { code: "COP", name: "Peso colombiano", symbol: "COL$", local: "$" },
+  PEN: { code: "PEN", name: "Sol peruano", symbol: "S/" },
+  UYU: { code: "UYU", name: "Peso uruguayo", symbol: "$U", local: "$" },
+  VES: { code: "VES", name: "Bolívar venezolano", symbol: "Bs." },
+  CUP: { code: "CUP", name: "Peso cubano", symbol: "CUP$", local: "$" },
+  EGP: { code: "EGP", name: "Libra egipcia", symbol: "E£" },
 };
 
 export const CURRENCY_CODES = Object.keys(CURRENCIES);
@@ -25,7 +34,7 @@ export const PIVOT = "ARS";
  * solo un punto de partida aproximado: la app no consulta cotizaciones, cada
  * persona carga las suyas en Monedas.
  */
-export const DEFAULT_RATES = { ARS: 1, USD: 1350, EUR: 1470, BRL: 245, GBP: 1730, JPY: 9, RUB: 15, TRY: 34 };
+export const DEFAULT_RATES = { ARS: 1, USD: 1350, EUR: 1470, BRL: 245, GBP: 1730, JPY: 9, RUB: 15, TRY: 34, MXN: 72, CLP: 1.4, COP: 0.33, PEN: 365, UYU: 33, VES: 7, CUP: 11, EGP: 27 };
 
 /**
  * Regiones: cómo se escriben los números (1.500,50 o 1,500.50) y qué moneda
@@ -40,6 +49,14 @@ export const REGIONS = {
   "ja-JP": { code: "ja-JP", name: "Japón", currency: "JPY" },
   "ru-RU": { code: "ru-RU", name: "Rusia", currency: "RUB" },
   "tr-TR": { code: "tr-TR", name: "Turquía", currency: "TRY" },
+  "es-MX": { code: "es-MX", name: "México", currency: "MXN" },
+  "es-CL": { code: "es-CL", name: "Chile", currency: "CLP" },
+  "es-CO": { code: "es-CO", name: "Colombia", currency: "COP" },
+  "es-PE": { code: "es-PE", name: "Perú", currency: "PEN" },
+  "es-UY": { code: "es-UY", name: "Uruguay", currency: "UYU" },
+  "es-VE": { code: "es-VE", name: "Venezuela", currency: "VES" },
+  "es-CU": { code: "es-CU", name: "Cuba", currency: "CUP" },
+  "en-EG": { code: "en-EG", name: "Egipto", currency: "EGP" },
 };
 export const DEFAULT_REGION = "es-AR";
 
@@ -48,23 +65,27 @@ export function detectRegion() {
   const langs = typeof navigator === "undefined" ? [] : [...(navigator.languages || []), navigator.language].filter(Boolean);
   for (const lang of langs) {
     if (REGIONS[lang]) return lang;
-    const base = String(lang).toLowerCase().split("-")[0];
+    const [base, country] = String(lang).toLowerCase().split("-");
+    // El país manda sobre el idioma: un teléfono en árabe de Egipto ("ar-EG") es Egipto.
+    const sameCountry = country && Object.keys(REGIONS).find((code) => code.toLowerCase().endsWith("-" + country));
+    if (sameCountry) return sameCountry;
     if (base === "es") return String(lang).toLowerCase() === "es-es" ? "es-ES" : "es-AR";
     const match = { pt: "pt-BR", en: String(lang).toLowerCase() === "en-gb" ? "en-GB" : "en-US", ja: "ja-JP", ru: "ru-RU", tr: "tr-TR" }[base];
     if (match) return match;
   }
-  return DEFAULT_REGION;
+  // Un idioma que no conocemos: inglés con dólares, que se entiende en cualquier lado.
+  return langs.length ? "en-US" : DEFAULT_REGION;
 }
 
 /**
- * Símbolo de una moneda, como se escribe en la región de la persona: "$" son
- * pesos en Argentina y dólares en Estados Unidos, así que la otra lleva su
- * prefijo ("US$" o "AR$") para que nunca se confundan.
+ * Símbolo de una moneda, como se escribe en el país de la persona: "$" es la
+ * moneda propia en Argentina, México, Chile o Estados Unidos; las demás llevan
+ * su prefijo ("US$", "AR$", "MX$") para que nunca se confundan.
  */
 export function symbolOf(code) {
-  if (code === "ARS") return region === "es-AR" ? "$" : "AR$";
-  if (code === "USD") return region === "en-US" ? "$" : "US$";
-  return CURRENCIES[code]?.symbol ?? code;
+  const currency = CURRENCIES[code];
+  if (!currency) return code;
+  return currency.local && REGIONS[region]?.currency === code ? currency.local : currency.symbol;
 }
 
 /** Monedas con las que se arranca en una región: la propia, dólares y, en Argentina, euros. */
@@ -103,8 +124,8 @@ export function separators() {
   return seps;
 }
 
-/** ¿Los montos de esta región llevan centavos? (los yenes no). */
-export const usesCents = () => region !== "ja-JP";
+/** ¿Los montos de esta región llevan centavos? (los yenes y los pesos chilenos no). */
+export const usesCents = () => CURRENCIES[REGIONS[region]?.currency]?.decimals !== 0;
 
 /** Cómo se ve "cero" en un campo de monto: "0,00", "0.00" o "0". */
 export const zeroAmount = () => (usesCents() ? `0${separators().decimal}00` : "0");

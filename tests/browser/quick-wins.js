@@ -64,7 +64,7 @@ return (async () => {
     s = sheet();
     log(`asistente: ${s?.querySelector(".sheet-title")?.textContent || "NO ✗"} · datos de ejemplo borrados=${store.getState().transactions.length === 0 && !store.getState().settings.isDemo}`);
     const form = s.querySelector("form");
-    form.querySelector("input[name=currency][value=USD]").click();
+    form.elements.currency.value = "USD"; form.elements.currency.dispatchEvent(new Event("change", { bubbles: true })); await wait(100);
     form.elements.salary.value = "abc";
     form.requestSubmit(); await wait(200);
     log("sueldo inválido: " + (form.querySelector("[data-setup-error]").textContent || "sin error ✗"));

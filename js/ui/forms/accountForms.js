@@ -11,7 +11,7 @@ import { textField, emojiPicker, colorPicker, formActions, readForm, fieldError,
 import * as store from "../../core/store.js";
 import { todayISO, formatDate } from "../../core/dates.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
-import { formatMoney, amountToInput, parseAmount, convert, CURRENCY_CODES, zeroAmount, symbolOf } from "../../core/money.js";
+import { formatMoney, amountToInput, parseAmount, convert, currencyChoices, zeroAmount, symbolOf } from "../../core/money.js";
 import { accountBalance, cardStatus, findAccount, findCategory } from "../../core/finance.js";
 import { ACCOUNT_KINDS } from "../../data/defaults.js";
 
@@ -86,7 +86,7 @@ export function openAccountForm({ account, kind: presetKind } = {}) {
         <span class="field-label">Moneda</span>
         ${used
           ? html`<p class="field-hint">${icon("lock", 14)} ${current.currency}: no se puede cambiar porque la cuenta ya tiene movimientos.</p>`
-          : segmented("currency", currencyTiles(CURRENCY_CODES), current.currency, { size: "segmented-wrap" })}
+          : segmented("currency", currencyTiles(currencyChoices(current.currency)), current.currency, { size: "segmented-wrap" })}
       </div>
       <div data-opening-normal ${isCard ? "hidden" : ""}>
         ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: isCard ? 0 : Math.abs(current.opening || 0), hint: "Lo que tenía esta cuenta antes de registrar movimientos." })}

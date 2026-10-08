@@ -79,7 +79,7 @@ const evil = sanitizeState({
   goals: [{ id: "g", target: 0 }, { id: "h", name: "Viaje", target: 1000, color: "url(https://evil)", movements: "no" }],
   budgets: [{ id: "q", mode: "percent", value: 250, target: { kind: "rest" } }, { id: "r", mode: "fixed", value: 10, target: { kind: "goal", goalId: "zzz" } }],
 });
-eq("tipos de cambio", [evil.rates.ARS, evil.rates.USD, evil.rates.EUR, Object.keys(evil.rates).length], [1, 1350, 1470, 8]);
+eq("tipos de cambio", [evil.rates.ARS, evil.rates.USD, evil.rates.EUR, Object.keys(evil.rates).length], [1, 1350, 1470, 16]);
 eq("moneda principal inválida", evil.settings.mainCurrency, "ARS");
 eq("saldo inicial inválido", evil.accounts[0].opening, 0);
 eq("sin saldo inicial en configuración", "openingBalance" in evil.settings, false);
@@ -364,7 +364,7 @@ eq("al activarlo no cuenta los pagos anteriores", F.billCushion(store.getState()
   eq("símbolos", fmt("pt-BR", () => [M.formatMoney(10, "BRL"), M.formatMoney(10, "GBP"), M.formatMoney(10, "RUB"), M.formatMoney(10, "TRY")]), ["R$ 10", "£ 10", "₽ 10", "₺ 10"]);
   eq("el signo $ es de la moneda del país; la otra lleva prefijo", [fmt("es-AR", () => [M.symbolOf("ARS"), M.symbolOf("USD")]), fmt("en-US", () => [M.symbolOf("ARS"), M.symbolOf("USD")]), fmt("pt-BR", () => [M.symbolOf("ARS"), M.symbolOf("USD")])], [["$", "US$"], ["AR$", "$"], ["AR$", "US$"]]);
   const langs = (list) => { Object.defineProperty(globalThis, "navigator", { value: { language: list[0], languages: list }, configurable: true }); const r = M.detectRegion(); Object.defineProperty(globalThis, "navigator", { value: { language: "es-AR", languages: ["es-AR"] }, configurable: true }); return r; };
-  eq("región según el idioma del dispositivo", [["pt-BR"], ["pt"], ["en-GB"], ["en-AU"], ["es-MX"], ["es-ES"], ["ja"], ["ru-RU"], ["tr"], ["de-DE"], ["de", "tr-TR"]].map(langs), ["pt-BR", "pt-BR", "en-GB", "en-US", "es-AR", "es-ES", "ja-JP", "ru-RU", "tr-TR", "es-AR", "tr-TR"]);
+  eq("región según el idioma del dispositivo", [["pt-BR"], ["pt"], ["en-GB"], ["en-AU"], ["es-MX"], ["es-ES"], ["ja"], ["ru-RU"], ["tr"], ["de-DE"], ["de", "tr-TR"], ["ar-EG"], ["es-EC"], ["es-CL"]].map(langs), ["pt-BR", "pt-BR", "en-GB", "en-US", "es-MX", "es-ES", "ja-JP", "ru-RU", "tr-TR", "en-US", "tr-TR", "en-EG", "es-AR", "es-CL"]);
   Object.defineProperty(globalThis, "navigator", { value: { language: "pt-BR", languages: ["pt-BR"] }, configurable: true });
   const br = sanitizeState(undefined);
   Object.defineProperty(globalThis, "navigator", { value: { language: "es-AR", languages: ["es-AR"] }, configurable: true });
@@ -454,6 +454,20 @@ eq("avisos: con ese día no hay aviso previo", R.buildPlan(remState, "2026-03-09
 mem.set("nekoFinanzas.hideAmounts", "1");
 eq("avisos: con montos ocultos no se ve el monto", R.buildPlan(remState, "2026-03-09", 1).every((i) => !/\$/.test(i.body)), true);
 mem.delete("nekoFinanzas.hideAmounts");
+
+// Ejemplo en la moneda de cada país: montos redondos, datos válidos y cuentas que cierran
+for (const [demoRegion, demoCurrency] of [["ja-JP", "JPY"], ["en-US", "USD"], ["es-MX", "MXN"], ["es-CL", "CLP"], ["en-EG", "EGP"]]) {
+  const demo = buildDemoState(undefined, demoRegion);
+  const used = new Set([...demo.accounts, ...demo.transactions, ...demo.bills, ...demo.goals, ...demo.loans, ...demo.budgets].map((x) => x.currency));
+  const clean = sanitizeState(JSON.parse(JSON.stringify(demo)));
+  const sum = F.balanceSummary(demo);
+  const amounts = (st) => JSON.stringify(st.transactions.map((t) => [t.id, t.amount, t.currency, t.toAmount, t.toCurrency]));
+  const whole = demoCurrency === "JPY" || demoCurrency === "CLP";
+  eq(`ejemplo en ${demoCurrency}: moneda, sin pesos, datos válidos, disponible positivo`, [demo.settings.mainCurrency, used.has("ARS"), [...used].every((c) => c === demoCurrency || c === "USD"), amounts(clean) === amounts(demo) && clean.transactions.length === demo.transactions.length, sum.available > 0 && sum.available < sum.total, !whole || demo.transactions.filter((t) => t.currency === demoCurrency).every((t) => Number.isInteger(t.amount))], [demoCurrency, false, true, true, true, true]);
+}
+eq("ejemplo en Argentina: no cambia", buildDemoState(undefined, "es-AR").settings.mainCurrency, "ARS");
+const inRegion = (region, fn) => { M.configureMoney({ region }); const out = fn(); M.configureMoney({ region: "es-AR", currencies: ["ARS", "USD", "EUR"] }); return out; };
+eq("símbolo $ solo en el país de la moneda", [inRegion("es-MX", () => [M.symbolOf("MXN"), M.symbolOf("USD"), M.symbolOf("ARS")]), inRegion("es-CL", () => [M.symbolOf("CLP"), M.symbolOf("MXN"), M.usesCents()])], [["$", "US$", "AR$"], ["$", "MX$", false]]);
 
 // Idiomas: los templates se traducen por tramos, con los valores en el orden de cada idioma
 const I = await import(base + "core/i18n.js");

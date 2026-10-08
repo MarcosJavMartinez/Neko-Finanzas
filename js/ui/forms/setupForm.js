@@ -4,17 +4,20 @@
 // junto, así la persona entiende cómo funciona antes de empezar a usarla.
 // Lo que no tenga se deja vacío; todo se puede cambiar después.
 
-import { msg, tr } from "../../core/i18n.js";
+import { msg, tr, LANGUAGES, getLanguage, saveLanguage } from "../../core/i18n.js";
 import { html, setHTML } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, whenHistorySettled } from "../sheet.js";
 import { toast } from "../toast.js";
-import { currencyTiles, segmented } from "../components.js";
-import { parseAmount, formatMoney, convert, CURRENCY_CODES, zeroAmount, symbolOf } from "../../core/money.js";
+import { segmented } from "../components.js";
+import { parseAmount, formatMoney, convert, CURRENCIES, CURRENCY_CODES, REGIONS, getRegion, zeroAmount, symbolOf } from "../../core/money.js";
 import { MAX_AMOUNT, isISODate } from "../../core/sanitize.js";
 import { addMonths, currentMonthKey, todayISO } from "../../core/dates.js";
 import * as store from "../../core/store.js";
 import { markSetupOffered } from "../../core/prefs.js";
+
+/** Marca para reabrir el asistente después de cambiar de idioma (la app se recarga). */
+export const REOPEN_KEY = "nekoFinanzas.reopenSetup";
 
 const STEPS = ["basics", "accounts", "card", "bills", "spending", "loans", "goals", "summary"];
 const MAX_ROWS = 6;
@@ -93,11 +96,21 @@ const RENDER = {
   basics: (a, additive) => html`
     <h3 class="setup-title">Empecemos por lo básico</h3>
     <p class="sheet-text">Son unas preguntas cortas sobre tu dinero. Lo que no tengas, déjalo vacío y sigue. Al final registro todo junto${additive ? " y se suma a lo que ya tienes" : ""}, y después lo puedes cambiar cuando quieras.</p>
-    <div class="field">
-      <span class="field-label">¿En qué moneda manejas tu dinero?</span>
-      ${segmented("currency", currencyTiles(CURRENCY_CODES), a.currency, { size: "segmented-wrap" })}
-      <p class="field-hint">Los totales se van a mostrar en esta moneda.</p>
+    <div class="setup-locale">
+      <label class="field">
+        <span class="field-label">Idioma</span>
+        <select name="setup-language">${Object.entries(LANGUAGES).map(([code, l]) => html`<option value="${code}" ${code === getLanguage() ? "selected" : ""}>${l.name}</option>`)}</select>
+      </label>
+      <label class="field">
+        <span class="field-label">País</span>
+        <select name="setup-region">${Object.values(REGIONS).map((r) => html`<option value="${r.code}" ${r.code === getRegion() ? "selected" : ""}>${r.name}</option>`)}</select>
+      </label>
     </div>
+    <label class="field">
+      <span class="field-label">¿En qué moneda manejas tu dinero?</span>
+      <select name="currency">${CURRENCY_CODES.map((code) => html`<option value="${code}" ${code === a.currency ? "selected" : ""}>${symbolOf(code)} · ${CURRENCIES[code].name}</option>`)}</select>
+      <span class="field-hint">Los totales se van a mostrar en esta moneda. Si tu país no está en la lista, elige el más parecido y cambia la moneda.</span>
+    </label>
     ${moneyField("salary", "¿Cuánto cobras por mes? (opcional)", a.salary, a.currency)}
     <p class="field-hint">Sirve para crear presupuestos en % de tus ingresos. No se suma a tu dinero: eso lo indicas en el paso siguiente.</p>`,
 
@@ -416,6 +429,25 @@ export function openSetupWizard() {
         if (match && event.target.value.trim()) form.elements[`${match[1]}-on-${match[2]}`].checked = true;
       });
       form.addEventListener("change", (event) => {
+        const { name, value } = event.target;
+        if (name === "setup-language") {
+          // Cambiar de idioma recarga la app: el asistente se vuelve a abrir solo.
+          saveLanguage(value);
+          try {
+            sessionStorage.setItem(REOPEN_KEY, "1");
+          } catch (error) {
+            /* sin sessionStorage: se abre desde Configuración */
+          }
+          location.reload();
+        } else if (name === "setup-region" || name === "currency") {
+          // El país propone su moneda y su forma de escribir los números; la moneda se puede cambiar aparte.
+          collect(step(), form, answers);
+          if (name === "setup-region") {
+            store.setRegion(value);
+            answers.currency = REGIONS[value]?.currency || answers.currency;
+          }
+          show();
+        }
         if (event.target.name === "card-on") form.querySelector("[data-card-box]").hidden = !event.target.checked;
       });
 

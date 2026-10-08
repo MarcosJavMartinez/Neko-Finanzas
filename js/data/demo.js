@@ -3,6 +3,7 @@
 // y con números estables (random con semilla fija). Se borran desde el aviso
 // del inicio o desde Configuración.
 
+import { CURRENCIES, DEFAULT_RATES, REGIONS, startingCurrencies } from "../core/money.js";
 import { createEmptyState, uid, DEFAULT_ACCOUNT_ID } from "./defaults.js";
 import { addDays, addMonths, lastMonthKeys, parseISO, todayISO, currentMonthKey } from "../core/dates.js";
 
@@ -16,8 +17,47 @@ function seeded(seed) {
   };
 }
 
-export function buildDemoState(today = todayISO()) {
+/**
+ * El ejemplo está armado en pesos argentinos. En otro país se pasa a su
+ * moneda con montos redondos (350.000 pesos → 39.000 yenes, no 38.888,89).
+ * El mismo monto da siempre el mismo resultado, así que un pago sigue
+ * coincidiendo con su factura y una transferencia con lo que llega.
+ */
+function toLocalCurrency(state, region) {
+  const local = REGIONS[region]?.currency;
+  if (!local || local === "ARS") return;
+  const perUnit = DEFAULT_RATES[local];
+  const whole = CURRENCIES[local].decimals === 0;
+  const nice = (ars) => {
+    const value = ars / perUnit;
+    if (!value) return 0;
+    const step = 10 ** (Math.floor(Math.log10(Math.abs(value))) - 1);
+    const rounded = Math.round(value / step) * step;
+    return whole ? Math.round(rounded) || Math.sign(value) : Math.round(rounded * 100) / 100;
+  };
+  // `inPesos`: el dato (o el que lo contiene: los pagos de un préstamo) está en pesos.
+  const walk = (node, inPesos) => {
+    if (Array.isArray(node)) return node.forEach((item) => walk(item, inPesos));
+    if (!node || typeof node !== "object") return;
+    const pesos = node.currency ? node.currency === "ARS" : inPesos;
+    if (pesos) {
+      for (const key of ["amount", "opening", "target"]) if (typeof node[key] === "number") node[key] = nice(node[key]);
+      if (typeof node.value === "number" && node.mode && node.mode !== "percent") node.value = nice(node.value);
+      if (node.currency) node.currency = local;
+    }
+    if (node.toCurrency === "ARS") Object.assign(node, { toAmount: nice(node.toAmount), toCurrency: local });
+    for (const child of Object.values(node)) walk(child, pesos);
+  };
+  for (const key of ["accounts", "transactions", "bills", "goals", "budgets", "loans"]) walk(state[key], false);
+  state.settings.budgetReference = nice(state.settings.budgetReference || 0);
+  state.settings.mainCurrency = local;
+  state.settings.currencies = startingCurrencies(region);
+}
+
+/** `region`: el país para el que se arma el ejemplo (por defecto, el del dispositivo). */
+export function buildDemoState(today = todayISO(), region) {
   const state = createEmptyState();
+  if (REGIONS[region]) state.settings.region = region;
   const rand = seeded(42);
   const between = (min, max, step = 500) => Math.round((min + rand() * (max - min)) / step) * step;
   // --- Cuentas -------------------------------------------------------------
@@ -217,5 +257,6 @@ export function buildDemoState(today = todayISO()) {
     if (t.type === "expense" && t.date === today && !t.billId && !t.installment) t.date = t.createdAt = yesterday;
   }
 
+  toLocalCurrency(state, state.settings.region);
   return state;
 }

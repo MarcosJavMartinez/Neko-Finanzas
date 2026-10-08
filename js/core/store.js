@@ -1038,7 +1038,7 @@ export function updateSettings(data) {
 export function loadDemo() {
   snapshotBefore("Antes de cargar el ejemplo");
   commit(() => {
-    state = migrate(buildDemoState());
+    state = migrate(buildDemoState(undefined, state?.settings?.region));
     syncFormat();
   });
 }

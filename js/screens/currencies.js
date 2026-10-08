@@ -128,6 +128,7 @@ export default {
     },
     "toggle-currency"(el) {
       store.toggleCurrency(el.value, el.checked);
+      if (el.checked) toast(msg`Revisa el tipo de cambio de ${el.value}: el valor inicial es aproximado`, { type: "info", duration: 6000 });
     },
     "save-rate"(el) {
       const value = parseAmount(el.value);

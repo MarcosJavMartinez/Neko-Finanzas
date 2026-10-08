@@ -35,7 +35,7 @@ import { syncPlan, fireDue } from "./ui/reminders.js";
 import "./ui/amountInput.js";
 import { snoozeIosNotice, markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen, setupOffered } from "./core/prefs.js";
 import { openOnboarding } from "./ui/onboarding.js";
-import { openSetupWizard } from "./ui/forms/setupForm.js";
+import { openSetupWizard, REOPEN_KEY } from "./ui/forms/setupForm.js";
 import { transactionsToCSV } from "./core/csv.js";
 import { todayISO } from "./core/dates.js";
 
@@ -577,7 +577,17 @@ async function start() {
   // cuestionario; con los datos de ejemplo, el tutorial que termina en él.
   const state = store.getState();
   const noOwnData = state.settings.isDemo || store.isEmptyState(state);
-  if (!onboardingSeen()) {
+  let reopenSetup = false;
+  try {
+    reopenSetup = sessionStorage.getItem(REOPEN_KEY) === "1";
+    sessionStorage.removeItem(REOPEN_KEY);
+  } catch (error) {
+    /* sin sessionStorage */
+  }
+  if (reopenSetup) {
+    // Venía del asistente y cambió de idioma: sigue donde estaba.
+    setTimeout(openSetupWizard, splashDelay + 200);
+  } else if (!onboardingSeen()) {
     if (noOwnData) setTimeout(openOnboarding, splashDelay + 200);
     else markOnboardingSeen();
   } else if (!setupOffered() && noOwnData) {
