@@ -32,7 +32,7 @@ export default {
           </button>`
         )}
       </div>
-      <button type="button" class="btn btn-soft btn-block reveal" data-action="add-category" data-type="${view.type}">${icon("plus", 18)}Nueva categoría de ${view.type === "expense" ? "gasto" : "ingreso"}</button>
+      <button type="button" class="btn btn-soft btn-block reveal" data-action="add-category" data-type="${view.type}">${icon("plus", 18)}${view.type === "expense" ? "Nueva categoría de gasto" : "Nueva categoría de ingreso"}</button>
     `;
   },
   changes: {

@@ -1,6 +1,7 @@
 // Reportes: el mes de un vistazo, en qué se fue el dinero y cómo viene
 // evolucionando. Pocos gráficos, fáciles de leer.
 
+import { tr } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { art, chartSize, emptyState, monthNav } from "../ui/components.js";
@@ -43,7 +44,7 @@ export default {
       return pick;
     };
     const slices = [
-      ...top.map((x) => ({ label: `${x.category?.icon || ""} ${x.category?.name || "Sin categoría"}`, value: x.amount, color: sliceColor(x.category?.color || "#8b958e"), categoryId: x.categoryId })),
+      ...top.map((x) => ({ label: `${x.category?.icon || ""} ${tr(x.category?.name || "Sin categoría")}`, value: x.amount, color: sliceColor(x.category?.color || "#8b958e"), categoryId: x.categoryId })),
       ...(rest > 0 ? [{ label: "Otras", value: rest, color: "#9aa39d" }] : []),
     ];
 

@@ -153,7 +153,7 @@ export function txRow(state, tx, { withDate = false, hideAccount = false } = {})
 
 const accountOf = (state, id) => {
   const account = state.accounts.find((a) => a.id === id);
-  return account ? `${account.icon} ${account.name}` : "";
+  return account ? `${account.icon} ${tr(account.name)}` : "";
 };
 
 /**
@@ -190,7 +190,7 @@ function transferRow(state, tx, { withDate }) {
         ${fx}
       </span>
     </span>
-    ${tableCells({ date: tx.date, category: "Transferencia", account: `${from?.name || "?"} → ${to?.name || "?"}`, amount: html`<span class="tx-amount is-transfer">${formatMoney(tx.amount, tx.currency)}</span>${fx}` })}
+    ${tableCells({ date: tx.date, category: "Transferencia", account: `${tr(from?.name) || "?"} → ${tr(to?.name) || "?"}`, amount: html`<span class="tx-amount is-transfer">${formatMoney(tx.amount, tx.currency)}</span>${fx}` })}
   </button>`;
 }
 

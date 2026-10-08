@@ -140,7 +140,7 @@ export default {
       const main = state.settings.mainCurrency;
       const inverse = el.dataset.inverse === "1";
       store.setRateInMain(el.name, inverse ? 1 / value : value);
-      toast(inverse ? `1 ${main} = ${formatMoney(value, el.name)} guardado` : `1 ${el.name} = ${formatMoney(value, main)} guardado`);
+      toast(inverse ? msg`1 ${main} = ${formatMoney(value, el.name)} guardado` : msg`1 ${el.name} = ${formatMoney(value, main)} guardado`);
     },
   },
 };

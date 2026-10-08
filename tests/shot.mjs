@@ -56,7 +56,7 @@ try {
   await sleep(2500);
   if (prep) {
     await evaluate(`(async () => { ${prep} })()`);
-    await sleep(1200);
+    await sleep(Number(process.env.ESPERA || 1200)); // ESPERA=5000 si el js-antes recarga la página
   }
   const shot = await send("Page.captureScreenshot", { format: "png" });
   writeFileSync(out, Buffer.from(shot.result.data, "base64"));

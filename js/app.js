@@ -72,7 +72,7 @@ const SIDE_NAV = [
   ["cuentas", "wallet", "Cuentas"],
   ["categorias", "tag", "Categorías"],
   ["prestamos", "coinStack", "Préstamos"],
-  ["monedas", "coins", "Monedas"],
+  ["monedas", "coins", "Idioma y monedas"],
 ];
 
 function renderSidebar() {
@@ -537,8 +537,13 @@ function localizeStatic() {
 }
 
 async function start() {
-  await initLanguage();
-  localizeStatic();
+  // Si el idioma no se puede preparar, la app arranca igual, en español.
+  try {
+    await initLanguage();
+    localizeStatic();
+  } catch (error) {
+    console.warn("[idioma]", error);
+  }
   setMasked(amountsHidden());
   showCustomImage();
   initBackupFile().then(() => currentScreen?.id === "ajustes-datos" && render());

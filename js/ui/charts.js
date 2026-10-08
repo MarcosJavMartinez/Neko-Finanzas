@@ -5,6 +5,7 @@
 // solo identifica la serie) y leyenda cuando hay más de una serie. Cada
 // marca tiene `data-tip` para el tooltip (mouse, toque o foco con teclado).
 
+import { tr } from "../core/i18n.js";
 import { html, raw, esc } from "./dom.js";
 import { formatCompact, formatMoney } from "../core/money.js";
 
@@ -136,7 +137,7 @@ export function lineChart(points, { currency, height = 160, color = "var(--brand
 /** Barra apilada horizontal (se usa en el saldo del inicio). */
 export function stackBar(segments) {
   const total = segments.reduce((s, x) => s + Math.max(0, x.value), 0) || 1;
-  return html`<div class="stack-bar" role="img" aria-label="${segments.map((s) => `${s.label}: ${Math.round((Math.max(0, s.value) / total) * 100)}%`).join(", ")}">
+  return html`<div class="stack-bar" role="img" aria-label="${segments.map((s) => `${tr(s.label)}: ${Math.round((Math.max(0, s.value) / total) * 100)}%`).join(", ")}">
     ${segments
       .filter((s) => s.value > 0)
       .map((s) => html`<span class="stack-seg" style="--w:${(s.value / total) * 100}%;--c:${s.color}" data-tip="${s.label}\n${s.tip || ""}"></span>`)}

@@ -1,7 +1,7 @@
 // Cuentas (efectivo, banco, billetera virtual, ahorro) y transferencias
 // entre ellas. Transferir no es gastar: el dinero cambia de lugar.
 
-import { msg } from "../../core/i18n.js";
+import { msg, tr } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
@@ -18,7 +18,7 @@ import { ACCOUNT_KINDS } from "../../data/defaults.js";
 const ACCOUNT_ICONS = ["👛", "💵", "🏦", "📱", "💳", "🐷", "💰", "🪙", "🏧", "💶", "💴", "🧾"];
 
 /** Nombre con ícono de una cuenta ("🏦 Cuenta sueldo"). */
-export const accountLabel = (account) => (account ? `${account.icon} ${account.name}` : "Cuenta borrada");
+export const accountLabel = (account) => (account ? `${account.icon} ${tr(account.name)}` : "Cuenta borrada");
 
 /** Selector de cuenta para formularios (las archivadas no se ofrecen, salvo la elegida). */
 export function accountSelect(state, { name = "accountId", label = "Cuenta", value, exclude = "" } = {}) {

@@ -40,7 +40,7 @@ export function transactionsToCSV(state) {
       if (tx.type === "transfer") {
         const to = findAccount(state, tx.toAccountId);
         const fx = tx.currency !== tx.toCurrency ? msg` (llegan ${formatMoney(tx.toAmount, tx.toCurrency, { reveal: true })})` : "";
-        return [tx.date, tx.time || "", text("Transferencia"), text(`${account?.name || "?"} → ${to?.name || "?"}`), "", "", text((tx.description || "") + fx), number(tx.amount), tx.currency, ""].join(";");
+        return [tx.date, tx.time || "", text("Transferencia"), text(`${tr(account?.name) || "?"} → ${tr(to?.name) || "?"}`), "", "", text((tx.description || "") + fx), number(tx.amount), tx.currency, ""].join(";");
       }
       const category = findCategory(state, tx.categoryId);
       const sub = findSubcategory(category, tx.subcategoryId);

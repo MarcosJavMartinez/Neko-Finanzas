@@ -379,7 +379,7 @@ export function openLoanDetail(loanId) {
   openSheet({
     title: `🤝 ${loan.person}`,
     body: html`<div class="loan-detail">
-      <p class="account-detail-label">${directionText(loan)} el ${formatDate(loan.date)}${account ? ` · ${account.icon} ${account.name}` : ""}</p>
+      <p class="account-detail-label">${directionText(loan)} el ${formatDate(loan.date)}${account ? ` · ${account.icon} ${tr(account.name)}` : ""}</p>
       <p class="account-detail-balance">${outstanding > 0 ? formatMoney(outstanding, loan.currency) : "Saldado"}</p>
       <p class="fine-print">${outstanding > 0 ? `${loan.direction === "lent" ? "Te falta cobrar" : "Te falta devolver"} de ${formatMoney(loan.amount, loan.currency)}` : msg`${formatMoney(loan.amount, loan.currency)} devueltos`}${loan.dueDate && outstanding > 0 ? ` · ${formatDue(loan.dueDate, today)}` : ""}</p>
       ${progressBar(percent(paid, loan.amount), { color: "var(--goal)", label: "Parte devuelta" })}
@@ -397,7 +397,7 @@ export function openLoanDetail(loanId) {
               return html`<div class="row loan-payment">
                 <span class="row-main">
                   <span class="row-title">${formatMoney(p.amount, loan.currency)}</span>
-                  <span class="row-meta">${formatDate(p.date, { withYear: true })}${acc ? ` · ${acc.icon} ${acc.name}` : " · sin mover dinero"}</span>
+                  <span class="row-meta">${formatDate(p.date, { withYear: true })}${acc ? ` · ${acc.icon} ${tr(acc.name)}` : " · sin mover dinero"}</span>
                 </span>
                 <button type="button" class="icon-btn" data-remove-payment="${p.id}" aria-label="Borrar esta devolución">${icon("trash", 18)}</button>
               </div>`;

@@ -307,7 +307,7 @@ export default {
         const base = x.category?.color || "#8b958e";
         const color = usedColors.has(base) ? PALETTE.find((c) => !usedColors.has(c)) || base : base;
         usedColors.add(color);
-        return { label: `${x.category?.icon || ""} ${x.category?.name || "Sin categoría"}`, value: x.amount, color };
+        return { label: `${x.category?.icon || ""} ${tr(x.category?.name || "Sin categoría")}`, value: x.amount, color };
       }),
       ...(restCats > 0 ? [{ label: "Otras", value: restCats, color: "#9aa39d" }] : []),
     ];

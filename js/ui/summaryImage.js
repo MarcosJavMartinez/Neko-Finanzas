@@ -180,7 +180,7 @@ async function draw(state, key) {
   const pctRight = PAD + 48 + innerW - amountCol - 28;
   cats.forEach((c, i) => {
     const y = listY + 138 + i * rowH;
-    const name = `${c.category?.icon || "•"}  ${c.category?.name || "Sin categoría"}`;
+    const name = `${c.category?.icon || "•"}  ${tr(c.category?.name || "Sin categoría")}`;
     const amount = m(c.amount);
     const pct = percent(c.amount, totals.expense);
     ctx.font = `700 30px ${DISPLAY}`;
