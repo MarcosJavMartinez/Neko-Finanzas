@@ -1,4 +1,4 @@
-import { setDateRegion, msg } from "./i18n.js";
+import { isRTL, setDateRegion, msg } from "./i18n.js";
 // Monedas, conversión y formato de montos.
 //
 // Los tipos de cambio los define el usuario a mano y se guardan como
@@ -157,6 +157,9 @@ function numberFormatter(decimals) {
  * Los montos grandes o enteros van sin decimales; los chicos con centavos
  * muestran dos, así una suscripción de US$ 9,99 no queda como "US$ 10".
  */
+/** Marca invisible que fija el orden de un monto dentro de un texto de derecha a izquierda. */
+const ltr = () => (isRTL() ? "\u200E" : "");
+
 export function formatMoney(amount, currency = PIVOT, { sign = false, reveal = false } = {}) {
   if (masked && !reveal) return maskedMoney(currency);
   const value = Number(amount) || 0;
@@ -169,7 +172,7 @@ export function formatMoney(amount, currency = PIVOT, { sign = false, reveal = f
   const number = numberFormatter(decimals).format(decimals ? rounded : Math.round(abs));
   // Un monto que redondea a 0 no lleva signo ("−$ 0" confunde).
   const prefix = rounded === 0 ? "" : value < 0 ? "−" : sign && value > 0 ? "+" : "";
-  return `${prefix}${symbol} ${number}`;
+  return `${ltr()}${prefix}${symbol} ${number}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -186,7 +189,7 @@ export function setMasked(value) {
 export const isMasked = () => masked;
 
 function maskedMoney(currency) {
-  return `${symbolOf(currency)} •••••`;
+  return `${ltr()}${symbolOf(currency)} •••••`;
 }
 
 /** Versión compacta para ejes de gráficos: "$ 1,2 M", "$ 850 mil". */
@@ -195,7 +198,7 @@ export function formatCompact(amount, currency = PIVOT) {
   const symbol = symbolOf(currency);
   const abs = Math.abs(amount);
   const sign = amount < 0 ? "−" : "";
-  if (abs >= 1e6) return `${sign}${symbol} ${numberFormatter(1).format(abs / 1e6).replace(/[.,]0$/, "")} M`;
+  if (abs >= 1e6) return `${ltr()}${sign}${symbol} ${numberFormatter(1).format(abs / 1e6).replace(/[.,]0$/, "")} M`;
   if (abs >= 1e4) return msg`${sign}${symbol} ${Math.round(abs / 1000)} mil`;
   return formatMoney(amount, currency);
 }

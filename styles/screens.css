@@ -10,7 +10,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 10px 12px 10px 14px;
+  padding-block: 10px;
+  padding-inline: 14px 12px;
   border-radius: var(--radius-lg);
   background: var(--surface);
   border: 1.5px dashed var(--border-strong);
@@ -51,7 +52,7 @@
 .backup-banner-actions {
   display: flex;
   gap: 8px;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .home-grid,
@@ -142,7 +143,8 @@
 .hero-art {
   width: 108px;
   height: auto;
-  margin: -6px -6px -8px 0;
+  margin-block: -6px -8px;
+  margin-inline: 0 -6px;
   flex-shrink: 0;
   filter: drop-shadow(0 8px 10px rgba(8, 120, 150, 0.16));
 }
@@ -439,7 +441,7 @@
 .card-pending-actions {
   display: flex;
   gap: 8px;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .budget-mini {
@@ -548,7 +550,7 @@
   border-radius: var(--radius-xl);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
-  text-align: left;
+  text-align: start;
   transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast);
 }
 
@@ -779,6 +781,7 @@
 .day-head {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   padding: 14px 0 2px;
   font-family: var(--font-display);
   font-size: 0.86rem;
@@ -874,7 +877,7 @@
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  text-align: left;
+  text-align: start;
   transition: box-shadow var(--dur-fast), transform var(--dur-fast) var(--ease);
 }
 
@@ -1058,7 +1061,7 @@ summary.cb-row::-webkit-details-marker {
   font-family: var(--font-display);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  text-align: right;
+  text-align: end;
 }
 
 .cb-toggle {
@@ -1075,9 +1078,11 @@ summary.cb-row::-webkit-details-marker {
 
 .cb-subs {
   list-style: none;
-  margin: 0 0 10px 4px;
-  padding: 2px 0 2px 14px;
-  border-left: 2px solid var(--border);
+  margin-block: 0 10px;
+  margin-inline: 4px 0;
+  padding-block: 2px;
+  padding-inline: 14px 0;
+  border-inline-start: 2px solid var(--border);
   animation: reveal 280ms var(--ease);
 }
 
@@ -1086,7 +1091,8 @@ summary.cb-row::-webkit-details-marker {
   grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 10px;
-  padding: 5px 26px 5px 0;
+  padding-block: 5px;
+  padding-inline: 0 26px;
   font-size: 0.84rem;
   color: var(--text-2);
 }
@@ -1239,7 +1245,7 @@ summary.cb-row::-webkit-details-marker {
 .formula-row .muted-text {
   font-weight: 400;
   font-size: 0.82rem;
-  text-align: right;
+  text-align: end;
 }
 
 .formula-total {
@@ -1363,7 +1369,7 @@ summary.cb-row::-webkit-details-marker {
   gap: 14px;
   padding: 12px 4px;
   border-radius: var(--radius-sm);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   color: var(--text-2);
   transition: background var(--dur-fast);
@@ -1574,7 +1580,7 @@ summary.cb-row::-webkit-details-marker {
 .cal-count {
   position: absolute;
   top: 2px;
-  right: 3px;
+  inset-inline-end: 3px;
   min-width: 15px;
   height: 15px;
   padding: 0 3px;
@@ -1639,7 +1645,7 @@ summary.cb-row::-webkit-details-marker {
 
 button.more-item {
   width: 100%;
-  text-align: left;
+  text-align: start;
 }
 
 .settings-help {
@@ -1728,7 +1734,7 @@ button.more-item {
 }
 
 .ob-actions [data-ob="next"] {
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .report-share {
@@ -2252,7 +2258,7 @@ button.inline-link {
 .cushion-actions {
   display: flex;
   gap: 8px;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 /* ---------------------------------------------------------------------------
@@ -2267,7 +2273,7 @@ button.inline-link {
 
 .cushion-actions {
   flex: 1 1 100%;
-  margin-left: 0;
+  margin-inline-start: 0;
   justify-content: flex-end;
 }
 
@@ -2298,7 +2304,7 @@ button.inline-link {
 @media (max-width: 359px) {
   .card-pending-actions {
     flex: 1 1 100%;
-    margin-left: 0;
+    margin-inline-start: 0;
   }
 
   .card-pending-actions .btn {
@@ -2478,7 +2484,7 @@ button.inline-link {
 
 .chooser-item {
   width: 100%;
-  text-align: left;
+  text-align: start;
 }
 
 .more-icon.tone-expense { background: var(--expense-soft); color: var(--expense); }
@@ -2512,4 +2518,9 @@ button.inline-link {
 /* Acciones del detalle (préstamo, cuenta): bajan de línea si no entran */
 .account-detail-actions {
   flex-wrap: wrap;
+}
+
+/* El total del día va siempre al otro extremo del título. */
+.day-head > :last-child {
+  margin-inline-start: auto;
 }

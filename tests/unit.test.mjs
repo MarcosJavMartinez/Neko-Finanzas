@@ -481,7 +481,7 @@ eq("idiomas: sin traducción queda el español", String(html`<p>Texto sin traduc
 I.useDictionary("es", null);
 eq("idiomas: en español no cambia nada", String(html`<p>Hola ${"Ana"}, tienes ${3} mensajes</p>`), "<p>Hola Ana, tienes 3 mensajes</p>");
 const i18nReport = await (await import(new URL("../tools/i18n.mjs", import.meta.url).href)).report();
-eq("idiomas: a ningún diccionario le faltan textos", Object.fromEntries(Object.entries(i18nReport.missing).map(([code, list]) => [code, list ? list.length : -1])), { en: 0, pt: 0, tr: 0, ru: 0, ja: 0 });
+eq("idiomas: a ningún diccionario le faltan textos", Object.fromEntries(Object.entries(i18nReport.missing).map(([code, list]) => [code, list ? list.length : -1])), { en: 0, "en-GB": 0, pt: 0, tr: 0, ru: 0, ja: 0, ar: 0 });
 eq("idiomas: ningún texto con variables quedó sin la etiqueta msg", i18nReport.loose.length, 0);
 
 console.log(`\n${pass} pruebas OK, ${fail} fallidas`);

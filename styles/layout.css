@@ -138,7 +138,7 @@
   }
 
   body {
-    padding-left: var(--side-w);
+    padding-inline-start: var(--side-w);
     padding-bottom: 48px;
   }
 
@@ -148,7 +148,8 @@
 
   .sidebar {
     position: fixed;
-    inset: 0 auto 0 0;
+    inset-block: 0;
+    inset-inline: 0 auto;
     z-index: 25;
     width: var(--side-w);
     display: flex;
@@ -156,7 +157,7 @@
     gap: 6px;
     padding: 16px 8px 14px;
     background: var(--surface);
-    border-right: 1px solid var(--border);
+    border-inline-end: 1px solid var(--border);
     overflow-y: auto;
     scrollbar-width: thin;
   }
@@ -234,8 +235,8 @@
   .app-header-inner,
   body.is-wide .app-header-inner {
     max-width: none;
-    padding-left: clamp(20px, 3vw, 44px);
-    padding-right: clamp(20px, 3vw, 44px);
+    padding-inline-start: clamp(20px, 3vw, 44px);
+    padding-inline-end: clamp(20px, 3vw, 44px);
   }
 
   .header-logo,
@@ -300,7 +301,7 @@
   }
 
   .toast-host {
-    left: var(--side-w);
+    inset-inline-start: var(--side-w);
     bottom: 24px;
   }
 
@@ -309,7 +310,7 @@
   .view[data-screen="monedas"],
   .view[data-screen="mas"] {
     max-width: 980px;
-    margin-left: 0;
+    margin-inline-start: 0;
   }
 
   .view[data-screen="ajustes"] > .more-grid,
@@ -440,7 +441,7 @@
     gap: 12px;
     padding: 10px 12px;
     font-size: 0.94rem;
-    text-align: left;
+    text-align: start;
   }
 
   .side-link span {
@@ -454,7 +455,8 @@
     align-items: center;
     gap: 8px;
     margin-top: 12px;
-    padding: 10px 12px 10px 6px;
+    padding-block: 10px;
+    padding-inline: 6px 12px;
     border-radius: 18px;
     background: var(--brand-soft);
     color: var(--brand-ink);
@@ -585,7 +587,7 @@
   }
 
   .view[data-screen="transacciones"] .tx-thead > :last-child {
-    text-align: right;
+    text-align: end;
   }
 
   .view[data-screen="transacciones"] .tx-row {
@@ -595,13 +597,13 @@
   }
 
   .view[data-screen="transacciones"] .tx-row > * {
-    margin-right: 18px;
+    margin-inline-end: 18px;
   }
 
   .view[data-screen="transacciones"] .tx-row > .cat-bubble {
     grid-column: 2;
     grid-row: 1;
-    margin-right: 12px;
+    margin-inline-end: 12px;
   }
 
   .view[data-screen="transacciones"] .tx-row > .tx-body {
@@ -636,7 +638,7 @@
 
   .view[data-screen="transacciones"] .tx-cell-amount {
     grid-column: 6;
-    margin-right: 0;
+    margin-inline-end: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -745,4 +747,60 @@
   .home-donut .cat-breakdown {
     margin-top: 0;
   }
+}
+
+/* ---------- Idiomas de derecha a izquierda (árabe) ---------- */
+
+/* Flechas que indican "adelante" o "atrás": apuntan para el otro lado. */
+[dir="rtl"] .more-chevron,
+[dir="rtl"] .header-back .icon,
+[dir="rtl"] .section-link .icon,
+[dir="rtl"] .see-all .icon,
+[dir="rtl"] .transfer-arrow .icon,
+[dir="rtl"] .cb-toggle .icon,
+[dir="rtl"] .month-nav .icon,
+[dir="rtl"] [data-action="bills-month"] .icon {
+  transform: scaleX(-1);
+}
+
+/* Bordes redondeados de un solo lado. */
+[dir="rtl"] .row-bill.status-overdue::after {
+  border-radius: 4px 0 0 4px;
+}
+
+[dir="rtl"] .sub-item-remove {
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+}
+
+/* Los números y las fechas se escriben de izquierda a derecha. */
+[dir="rtl"] input[inputmode="decimal"],
+[dir="rtl"] input[type="date"],
+[dir="rtl"] input[type="time"],
+[dir="rtl"] input[type="number"] {
+  direction: ltr;
+}
+
+[dir="rtl"] input[type="date"],
+[dir="rtl"] input[type="time"] {
+  text-align: end;
+}
+
+/* Los gráficos conservan sus ejes de izquierda a derecha. */
+[dir="rtl"] .chart-svg,
+[dir="rtl"] .chart-tip {
+  direction: ltr;
+}
+
+/* Símbolos de moneda ("E£", "US$"): siempre en su orden. */
+[dir="rtl"] .amount-currency,
+[dir="rtl"] .cur-badge,
+[dir="rtl"] .cur-tile strong,
+[dir="rtl"] .amount-suffix {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* La flecha de los desplegables pasa al otro lado. */
+[dir="rtl"] select {
+  background-position: left 12px center;
 }

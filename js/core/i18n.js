@@ -16,12 +16,18 @@
 
 export const LANGUAGES = {
   es: { name: "Español", locale: "es-AR" },
-  en: { name: "English", locale: "en-US" },
+  en: { name: "English (US)", locale: "en-US" },
+  "en-GB": { name: "English (UK)", locale: "en-GB" },
   pt: { name: "Português", locale: "pt-BR" },
   tr: { name: "Türkçe", locale: "tr-TR" },
   ru: { name: "Русский", locale: "ru-RU" },
   ja: { name: "日本語", locale: "ja-JP" },
+  // Árabe con números occidentales (los mismos que usan los montos) y de derecha a izquierda.
+  ar: { name: "العربية", locale: "ar-EG-u-nu-latn", rtl: true },
 };
+
+/** Inglés británico: también es el que se usa en estos países. */
+const BRITISH = /^en-(gb|ie|au|nz|za|in)$/;
 
 const KEY = "nekoFinanzas.language";
 let language = "es";
@@ -32,7 +38,9 @@ let templates = new WeakMap();
 export function detectLanguage() {
   const list = typeof navigator !== "undefined" ? navigator.languages || [navigator.language] : [];
   for (const tag of list) {
-    const code = String(tag || "").slice(0, 2).toLowerCase();
+    const lower = String(tag || "").toLowerCase();
+    if (BRITISH.test(lower)) return "en-GB";
+    const code = lower.slice(0, 2);
     if (LANGUAGES[code]) return code;
   }
   return list.length ? "en" : "es";
@@ -49,13 +57,17 @@ export function savedLanguage() {
 
 export const getLanguage = () => language;
 
+/** ¿El idioma se escribe de derecha a izquierda? */
+export const isRTL = () => Boolean(LANGUAGES[language]?.rtl);
+
 /** País elegido (lo avisa money.js): afina el formato de las fechas dentro del idioma. */
 let region = null;
 export const setDateRegion = (code) => (region = code);
 
 /** Locale para fechas y nombres de meses: el del idioma, con el país si coincide. */
 export function dateLocale() {
-  return region && region.slice(0, 2) === language ? region : LANGUAGES[language].locale;
+  // Una variante ("en-GB") ya trae su país; si no, vale el país elegido cuando habla ese idioma.
+  return !language.includes("-") && region && region.slice(0, 2) === language ? region : LANGUAGES[language].locale;
 }
 
 /** Carga el diccionario del idioma (el guardado, o el del dispositivo) antes del primer render. */
@@ -77,7 +89,10 @@ export async function applyLanguage(code) {
   language = entries || next === "es" ? next : "es";
   dict = entries ? new Map(Object.entries(entries)) : null;
   templates = new WeakMap();
-  if (typeof document !== "undefined") document.documentElement.lang = language;
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = language;
+    document.documentElement.dir = isRTL() ? "rtl" : "ltr";
+  }
 }
 
 export function saveLanguage(code) {
