@@ -26,6 +26,16 @@ return (async () => {
     log("sueldo inválido: " + (error() || "sin error ✗") + " · sigue en el paso " + (Number(form().dataset.step) + 1));
     type("salary", "900.000"); await next();
 
+    // 1b) Otras monedas: el dólar viene propuesto; se suma el euro y se escribe a cuánto está cada uno
+    log("paso " + step());
+    form().elements["cur-on-EUR"].click(); await wait(150);
+    type("cur-rate-USD", "abc"); await next();
+    log("tipo de cambio inválido: " + (error() || "sin error ✗"));
+    type("cur-rate-USD", "1.400"); type("cur-rate-EUR", "1.600");
+    form().elements["cur-on-EUR"].click(); await wait(150);
+    log("al desmarcar el euro se va su fila y queda lo escrito del dólar: " + (!form().elements["cur-rate-EUR"] && form().elements["cur-rate-USD"].value === "1.400" ? "sí" : "NO ✗"));
+    await next();
+
     // 2) Cuentas (escribir el monto marca la cuenta)
     log("paso " + step());
     type("acc-amount-0", "50.000");
@@ -99,6 +109,7 @@ return (async () => {
     const sum = F.balanceSummary(s);
     log("hoja cerrada=" + !sheet() + " · pantalla=" + d.querySelector("#view").dataset.screen + " · aviso: " + ([...d.querySelectorAll(".toast")].pop()?.textContent.trim().split("\n")[0] || "ninguno ✗"));
     log("cuentas: " + s.accounts.map((a) => `${a.name} ${a.currency} ${a.opening}`).join(" · "));
+    log(`otras monedas: ${s.settings.currencies.join(",")} · 1 USD = ${s.rates.USD}${s.settings.currencies.join(",") === "ARS,USD" && s.rates.USD === 1400 ? "" : " ✗"}`);
     log("la primera cuenta reemplazó a «Mi dinero»: " + (s.accounts.length === 4 && !s.accounts.some((a) => a.name === "Mi dinero") ? "sí" : "NO ✗"));
     const card = s.accounts.find((a) => a.kind === "credit");
     const st = F.cardStatus(s, card, today);
@@ -134,6 +145,7 @@ return (async () => {
     d.querySelector("#view [data-action=setup-wizard]").click(); await wait(500);
     log("desde Configuración: " + (form() ? "abre · " + (/se suma a lo que ya tienes/.test(form().innerText) ? "avisa que se suma" : "sin aviso ✗") : "NO ✗"));
     await next();
+    await next(); // otras monedas, sin cambios
     type("acc-amount-2", "1.000");
     await toSummary();
     await next();

@@ -56,6 +56,7 @@ return (async () => {
     for (let i = 0; i < 4; i++) { sheet().querySelector("[data-ob=next]").click(); await wait(i === 3 ? 700 : 80); }
     form().elements.salary.value = "800.000";
     await submit();
+    await submit(); // paso "otras monedas", sin cambios
     set(form().elements["acc-amount-0"], "500.000");
     for (let i = 0; i < 12 && sheet()?.querySelector("form.setup"); i++) await submit();
     await check("asistente (dinero hoy 500.000, sueldo 800.000)");

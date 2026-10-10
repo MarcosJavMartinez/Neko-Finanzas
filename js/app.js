@@ -531,6 +531,9 @@ function localizeStatic() {
     const to = text && tr(text.replace(/\s+/g, " "));
     if (to && to !== text) node.nodeValue = node.nodeValue.replace(text, to);
   }
+  // La descripción de la página (la que se ve al compartir el enlace desde el navegador).
+  const description = document.querySelector('meta[name="description"]');
+  if (description) description.setAttribute("content", tr(description.getAttribute("content")));
   for (const el of document.querySelectorAll("[aria-label], [title]")) {
     for (const name of ["aria-label", "title"]) if (el.hasAttribute(name)) el.setAttribute(name, tr(el.getAttribute(name)));
   }

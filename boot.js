@@ -174,6 +174,25 @@
     root.toggleAttribute("data-bg-color", hasBgColor);
   }
 
+  // Nombre y descripción al instalar, en el idioma de la persona (el mismo criterio que js/core/i18n.js).
+  var MANIFESTS = ["en", "en-GB", "pt", "tr", "ru", "ja", "ar"];
+  function manifestLanguage() {
+    var saved = read("nekoFinanzas.language");
+    if (saved) return saved;
+    var list = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ""];
+    for (var i = 0; i < list.length; i++) {
+      var tag = String(list[i] || "").toLowerCase();
+      if (/^en-(gb|ie|au|nz|za|in)$/.test(tag)) return "en-GB";
+      var code = tag.slice(0, 2);
+      if (code === "es") return "es";
+      if (MANIFESTS.indexOf(code) >= 0) return code;
+    }
+    return "en";
+  }
+  var manifestLink = document.querySelector('link[rel="manifest"]');
+  var manifestCode = manifestLanguage();
+  if (manifestLink && MANIFESTS.indexOf(manifestCode) >= 0) manifestLink.setAttribute("href", "manifest." + manifestCode + ".json");
+
   window.NekoAppearance = { apply: apply, palettes: PALETTES };
   apply();
 })();

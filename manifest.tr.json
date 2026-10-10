@@ -1,0 +1,60 @@
+{
+  "id": ".",
+  "name": "Neko Finanzas",
+  "short_name": "Neko Finanzas",
+  "description": "Kişisel finansların, basit ve gizli: ne kadarın var, ne kadar ayırmalısın, ne kadar harcayabilirsin ve ne kadar biriktiriyorsun.",
+  "lang": "tr",
+  "start_url": "./#/inicio",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f3ee",
+  "theme_color": "#0aa0c0",
+  "categories": [
+    "finance",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Gider kaydet",
+      "url": "./#/transacciones",
+      "icons": [
+        {
+          "src": "img/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Hedeflerim",
+      "url": "./#/metas",
+      "icons": [
+        {
+          "src": "img/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

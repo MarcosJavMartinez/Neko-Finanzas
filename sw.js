@@ -4,12 +4,19 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v65";
+const CACHE_VERSION = "neko-finanzas-v66";
 const APP_SHELL = [
   "./",
   "index.html",
   "boot.js",
   "manifest.json",
+  "manifest.en.json",
+  "manifest.en-GB.json",
+  "manifest.pt.json",
+  "manifest.tr.json",
+  "manifest.ru.json",
+  "manifest.ja.json",
+  "manifest.ar.json",
   "styles/fonts.css",
   "fonts/inter-latin.woff2",
   "fonts/inter-latin-ext.woff2",

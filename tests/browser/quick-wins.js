@@ -70,6 +70,7 @@ return (async () => {
     log("sueldo inválido: " + (form.querySelector("[data-setup-error]").textContent || "sin error ✗"));
     form.elements.salary.value = "900";
     form.requestSubmit(); await wait(250);
+    form.requestSubmit(); await wait(250); // paso "otras monedas", sin cambios
     form.elements["acc-amount-0"].value = "1.500,50";
     form.elements["acc-amount-0"].dispatchEvent(new Event("input", { bubbles: true }));
     for (let i = 0; i < 12 && sheet()?.querySelector("form.setup"); i++) { form.requestSubmit(); await wait(250); }

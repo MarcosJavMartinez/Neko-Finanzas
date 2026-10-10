@@ -95,6 +95,12 @@ return (async () => {
 
     const show = (set) => (set.size ? `${set.size} ✗\n  ` + [...set].slice(0, 40).join("\n  ") : "ninguno");
     log(`${lang}: ${routes.length} pantallas y ${opened} hojas${missing.length ? " · no se encontraron: " + missing.join(", ") : ""}`);
+    // Al instalar: el manifest del idioma, con su descripción (y la de la página) traducida
+    const manifestHref = d.querySelector('link[rel="manifest"]').getAttribute("href");
+    const manifest = await (await w.fetch(manifestHref)).json();
+    const pageDescription = d.querySelector('meta[name="description"]').getAttribute("content");
+    const installOk = manifestHref === `manifest.${lang}.json` && manifest.name === "Neko Finanzas" && !/cuánto|tus finanzas/i.test(manifest.description + pageDescription) && manifest.shortcuts.length === 2;
+    log(`al instalar: ${manifestHref} · "${manifest.description.slice(0, 40)}…"${installOk ? "" : " ✗"}`);
     log("texto en español: " + show(spanish));
     log("texto cortado: " + show(cut));
     log("desborde horizontal: " + show(wide));

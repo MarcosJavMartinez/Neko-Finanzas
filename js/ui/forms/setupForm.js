@@ -10,7 +10,7 @@ import { icon } from "../icons.js";
 import { openSheet, whenHistorySettled } from "../sheet.js";
 import { toast } from "../toast.js";
 import { segmented } from "../components.js";
-import { parseAmount, formatMoney, convert, CURRENCIES, CURRENCY_CODES, REGIONS, getRegion, zeroAmount, symbolOf } from "../../core/money.js";
+import { parseAmount, amountToInput, formatMoney, convert, CURRENCIES, CURRENCY_CODES, REGIONS, getRegion, zeroAmount, symbolOf } from "../../core/money.js";
 import { MAX_AMOUNT, isISODate } from "../../core/sanitize.js";
 import { addMonths, currentMonthKey, todayISO } from "../../core/dates.js";
 import * as store from "../../core/store.js";
@@ -19,7 +19,7 @@ import { markSetupOffered } from "../../core/prefs.js";
 /** Marca para reabrir el asistente después de cambiar de idioma (la app se recarga). */
 export const REOPEN_KEY = "nekoFinanzas.reopenSetup";
 
-const STEPS = ["basics", "accounts", "card", "bills", "spending", "loans", "goals", "summary"];
+const STEPS = ["basics", "currencies", "accounts", "card", "bills", "spending", "loans", "goals", "summary"];
 const MAX_ROWS = 6;
 
 const BILL_PRESETS = [
@@ -42,15 +42,38 @@ function num(text) {
 
 const filled = (...values) => values.some((v) => String(v ?? "").trim() !== "");
 
-function initialAnswers(state) {
-  return {
-    currency: state.settings.mainCurrency,
+/**
+ * Un tipo de cambio se pregunta en el sentido cómodo de leer: "1 USD = 1.350
+ * ARS", o al revés ("1 USD = 150 JPY") cuando la moneda principal vale más.
+ */
+function rateView(code, main, rates) {
+  const inMain = rates[code] / rates[main];
+  return inMain >= 1 ? { from: code, to: main, value: inMain, inverse: false } : { from: main, to: code, value: 1 / inMain, inverse: true };
+}
+
+const savingsAccount = (code) => ({ on: false, name: code === "USD" ? "Dólares ahorrados" : msg`Ahorros en ${code}`, kind: "savings", icon: "🐷", color: "#d99a2b", amount: "", cur: code });
+
+/** Cada moneda extra tiene su cuenta de ahorros para completar; si se saca la moneda, se va su cuenta. */
+function syncAccounts(a) {
+  a.extras = a.extras.filter((e) => e.code !== a.currency && CURRENCIES[e.code]);
+  const keep = a.accounts.filter((acc) => !acc.cur || a.extras.some((e) => e.code === acc.cur));
+  for (const e of a.extras) if (!keep.some((acc) => acc.cur === e.code)) keep.push(savingsAccount(e.code));
+  a.accounts = keep;
+  return a;
+}
+
+function initialAnswers(state, additive) {
+  const main = state.settings.mainCurrency;
+  // Con datos propios, las monedas que ya usa; de cero, se propone el dólar como moneda de ahorro.
+  const extras = additive ? state.settings.currencies.filter((c) => c !== main) : main === "USD" ? [] : ["USD"];
+  return syncAccounts({
+    extras: extras.map((code) => ({ code, rate: "" })),
+    currency: main,
     salary: "",
     accounts: [
       { on: false, name: "Efectivo", kind: "cash", icon: "💵", color: "#2ba66a", amount: "" },
       { on: false, name: "Banco", kind: "bank", icon: "🏦", color: "#08a7c8", amount: "" },
       { on: false, name: "Billetera virtual", kind: "wallet", icon: "📱", color: "#3a86d4", amount: "" },
-      { on: false, name: "Dólares ahorrados", kind: "savings", icon: "🐷", color: "#d99a2b", amount: "", usd: true },
     ],
     card: { on: false, name: "Tarjeta de crédito", debt: "", closingDay: 25, dueDay: 5, purchases: [{ what: "", per: "", left: "" }] },
     bills: BILL_PRESETS.map((p) => ({ ...p, on: false, amount: "", day: 10 })),
@@ -58,7 +81,7 @@ function initialAnswers(state) {
     treats: "",
     loans: [{ direction: "lent", person: "", amount: "", due: "" }],
     goals: [{ name: "", target: "", saved: "" }],
-  };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +137,47 @@ const RENDER = {
     ${moneyField("salary", "¿Cuánto cobras por mes? (opcional)", a.salary, a.currency)}
     <p class="field-hint">Sirve para crear presupuestos en % de tus ingresos. No se suma a tu dinero: eso lo indicas en el paso siguiente.</p>`,
 
+  currencies: (a, additive, state) => {
+    const offered = [...new Set(["USD", "EUR", ...a.extras.map((e) => e.code)])].filter((code) => code !== a.currency);
+    const rest = CURRENCY_CODES.filter((code) => code !== a.currency && !offered.includes(code));
+    return html`
+    <h3 class="setup-title">¿Usas otras monedas?</h3>
+    <p class="sheet-text">Para ahorros, cobros o compras en otra moneda. Si manejas todo en una sola, desmarca las que no uses y sigue.</p>
+    <div class="currency-toggles">
+      ${offered.map(
+        (code) => html`<label class="chip-check" title="${CURRENCIES[code].name}">
+          <input type="checkbox" name="cur-on-${code}" ${a.extras.some((e) => e.code === code) ? "checked" : ""} />
+          <span>${symbolOf(code)} ${code}</span>
+        </label>`
+      )}
+    </div>
+    <label class="field">
+      <span class="field-label">Agregar otra moneda</span>
+      <select name="cur-add">
+        <option value="">Elegir…</option>
+        ${rest.map((code) => html`<option value="${code}">${symbolOf(code)} · ${CURRENCIES[code].name}</option>`)}
+      </select>
+    </label>
+    ${a.extras.length
+      ? html`<div class="field">
+          <span class="field-label">¿A cuánto está hoy?</span>
+          <div class="rates-form">
+            ${a.extras.map((e) => {
+              const view = rateView(e.code, a.currency, state.rates);
+              return html`<label class="rate-edit">
+                <span class="rate-edit-left"><span class="cur-badge">${symbolOf(e.code)}</span><span>1 ${view.from} =</span></span>
+                <span class="amount-input amount-input-sm">
+                  <input name="cur-rate-${e.code}" type="text" inputmode="decimal" autocomplete="off" value="${e.rate}" placeholder="≈ ${amountToInput(Math.round(view.value * 100) / 100)}" aria-label="Valor de 1 ${view.from} en ${view.to}" />
+                  <span class="amount-suffix">${view.to}</span>
+                </span>
+              </label>`;
+            })}
+          </div>
+          <p class="field-hint">Escribe el valor que tú uses. Si lo dejas vacío, ponemos uno aproximado y lo corriges después en Más → Idioma y monedas.</p>
+        </div>`
+      : ""}`;
+  },
+
   accounts: (a) => html`
     <h3 class="setup-title">¿Dónde tienes tu dinero hoy?</h3>
     <p class="sheet-text">Cada lugar es una <strong>cuenta</strong>. La suma de todas es tu dinero total, y cuando registres un gasto vas a elegir de cuál salió.</p>
@@ -121,7 +185,7 @@ const RENDER = {
       ${a.accounts.map(
         (acc, i) => html`<div class="setup-item">
           <label class="setup-check"><input type="checkbox" class="switch" name="acc-on-${i}" ${acc.on ? "checked" : ""} /><span>${acc.icon} ${acc.name}</span></label>
-          ${money(`acc-amount-${i}`, acc.amount, acc.usd ? "USD" : a.currency, msg`Cuánto tienes en ${acc.name}`)}
+          ${money(`acc-amount-${i}`, acc.amount, acc.cur || a.currency, msg`Cuánto tienes en ${acc.name}`)}
         </div>`
       )}
     </div>
@@ -222,7 +286,7 @@ function summaryLines(a, state) {
   const lines = [];
   const accounts = a.accounts.filter((x) => x.on);
   if (accounts.length) {
-    const total = accounts.reduce((s, x) => s + convert(num(x.amount) || 0, x.usd ? "USD" : a.currency, a.currency, state.rates), 0);
+    const total = accounts.reduce((s, x) => s + convert(num(x.amount) || 0, x.cur || a.currency, a.currency, state.rates), 0);
     lines.push(["👛", msg`${accounts.length} cuenta${accounts.length === 1 ? "" : "s"}: ${accounts.map((x) => x.name).join(", ")} · ${m(total)} en total`]);
   }
   if (num(a.salary) > 0) lines.push(["💼", msg`Ingreso de referencia: ${m(num(a.salary))} por mes`]);
@@ -240,6 +304,8 @@ function summaryLines(a, state) {
   if (loans.length) lines.push(["🤝", [lent > 0 && msg`Te deben ${m(lent)}`, borrowed > 0 && msg`debes ${m(borrowed)}`].filter(Boolean).join(" · ")]);
   const goals = validGoals(a);
   if (goals.length) lines.push(["🎯", msg`${goals.length} meta${goals.length === 1 ? "" : "s"}: ${goals.map((g) => g.name.trim()).join(", ")} · ${m(goals.reduce((s, g) => s + (num(g.saved) || 0), 0))} ya apartados`]);
+  // Las otras monedas solo acompañan: si no se respondió nada más, el resumen sigue vacío.
+  if (lines.length && a.extras.length) lines.unshift(["💱", msg`Otras monedas: ${a.extras.map((e) => e.code).join(", ")}`]);
   return lines;
 }
 
@@ -258,6 +324,10 @@ function collect(step, form, a) {
   if (step === "basics") {
     a.currency = v("currency") || a.currency;
     a.salary = v("salary");
+    syncAccounts(a);
+  } else if (step === "currencies") {
+    a.extras.forEach((e) => (e.rate = v(`cur-rate-${e.code}`)));
+    syncAccounts(a);
   } else if (step === "accounts") {
     a.accounts.forEach((acc, i) => Object.assign(acc, { on: on(`acc-on-${i}`), amount: v(`acc-amount-${i}`) }));
   } else if (step === "card") {
@@ -279,6 +349,10 @@ function collect(step, form, a) {
 function validate(step, a) {
   const bad = (text) => Number.isNaN(num(text));
   if (step === "basics" && bad(a.salary)) return "El sueldo no es un monto válido.";
+  if (step === "currencies") {
+    const wrong = a.extras.find((e) => e.rate.trim() && !(parseAmount(e.rate) > 0));
+    if (wrong) return msg`El tipo de cambio de ${wrong.code} no es válido.`;
+  }
   if (step === "accounts" && a.accounts.some((x) => x.on && bad(x.amount))) return "Revisa los montos de tus cuentas: alguno no es válido.";
   if (step === "card" && a.card.on) {
     if (bad(a.card.debt)) return "La deuda de la tarjeta no es un monto válido.";
@@ -325,13 +399,21 @@ export function applySetup(a) {
   const today = todayISO();
   const wasEmpty = store.isEmptyState();
   store.setMainCurrency(a.currency);
+  // Otras monedas: quedan las elegidas, cada una con el tipo de cambio que escribió la persona.
+  const extras = a.extras || [];
+  for (const code of store.getState().settings.currencies) if (code !== a.currency && !extras.some((e) => e.code === code)) store.toggleCurrency(code, false);
+  for (const e of extras) {
+    store.toggleCurrency(e.code, true);
+    const value = parseAmount(e.rate || "");
+    if (value > 0) store.setRateInMain(e.code, rateView(e.code, a.currency, store.getState().rates).inverse ? 1 / value : value);
+  }
   if (num(a.salary) > 0) store.updateSettings({ budgetReference: num(a.salary) });
 
   // Cuentas
   let replaceDefault = wasEmpty;
   const defaultAccount = () => store.getState().accounts.find((x) => x.id === store.defaultAccountId());
   for (const acc of a.accounts.filter((x) => x.on)) {
-    const data = { name: acc.name, kind: acc.kind, icon: acc.icon, color: acc.color, currency: acc.usd ? "USD" : a.currency, opening: num(acc.amount) || 0 };
+    const data = { name: acc.name, kind: acc.kind, icon: acc.icon, color: acc.color, currency: acc.cur || a.currency, opening: num(acc.amount) || 0 };
     if (replaceDefault) store.saveAccount({ ...defaultAccount(), ...data });
     else store.saveAccount(data);
     replaceDefault = false;
@@ -383,7 +465,7 @@ export function applySetup(a) {
 export function openSetupWizard() {
   markSetupOffered();
   const additive = !store.isEmptyState();
-  const answers = initialAnswers(store.getState());
+  const answers = initialAnswers(store.getState(), additive);
   let index = 0;
 
   openSheet({
@@ -439,6 +521,15 @@ export function openSetupWizard() {
             /* sin sessionStorage: se abre desde Configuración */
           }
           location.reload();
+        } else if (name === "cur-add" || name.startsWith("cur-on-")) {
+          // Marcar o agregar una moneda muestra su tipo de cambio; desmarcarla lo saca.
+          collect(step(), form, answers);
+          const code = name === "cur-add" ? value : name.slice(7);
+          const has = answers.extras.some((e) => e.code === code);
+          if (code && !has && (name === "cur-add" || event.target.checked)) answers.extras.push({ code, rate: "" });
+          else if (name !== "cur-add" && !event.target.checked) answers.extras = answers.extras.filter((e) => e.code !== code);
+          syncAccounts(answers);
+          show();
         } else if (name === "setup-region" || name === "currency") {
           // El país propone su moneda y su forma de escribir los números; la moneda se puede cambiar aparte.
           collect(step(), form, answers);
