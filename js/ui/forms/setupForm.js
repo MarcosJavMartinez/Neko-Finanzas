@@ -10,7 +10,7 @@ import { icon } from "../icons.js";
 import { openSheet, whenHistorySettled } from "../sheet.js";
 import { toast } from "../toast.js";
 import { segmented } from "../components.js";
-import { parseAmount, amountToInput, formatMoney, convert, CURRENCIES, CURRENCY_CODES, REGIONS, getRegion, zeroAmount, symbolOf } from "../../core/money.js";
+import { parseAmount, amountToInput, formatMoney, convert, CURRENCIES, CURRENCY_CODES, REGIONS, activeCurrencies, configureMoney, getRegion, zeroAmount, symbolOf } from "../../core/money.js";
 import { MAX_AMOUNT, isISODate } from "../../core/sanitize.js";
 import { addMonths, currentMonthKey, todayISO } from "../../core/dates.js";
 import * as store from "../../core/store.js";
@@ -167,7 +167,7 @@ const RENDER = {
               return html`<label class="rate-edit">
                 <span class="rate-edit-left"><span class="cur-badge">${symbolOf(e.code)}</span><span>1 ${view.from} =</span></span>
                 <span class="amount-input amount-input-sm">
-                  <input name="cur-rate-${e.code}" type="text" inputmode="decimal" autocomplete="off" value="${e.rate}" placeholder="≈ ${amountToInput(Math.round(view.value * 100) / 100)}" aria-label="Valor de 1 ${view.from} en ${view.to}" />
+                  <input name="cur-rate-${e.code}" type="text" inputmode="decimal" data-plain autocomplete="off" value="${e.rate}" placeholder="≈ ${amountToInput(Math.round(view.value * 100) / 100)}" aria-label="Valor de 1 ${view.from} en ${view.to}" />
                   <span class="amount-suffix">${view.to}</span>
                 </span>
               </label>`;
@@ -486,6 +486,8 @@ export function openSetupWizard() {
 
       const show = () => {
         const last = index === STEPS.length - 1;
+        // Los campos de monto siguen la moneda elegida en el asistente (los yenes no llevan centavos), aunque todavía no se guardó.
+        configureMoney({ region: getRegion(), currencies: activeCurrencies(), main: answers.currency });
         form.dataset.step = String(index);
         setHTML(
           body,

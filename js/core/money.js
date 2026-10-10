@@ -97,10 +97,12 @@ export function startingCurrencies(region) {
 // La región y las monedas en uso vienen de los datos (settings): el store
 // avisa aquí cada vez que cambian.
 let region = DEFAULT_REGION;
+let mainCurrency = null; // la moneda principal de la persona, si ya se sabe
 let active = ["ARS", "USD", "EUR"];
 let seps = null;
 
-export function configureMoney({ region: nextRegion, currencies } = {}) {
+export function configureMoney({ region: nextRegion, currencies, main } = {}) {
+  mainCurrency = CURRENCIES[main] ? main : null;
   region = REGIONS[nextRegion] ? nextRegion : DEFAULT_REGION;
   if (Array.isArray(currencies) && currencies.length) active = currencies.filter((c) => CURRENCIES[c]);
   formatters.clear();
@@ -124,8 +126,8 @@ export function separators() {
   return seps;
 }
 
-/** ¿Los montos de esta región llevan centavos? (los yenes y los pesos chilenos no). */
-export const usesCents = () => CURRENCIES[REGIONS[region]?.currency]?.decimals !== 0;
+/** ¿Los montos llevan centavos? Depende de la moneda principal (los yenes y los pesos chilenos no). */
+export const usesCents = () => CURRENCIES[mainCurrency || REGIONS[region]?.currency]?.decimals !== 0;
 
 /** Cómo se ve "cero" en un campo de monto: "0,00", "0.00" o "0". */
 export const zeroAmount = () => (usesCents() ? `0${separators().decimal}00` : "0");

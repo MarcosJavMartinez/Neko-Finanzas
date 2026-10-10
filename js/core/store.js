@@ -10,7 +10,7 @@ import { msg } from "./i18n.js";
 import { initStorage, loadData, saveData, clearData, onWriteError, saveSnapshot, listSnapshots, loadSnapshot } from "./storage.js";
 import { ACCOUNT_KINDS, DEFAULT_ACCOUNT_ID, createEmptyState, DEFAULT_CATEGORIES, defaultSubcategories, FALLBACK_CATEGORY, PALETTE, PALETTE_V1, SCHEMA_VERSION, uid } from "../data/defaults.js";
 import { buildDemoState } from "../data/demo.js";
-import { sanitizeState } from "./sanitize.js";
+import { rateValue, sanitizeState } from "./sanitize.js";
 import { addMonths, nextDate, todayISO } from "./dates.js";
 import { convert, configureMoney, CURRENCY_CODES, PIVOT, REGIONS } from "./money.js";
 
@@ -77,7 +77,7 @@ export function getState() {
 
 /** La región y las monedas en uso definen cómo se escriben y ofrecen los montos. */
 function syncFormat() {
-  if (state) configureMoney({ region: state.settings.region, currencies: state.settings.currencies });
+  if (state) configureMoney({ region: state.settings.region, currencies: state.settings.currencies, main: state.settings.mainCurrency });
 }
 
 export function subscribe(fn) {
@@ -948,9 +948,9 @@ export function setRateInMain(code, valueInMain) {
     if (!CURRENCY_CODES.includes(code) || code === main || !(valueInMain > 0)) return;
     if (code === PIVOT) {
       const factor = 1 / valueInMain / s.rates[main];
-      for (const c of CURRENCY_CODES) if (c !== PIVOT) s.rates[c] *= factor;
+      for (const c of CURRENCY_CODES) if (c !== PIVOT) s.rates[c] = rateValue(s.rates[c] * factor) || s.rates[c];
     } else {
-      s.rates[code] = valueInMain * s.rates[main];
+      s.rates[code] = rateValue(valueInMain * s.rates[main]) || s.rates[code];
     }
     s.ratesUpdatedAt = new Date().toISOString();
   });

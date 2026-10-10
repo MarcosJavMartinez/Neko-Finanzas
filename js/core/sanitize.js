@@ -26,6 +26,11 @@ const positive = (v) => {
   const n = finite(v);
   return n > 0 && n <= MAX_AMOUNT ? Math.round(n * 100) / 100 : NaN;
 };
+/** Un tipo de cambio: positivo y con la precisión con que se guardó (no se redondea a centavos). */
+export const rateValue = (v) => {
+  const n = finite(v);
+  return n > 0 && n <= MAX_AMOUNT ? Number(n.toPrecision(12)) : NaN;
+};
 const signed = (v) => {
   const n = finite(v);
   return Math.abs(n) <= MAX_AMOUNT ? Math.round(n * 100) / 100 : NaN;
@@ -57,7 +62,7 @@ export function sanitizeState(input) {
   const rates = { ...base.rates };
   if (isObj(data.rates)) {
     for (const code of CURRENCY_CODES) {
-      const n = positive(data.rates[code]);
+      const n = rateValue(data.rates[code]);
       if (n) rates[code] = n;
     }
   }

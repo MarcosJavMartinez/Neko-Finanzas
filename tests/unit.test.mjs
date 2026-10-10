@@ -455,6 +455,16 @@ mem.set("nekoFinanzas.hideAmounts", "1");
 eq("avisos: con montos ocultos no se ve el monto", R.buildPlan(remState, "2026-03-09", 1).every((i) => !/\$/.test(i.body)), true);
 mem.delete("nekoFinanzas.hideAmounts");
 
+// Un tipo de cambio chico no se redondea a centavos al recargar (1 USD = 4.100 COP seguía en 4.090,91)
+{
+  const kept = sanitizeState({ ...buildDemoState(), rates: { ARS: 1, USD: 1350, COP: 1350 / 4100 } });
+  eq("tipo de cambio: conserva la precisión al validar", Math.round(M.convert(1, "USD", "COP", kept.rates) * 100) / 100, 4100);
+  M.configureMoney({ region: "ja-JP", main: "USD" });
+  const expat = M.usesCents();
+  M.configureMoney({ region: "es-AR", currencies: ["ARS", "USD", "EUR"] });
+  eq("centavos según la moneda principal, no el país", expat, true);
+}
+
 // Ejemplo en la moneda de cada país: montos redondos, datos válidos y cuentas que cierran
 for (const [demoRegion, demoCurrency] of [["ja-JP", "JPY"], ["en-US", "USD"], ["es-MX", "MXN"], ["es-CL", "CLP"], ["en-EG", "EGP"]]) {
   const demo = buildDemoState(undefined, demoRegion);

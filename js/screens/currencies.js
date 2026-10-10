@@ -101,7 +101,7 @@ export default {
                 return html`<label class="rate-edit">
                   <span class="rate-edit-left"><span class="cur-badge">${symbolOf(code)}</span><span>1 ${pair.from} =</span></span>
                   <span class="amount-input amount-input-sm">
-                    <input name="${code}" type="text" inputmode="decimal" value="${amountToInput(Math.round(pair.value * 100) / 100)}" aria-label="Valor de 1 ${pair.from} en ${pair.to}" data-inverse="${pair.inverse ? "1" : ""}" data-change="save-rate" />
+                    <input name="${code}" type="text" inputmode="decimal" data-plain value="${amountToInput(Math.round(pair.value * 100) / 100)}" aria-label="Valor de 1 ${pair.from} en ${pair.to}" data-inverse="${pair.inverse ? "1" : ""}" data-change="save-rate" />
                     <span class="amount-suffix">${pair.to}</span>
                   </span>
                 </label>`;

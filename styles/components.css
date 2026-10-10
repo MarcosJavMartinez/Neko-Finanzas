@@ -2517,3 +2517,14 @@ details[open] > :not(summary) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
+
+/* Tipo de cambio: un número común, no un monto grande (entra entero en 320 px) */
+.rate-edit .amount-input input {
+  min-height: 46px;
+  font-size: 1.05rem;
+}
+
+/* "1 USD = 1.350 ARS" es una cuenta: se lee de izquierda a derecha también en árabe. */
+[dir="rtl"] .rate-edit {
+  direction: ltr;
+}

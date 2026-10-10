@@ -527,3 +527,24 @@ body.is-wide .app-header-inner {
   background: var(--surface);
   box-shadow: var(--shadow-xs);
 }
+
+/* Pantallas angostas (320 px): el nombre de la app entra completo al lado de los tres botones */
+@media (max-width: 359px) {
+  .header-title {
+    font-size: 1.02rem;
+  }
+
+  .header-logo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .header-actions {
+    gap: 4px;
+  }
+
+  .header-btn {
+    width: 36px;
+    height: 36px;
+  }
+}

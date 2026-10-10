@@ -156,6 +156,7 @@ for (const [name, file, opts] of [
   ["Idioma tr: pantallas y hojas", "languages.js", { pre: 'localStorage.setItem("nekoFinanzas.language","tr");' }],
   ["Idioma ru: pantallas y hojas", "languages.js", { pre: 'localStorage.setItem("nekoFinanzas.language","ru");' }],
   ["Idioma ja: pantallas y hojas", "languages.js", { pre: 'localStorage.setItem("nekoFinanzas.language","ja");' }],
+  ["Otros países: asistente, otra moneda y movimientos", "world.js"],
   ["Idioma en-GB: pantallas y hojas", "languages.js", { pre: 'localStorage.setItem("nekoFinanzas.language","en-GB");' }],
   ["Idioma ar: pantallas y hojas", "languages.js", { pre: 'localStorage.setItem("nekoFinanzas.language","ar");' }],
   ["Idioma ar: recorrido completo", "journey.js", { pre: 'localStorage.setItem("nekoFinanzas.language","ar");' }],
