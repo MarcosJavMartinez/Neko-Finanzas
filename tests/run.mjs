@@ -239,10 +239,18 @@ if (wanted("Sin conexión", "offline")) try {
       if (/^https?:/.test(u) && !u.startsWith(BASE)) external.add(new URL(u).hostname);
     });
     await send("Page.navigate", { url: `${BASE}/#/inicio` });
-    await sleep(8000); // que el service worker se instale y guarde todo
+    // Se espera a que el service worker tome la página y deje de sumar archivos al
+    // cache (son más de cien; con la máquina ocupada 8 segundos fijos no alcanzaban).
     const sw = await evaluate(`(async () => {
-      const names = await caches.keys();
-      const count = names.length ? (await (await caches.open(names[0])).keys()).length : 0;
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      let names = [], count = 0, still = 0;
+      for (let i = 0; i < 80 && still < 4; i++) {
+        await wait(500);
+        names = await caches.keys();
+        const now = names.length ? (await (await caches.open(names[0])).keys()).length : 0;
+        still = now > 0 && now === count && navigator.serviceWorker.controller ? still + 1 : 0;
+        count = now;
+      }
       return { controlled: !!navigator.serviceWorker.controller, cache: names[0], count };
     })()`);
     await send("Network.emulateNetworkConditions", { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
