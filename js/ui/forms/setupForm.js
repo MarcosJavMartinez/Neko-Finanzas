@@ -401,7 +401,6 @@ export function applySetup(a) {
   store.setMainCurrency(a.currency);
   // Otras monedas: quedan las elegidas, cada una con el tipo de cambio que escribió la persona.
   const extras = a.extras || [];
-  for (const code of store.getState().settings.currencies) if (code !== a.currency && !extras.some((e) => e.code === code)) store.toggleCurrency(code, false);
   for (const e of extras) {
     store.toggleCurrency(e.code, true);
     const value = parseAmount(e.rate || "");
@@ -456,6 +455,8 @@ export function applySetup(a) {
     const goal = store.addGoal({ name: g.name.trim().slice(0, 60), icon: "🎯", color: "#8a63d2", target: num(g.target), currency: a.currency, targetDate: "" });
     if (num(g.saved) > 0) store.moveGoalMoney(goal.id, num(g.saved), "Lo que ya tenía ahorrado");
   }
+  // Al final, cuando las cuentas ya están en su moneda: se sacan las monedas que no se eligieron (las que tienen datos quedan).
+  for (const code of store.getState().settings.currencies) if (code !== a.currency && !extras.some((e) => e.code === code)) store.toggleCurrency(code, false);
 }
 
 // ---------------------------------------------------------------------------
