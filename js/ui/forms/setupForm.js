@@ -572,7 +572,7 @@ export function openSetupWizard() {
         const backup = store.snapshot();
         applySetup(answers);
         close();
-        toast("¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar transacción»", { duration: 7000, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast("¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar transacción»", { duration: 3500, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
         whenHistorySettled(() => (location.hash = "#/inicio"));
       });
 

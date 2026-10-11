@@ -2528,3 +2528,24 @@ details[open] > :not(summary) {
 [dir="rtl"] .rate-edit {
   direction: ltr;
 }
+
+/* Zonas de toque de al menos 40 px, aunque el texto sea chico */
+.section-link {
+  min-height: 40px;
+}
+
+.hero-eye {
+  width: 40px;
+  height: 40px;
+}
+
+/* Enlaces dentro de un párrafo: el área que responde al dedo es más alta que la letra */
+.inline-link {
+  position: relative;
+}
+
+.inline-link::after {
+  content: "";
+  position: absolute;
+  inset: -11px 0;
+}
