@@ -465,6 +465,13 @@ mem.delete("nekoFinanzas.hideAmounts");
   eq("centavos según la moneda principal, no el país", expat, true);
 }
 
+// Una moneda con datos no se saca de las que se usan
+store.loadDemo();
+store.toggleCurrency("USD", false);
+store.toggleCurrency("EUR", false);
+eq("moneda en uso: no se puede sacar; sin uso, sí", [store.getState().settings.currencies.includes("USD"), store.getState().settings.currencies.includes("EUR")], [true, false]);
+store.toggleCurrency("EUR", true);
+
 // Ejemplo en la moneda de cada país: montos redondos, datos válidos y cuentas que cierran
 for (const [demoRegion, demoCurrency] of [["ja-JP", "JPY"], ["en-US", "USD"], ["es-MX", "MXN"], ["es-CL", "CLP"], ["en-EG", "EGP"]]) {
   const demo = buildDemoState(undefined, demoRegion);
@@ -485,6 +492,9 @@ const { html } = await import(base + "ui/dom.js");
 I.useDictionary("en", { "Hola {0}, tienes {1} mensajes": "{1} messages for you, {0}", Guardar: "Save", "Faltan {0} días": "{0} days left", Cerrar: "Close" });
 eq("idiomas: template con valores reordenados", String(html`<p class="x">Hola ${"Ana"}, tienes ${3} mensajes</p>`), '<p class="x">3 messages for you, Ana</p>');
 eq("idiomas: ícono delante, atributo y valor suelto", String(html`<button aria-label="Cerrar">${html`<i></i>`} Guardar</button><span>${"Guardar"}</span>`), '<button aria-label="Close"><i></i> Save</button><span>Save</span>');
+I.useDictionary("en", { Cerrar: 'Close "now"', Guardar: "<b>Save</b>" });
+eq("idiomas: comillas en un atributo y texto de la persona igual a una clave", String(html`<button aria-label="Cerrar">${"Guardar"}</button>`), '<button aria-label="Close &quot;now&quot;">&lt;b&gt;Save&lt;/b&gt;</button>');
+I.useDictionary("en", { "Hola {0}, tienes {1} mensajes": "{1} messages for you, {0}", "Faltan {0} días": "{0} days left" });
 eq("idiomas: texto armado con msg", I.msg`Faltan ${4} días`, "4 days left");
 eq("idiomas: lo escrito por la persona se escapa igual", String(html`<p>Hola ${"<b>"}, tienes ${1} mensajes</p>`), "<p>1 messages for you, &lt;b&gt;</p>");
 eq("idiomas: sin traducción queda el español", String(html`<p>Texto sin traducir ${1}</p>`), "<p>Texto sin traducir 1</p>");

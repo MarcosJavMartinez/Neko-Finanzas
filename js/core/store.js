@@ -80,6 +80,9 @@ function syncFormat() {
   if (state) configureMoney({ region: state.settings.region, currencies: state.settings.currencies, main: state.settings.mainCurrency });
 }
 
+/** Vuelve a aplicar el formato de los datos guardados (por si algo lo cambió de forma provisoria). */
+export const refreshFormat = () => syncFormat();
+
 export function subscribe(fn) {
   listeners.add(fn);
   return () => listeners.delete(fn);
@@ -969,8 +972,9 @@ export function toggleCurrency(code, on) {
   if (!CURRENCY_CODES.includes(code)) return;
   commit((s) => {
     const list = new Set(s.settings.currencies || []);
+    const inUse = [...s.accounts, ...s.transactions, ...s.bills, ...s.goals, ...(s.loans || []), ...s.budgets].some((x) => x.currency === code || x.toCurrency === code);
     if (on) list.add(code);
-    else if (code !== s.settings.mainCurrency) list.delete(code);
+    else if (code !== s.settings.mainCurrency && !inUse) list.delete(code);
     s.settings.currencies = CURRENCY_CODES.filter((c) => list.has(c));
   });
 }

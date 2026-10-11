@@ -470,6 +470,8 @@ export function openSetupWizard() {
 
   openSheet({
     title: "Tu punto de partida",
+    // El asistente muestra los montos en la moneda que se está eligiendo; al cerrar vale la guardada.
+    onClose: () => store.refreshFormat(),
     body: html`<form class="form setup" novalidate data-step="0">
       <div data-setup-body></div>
       <p class="notice notice-warn" data-setup-error hidden></p>

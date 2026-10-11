@@ -165,7 +165,7 @@ export function translateSource(strings, lookup) {
   let last = 0;
   for (const match of source.matchAll(CUT)) {
     out += translateRun(source.slice(last, match.index), lookup);
-    out += match[0].replace(ATTR, (_, name, value) => `${name}="${translateRun(value, lookup)}"`);
+    out += match[0].replace(ATTR, (_, name, value) => `${name}="${translateRun(value, (key) => lookup(key)?.replace(/"/g, "&quot;"))}"`);
     last = match.index + match[0].length;
   }
   return out + translateRun(source.slice(last), lookup);
