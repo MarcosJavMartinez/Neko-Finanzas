@@ -1,6 +1,6 @@
 // Copias automáticas: lista y restauración (Configuración → Tus datos).
 
-import { dateLocale } from "../core/i18n.js";
+import { dateLocale, msg } from "../core/i18n.js";
 import { html, setHTML } from "./dom.js";
 import { icon } from "./icons.js";
 import { openSheet, confirmDialog } from "./sheet.js";
@@ -12,10 +12,6 @@ function when(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "Fecha desconocida";
   return d.toLocaleString(dateLocale(), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).replace(".", "");
-}
-
-function plural(n, one, many) {
-  return `${n} ${n === 1 ? one : many}`;
 }
 
 export function openSnapshots() {
@@ -44,7 +40,7 @@ export function openSnapshots() {
               <span class="mini-icon">${icon("shield", 18)}</span>
               <div class="row-main">
                 <span class="row-title">${when(s.at)}</span>
-                <span class="row-meta">${s.reason} · ${plural(s.counts.transactions || 0, "movimiento", "movimientos")}, ${plural(s.counts.bills || 0, "factura", "facturas")}, ${plural(s.counts.goals || 0, "meta", "metas")}</span>
+                <span class="row-meta">${s.reason} · ${msg`Movimientos: ${s.counts.transactions || 0} · Facturas: ${s.counts.bills || 0} · Metas: ${s.counts.goals || 0}`}</span>
               </div>
               <button type="button" class="btn btn-sm btn-soft" data-restore="${s.id}">Restaurar</button>
             </div>`

@@ -7,7 +7,7 @@ import { icon } from "../ui/icons.js";
 import { art, chartSize, emptyState, monthNav } from "../ui/components.js";
 import { donutChart, barChart, lineChart } from "../ui/charts.js";
 import { formatMoney } from "../core/money.js";
-import { currentMonthKey, formatMonth, shiftMonthKey } from "../core/dates.js";
+import { currentMonthKey, formatMonth, shiftMonthKey, midSentence } from "../core/dates.js";
 import { PALETTE } from "../data/defaults.js";
 import { toast } from "../ui/toast.js";
 import { shareMonthSummary } from "../ui/summaryImage.js";
@@ -67,7 +67,7 @@ export default {
         </div>
         ${available !== null ? html`<p class="fine-print">${icon("wallet", 14)} Disponible hoy: <strong>${m(available)}</strong></p>` : ""}
         ${change !== null
-          ? html`<p class="fine-print">${icon(change > 0 ? "arrowUp" : "arrowDown", 14)} Gastaste ${Math.abs(Math.round(change))}% ${change > 0 ? "más" : "menos"} que en ${formatMonth(shiftMonthKey(view.month, -1)).split(" ")[0].toLowerCase()}.</p>`
+          ? html`<p class="fine-print">${icon(change > 0 ? "arrowUp" : "arrowDown", 14)} Gastaste ${Math.abs(Math.round(change))}% ${change > 0 ? "más" : "menos"} que en ${midSentence(formatMonth(shiftMonthKey(view.month, -1)).split(" ")[0])}.</p>`
           : ""}
         ${totals.income || totals.expense
           ? html`<button type="button" class="btn btn-soft btn-sm report-share" data-action="share-summary">${icon("share", 16)} Compartir resumen del mes</button>`

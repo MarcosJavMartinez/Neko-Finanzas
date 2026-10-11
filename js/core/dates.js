@@ -2,7 +2,7 @@
 // con Date/UTC) evita los corrimientos de un día que aparecen al cruzar
 // zonas horarias, y además se ordenan y comparan como texto.
 
-import { dateLocale, msg } from "./i18n.js";
+import { dateLocale, getLanguage, msg } from "./i18n.js";
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -76,13 +76,20 @@ export function lastMonthKeys(count, endKey = currentMonthKey()) {
   return keys;
 }
 
+/**
+ * Un mes en medio de una frase: en español, portugués y ruso va en minúscula
+ * ("en octubre"); en inglés o turco es nombre propio y queda como viene.
+ */
+export const midSentence = (text) => (/^(es|pt|ru)/.test(getLanguage()) ? String(text).toLowerCase() : String(text));
+
 export function formatMonth(key, { short = false } = {}) {
   const [y, m] = key.split("-").map(Number);
   const label = new Date(y, m - 1, 1).toLocaleDateString(dateLocale(), {
     month: short ? "short" : "long",
     ...(short ? {} : { year: "numeric" }),
   });
-  return capitalize(label.replace(".", "").replace(" de ", " "));
+  // Sin el punto de la abreviatura, sin "de" (español) y sin el "г." final del ruso.
+  return capitalize(label.replace(".", "").replace(" de ", " ").replace(/\s*г\.?$/, ""));
 }
 
 export function formatDate(iso, { withYear = false, weekday = false } = {}) {
@@ -104,7 +111,9 @@ export function formatDayHeading(iso, today = todayISO()) {
   if (diff === 0) return "Hoy";
   if (diff === 1) return "Ayer";
   if (diff === -1) return "Mañana";
-  return capitalize(formatDate(iso, { weekday: true }).replace(",", ""));
+  // "Jueves 22 oct" en español; en los demás idiomas la coma es parte de la fecha ("Thursday, Oct 22").
+  const text = formatDate(iso, { weekday: true });
+  return capitalize(getLanguage() === "es" ? text.replace(",", "") : text);
 }
 
 /** Texto amigable para vencimientos. */

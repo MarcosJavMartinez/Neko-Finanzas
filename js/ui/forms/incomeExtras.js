@@ -11,7 +11,7 @@ import { dateField, formActions, fieldError, clearErrors } from "./fields.js";
 import { accountSelect } from "./accountForms.js";
 import { segmented } from "../components.js";
 import * as store from "../../core/store.js";
-import { formatMonth, monthKey, todayISO } from "../../core/dates.js";
+import { formatMonth, monthKey, todayISO, midSentence } from "../../core/dates.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
 import { formatMoney, parseAmount, CURRENCY_CODES, zeroAmount, currencyChoices, symbolOf } from "../../core/money.js";
 import { toMain } from "../../core/finance.js";
@@ -43,7 +43,7 @@ export function openIncomeExtras() {
   openSheet({
     title: "Extras del mes",
     body: html`<form class="form" novalidate>
-      <p class="sheet-text">Lo que cobraste además del sueldo. Son variables: anota solo los que tuviste, cuando los tengas.${loadedTotal > 0 ? html` En ${formatMonth(month).split(" ")[0].toLowerCase()} ya llevas <strong>${formatMoney(loadedTotal, main)}</strong> en extras.` : ""}</p>
+      <p class="sheet-text">Lo que cobraste además del sueldo. Son variables: anota solo los que tuviste, cuando los tengas.${loadedTotal > 0 ? html` En ${midSentence(formatMonth(month).split(" ")[0])} ya llevas <strong>${formatMoney(loadedTotal, main)}</strong> en extras.` : ""}</p>
       <div class="field">
         <span class="field-label">Moneda</span>
         ${segmented("currency", currencyChoices(main).map((c) => ({ value: c, label: symbolOf(c) })), main)}

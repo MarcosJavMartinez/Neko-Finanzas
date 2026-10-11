@@ -10,7 +10,7 @@ import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, t
 import { barChart, donutChart } from "../ui/charts.js";
 import { PALETTE } from "../data/defaults.js";
 import { formatMoney, CURRENCIES, isMasked, symbolOf } from "../core/money.js";
-import { daysBetween, formatDate, formatMonth, currentMonthKey, shiftMonthKey, todayISO } from "../core/dates.js";
+import { daysBetween, formatDate, formatMonth, currentMonthKey, shiftMonthKey, todayISO, midSentence } from "../core/dates.js";
 import { accountRow } from "./accounts.js";
 import { ratePair } from "./currencies.js";
 import { loanRow } from "./loans.js";
@@ -45,7 +45,7 @@ function heroSize(text) {
 function reserveLabel(summary) {
   const parts = ["facturas", summary.scheduled.amount > 0 && "cuotas", summary.debts.amount > 0 && "deudas", summary.envelopes.amount > 0 && "gastos del mes"].filter(Boolean);
   const names = parts.map(tr);
-  return names.length > 1 ? msg`${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}` : names[0];
+  return names.length > 1 ? msg`${names.slice(0, -1).join(tr(", "))} y ${names[names.length - 1]}` : names[0];
 }
 
 export default {
@@ -74,7 +74,7 @@ export default {
     // Contra el mes pasado a esta misma altura (no contra el mes entero).
     const dayOfMonth = Number(today.slice(8));
     const prevKey = shiftMonthKey(currentMonthKey(), -1);
-    const prevName = formatMonth(prevKey, { short: true }).toLowerCase().replace(".", "");
+    const prevName = midSentence(formatMonth(prevKey, { short: true })).replace(".", "");
     const soFar = monthToDate(state, currentMonthKey(), dayOfMonth);
     const before = monthToDate(state, prevKey, dayOfMonth);
     const versus = (now, then) => {
@@ -195,7 +195,7 @@ export default {
         <span class="mini-icon mini-icon-income">${icon("sparkle", 18)}</span>
         <div class="row-main">
           <span class="row-title">Te sobraron ${m(l.amount)} de ${l.budget.name}</span>
-          <span class="row-meta">De ${formatMonth(l.month).toLowerCase()}. ¿Lo pasas a tus ahorros?</span>
+          <span class="row-meta">De ${midSentence(formatMonth(l.month))}. ¿Lo pasas a tus ahorros?</span>
         </div>
         <div class="card-pending-actions">
           <button type="button" class="btn btn-sm btn-ghost" data-action="leftover-keep" data-id="${l.budget.id}" data-month="${l.month}">Dejarlo disponible</button>

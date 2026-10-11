@@ -9,7 +9,7 @@ import { toast } from "../toast.js";
 import { formActions, fieldError, clearErrors } from "./fields.js";
 import { openGoalForm } from "./goalForms.js";
 import * as store from "../../core/store.js";
-import { formatMonth } from "../../core/dates.js";
+import { formatMonth, midSentence } from "../../core/dates.js";
 import { MAX_AMOUNT } from "../../core/sanitize.js";
 import { amountToInput, formatMoney, parseAmount, symbolOf } from "../../core/money.js";
 import { billCushion, budgetLeftovers, goalProgress } from "../../core/finance.js";
@@ -25,7 +25,7 @@ export function openLeftoverSheet(budgetId) {
     title: msg`Sobrante de ${budget.name}`,
     body: state.goals.length
       ? html`<form class="form" novalidate>
-          <p class="sheet-text">En ${formatMonth(month).toLowerCase()} te sobraron <strong>${formatMoney(amount, main)}</strong>. Pásalos a una meta y quedan apartados como ahorro.</p>
+          <p class="sheet-text">En ${midSentence(formatMonth(month))} te sobraron <strong>${formatMoney(amount, main)}</strong>. Pásalos a una meta y quedan apartados como ahorro.</p>
           <div class="field">
             <label class="field-label" for="f-goalId">¿A qué meta?</label>
             <select id="f-goalId" name="goalId">
@@ -43,7 +43,7 @@ export function openLeftoverSheet(budgetId) {
           </div>
           ${formActions({ submitLabel: "Pasar a la meta" })}
         </form>`
-      : html`<p class="sheet-text">En ${formatMonth(month).toLowerCase()} te sobraron <strong>${formatMoney(amount, main)}</strong>. Para pasarlos a tus ahorros, primero crea una meta.</p>
+      : html`<p class="sheet-text">En ${midSentence(formatMonth(month))} te sobraron <strong>${formatMoney(amount, main)}</strong>. Para pasarlos a tus ahorros, primero crea una meta.</p>
           <div class="form-actions">
             <button type="button" class="btn btn-ghost" data-sheet-close>Ahora no</button>
             <button type="button" class="btn btn-primary btn-grow" data-new-goal>${icon("plus", 18)}Crear una meta</button>
@@ -62,7 +62,7 @@ export function openLeftoverSheet(budgetId) {
         if (value > amount + 0.005) return fieldError(form, "amount", msg`Es más de lo que sobró (${formatMoney(amount, main)}).`);
         const goal = store.getState().goals.find((g) => g.id === form.elements.goalId.value);
         const backup = store.snapshot();
-        store.settleBudgetLeftover(budget.id, month, { goalId: goal.id, amount: Math.round(value * 100) / 100, note: msg`Sobrante de ${budget.name} (${formatMonth(month).toLowerCase()})` });
+        store.settleBudgetLeftover(budget.id, month, { goalId: goal.id, amount: Math.round(value * 100) / 100, note: msg`Sobrante de ${budget.name} (${midSentence(formatMonth(month))})` });
         close();
         toast(msg`${formatMoney(value, main)} pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });

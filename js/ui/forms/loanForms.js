@@ -377,11 +377,11 @@ export function openLoanDetail(loanId) {
   const account = tx && findAccount(state, tx.accountId);
   const today = todayISO();
   openSheet({
-    title: `🤝 ${loan.person}`,
+    title: `🤝 ${tr(loan.person)}`,
     body: html`<div class="loan-detail">
       <p class="account-detail-label">${directionText(loan)} el ${formatDate(loan.date)}${account ? ` · ${account.icon} ${tr(account.name)}` : ""}</p>
       <p class="account-detail-balance">${outstanding > 0 ? formatMoney(outstanding, loan.currency) : "Saldado"}</p>
-      <p class="fine-print">${outstanding > 0 ? `${loan.direction === "lent" ? "Te falta cobrar" : "Te falta devolver"} de ${formatMoney(loan.amount, loan.currency)}` : msg`${formatMoney(loan.amount, loan.currency)} devueltos`}${loan.dueDate && outstanding > 0 ? ` · ${formatDue(loan.dueDate, today)}` : ""}</p>
+      <p class="fine-print">${outstanding > 0 ? loan.direction === "lent" ? msg`Te falta cobrar de ${formatMoney(loan.amount, loan.currency)}` : msg`Te falta devolver de ${formatMoney(loan.amount, loan.currency)}` : msg`${formatMoney(loan.amount, loan.currency)} devueltos`}${loan.dueDate && outstanding > 0 ? ` · ${formatDue(loan.dueDate, today)}` : ""}</p>
       ${progressBar(percent(paid, loan.amount), { color: "var(--goal)", label: "Parte devuelta" })}
       ${loan.note ? html`<p class="sheet-text">${loan.note}</p>` : ""}
       <div class="account-detail-actions">

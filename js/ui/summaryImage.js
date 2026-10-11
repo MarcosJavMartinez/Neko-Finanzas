@@ -4,7 +4,7 @@
 
 import { msg, tr } from "../core/i18n.js";
 import { formatMoney } from "../core/money.js";
-import { formatMonth } from "../core/dates.js";
+import { formatMonth, midSentence } from "../core/dates.js";
 import { monthlyTotals, expensesByCategory, percent } from "../core/finance.js";
 
 const W = 1080;
@@ -111,7 +111,7 @@ async function draw(state, key) {
   ctx.fillText("Neko Finanzas", x, 110);
   ctx.font = `600 28px ${UI}`;
   ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.fillText(msg`Resumen de ${formatMonth(key).toLowerCase()}`, x, 150);
+  ctx.fillText(msg`Resumen de ${midSentence(formatMonth(key))}`, x, 150);
 
   // Tarjeta principal: ahorro del mes
   const cardY = 210;

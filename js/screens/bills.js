@@ -7,7 +7,7 @@ import { icon } from "../ui/icons.js";
 import { art, billRow, emptyState } from "../ui/components.js";
 import { openSheet } from "../ui/sheet.js";
 import { formatMoney } from "../core/money.js";
-import { currentMonthKey, formatDate, formatMonth, monthRange, parseISO, shiftMonthKey, todayISO } from "../core/dates.js";
+import { currentMonthKey, formatDate, formatMonth, monthRange, parseISO, shiftMonthKey, todayISO, midSentence } from "../core/dates.js";
 import { billCalendar, billCushion, billReserve, billStatus, toMain } from "../core/finance.js";
 import { releaseBillCushion, snapshot, restore } from "../core/store.js";
 import { openCushionSheet } from "../ui/forms/leftoverForm.js";
@@ -77,7 +77,7 @@ function calendar(state, today) {
       <span class="cal-legend"><i class="tone-later"></i>Más adelante</span>
       <span class="cal-legend"><i class="tone-paid"></i>Pagada</span>
     </div>
-    <p class="cal-total">${all.length} vencimiento${all.length === 1 ? "" : "s"} en ${formatMonth(view.month).split(" ")[0].toLowerCase()} · <strong>${formatMoney(total, main)}</strong>
+    <p class="cal-total">${all.length} vencimiento${all.length === 1 ? "" : "s"} en ${midSentence(formatMonth(view.month).split(" ")[0])} · <strong>${formatMoney(total, main)}</strong>
       ${isCurrent ? "" : html` · <button type="button" class="link-btn" data-action="bills-today">Volver a hoy</button>`}</p>
   </section>`;
 }
