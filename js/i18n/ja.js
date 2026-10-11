@@ -1294,4 +1294,6 @@ export default {
   "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "完了！すべて記録しました。これからは「追加」で支出を追加してください",
   "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "「追加」をタップして支出や収入を記録します。請求を期限つきで追加すると、いくら取っておけばよいかお知らせします。",
   "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "あとはふだんどおり、支出と収入を「追加」で記録していきます。",
+  "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "安心して使える額です：お金の合計から、これから来る支払い（請求、分割払い、借金）のための予約分と、目標に取り分けた分を引いた額です。1日に使える額もお知らせします。",
+  "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.": "「追加」をタップして、支出・収入・カードでの買い物・貸し借りを記録します。アプリが勝手にお金を動かすことはありません。提案し、あなたが確認します。",
 };

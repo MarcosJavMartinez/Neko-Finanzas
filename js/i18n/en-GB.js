@@ -108,4 +108,5 @@ export default {
   " · {0} en cuotas": " · {0} in instalments",
   " · {0} compra{1} en cuotas": " · {0} instalment purchase{1}",
   "Compra en {0} cuotas de ≈ {1} guardada": "Purchase in {0} instalments of ≈ {1} saved",
+  "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "It's what you can spend with peace of mind: your total money, minus what's reserved for what's coming (bills, instalments, debts) and what you set aside for your goals. And we tell you how much you can spend per day.",
 };

@@ -1292,4 +1292,6 @@ export default {
   "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "Готово! Всё записано. Теперь добавляйте расходы через «Добавить»",
   "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "Нажмите «Добавить», чтобы записать расход или доход. Добавьте счета со сроками оплаты — и мы подскажем, сколько отложить.",
   "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "Дальше всё как обычно: записывайте каждый расход и доход через «Добавить».",
+  "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "Это то, что можно спокойно тратить: все ваши деньги минус то, что отложено на предстоящее (счета, платежи, долги) и на ваши цели. А ещё мы подскажем, сколько можно тратить в день.",
+  "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.": "Нажмите «Добавить», чтобы записать расход, доход, покупку по карте или заём. Приложение никогда не перемещает ваши деньги само: оно предлагает, а вы подтверждаете.",
 };

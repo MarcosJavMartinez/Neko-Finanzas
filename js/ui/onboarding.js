@@ -20,13 +20,13 @@ const STEPS = [
     icon: "wallet",
     tone: "brand",
     title: "Tu saldo disponible",
-    text: "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo que reservas para las facturas que vienen y lo que apartaste para tus metas.",
+    text: "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.",
   },
   {
     icon: "plus",
     tone: "action",
     title: "Anota en segundos",
-    text: "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.",
+    text: "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.",
   },
   {
     art: html`<img class="ob-art-img" src="img/neko-seguro.webp" alt="" width="150" height="150" />`,

@@ -1292,4 +1292,6 @@ export default {
   "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "Pronto! Já está tudo registrado. Agora adicione seus gastos com «Adicionar»",
   "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "Toque em «Adicionar» para anotar um gasto ou uma receita. Adicione suas contas com o vencimento e dizemos quanto reservar.",
   "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "Depois você segue normalmente: registra cada gasto e receita com «Adicionar».",
+  "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "É o que você pode gastar com tranquilidade: seu dinheiro total, menos o reservado para o que vem (contas a pagar, parcelas, dívidas) e o que você guardou para suas metas. E dizemos quanto você pode gastar por dia.",
+  "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.": "Toque em «Adicionar» para anotar um gasto, uma receita, uma compra no cartão ou um empréstimo. O app nunca move seu dinheiro sozinho: ele propõe e você confirma.",
 };

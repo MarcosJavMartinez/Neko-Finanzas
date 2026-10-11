@@ -1293,4 +1293,6 @@ export default {
   "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "تمام! كل شيء مسجّل. الآن أضف مصروفاتك من «إضافة»",
   "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "اضغط «إضافة» لتسجيل مصروف أو دخل. أضف فواتيرك مع استحقاقها ونخبرك كم تحجز.",
   "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "بعدها تتابع كالمعتاد: تسجّل كل مصروف ودخل من «إضافة».",
+  "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "هو ما يمكنك إنفاقه مطمئنًا: إجمالي أموالك، ناقص المحجوز لما هو قادم (فواتير، أقساط، ديون) وما خصصته لأهدافك. ونخبرك أيضًا كم يمكنك أن تنفق يوميًا.",
+  "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.": "اضغط «إضافة» لتسجيل مصروف أو دخل أو شراء بالبطاقة أو قرض. التطبيق لا يحرّك أموالك من تلقاء نفسه أبدًا: يقترح وأنت تؤكد.",
 };

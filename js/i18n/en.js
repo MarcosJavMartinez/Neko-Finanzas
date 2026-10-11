@@ -1292,4 +1292,6 @@ export default {
   "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "Done! Everything is recorded. Now add your expenses with “Add”",
   "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "Tap “Add” to record an expense or an income. Add your bills with their due date and we tell you how much to reserve.",
   "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "After that you carry on as usual: you record each expense and income with “Add”.",
+  "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "It's what you can spend with peace of mind: your total money, minus what's reserved for what's coming (bills, installments, debts) and what you set aside for your goals. And we tell you how much you can spend per day.",
+  "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.": "Tap “Add” to record an expense, an income, a card purchase or a loan. The app never moves your money on its own: it suggests and you confirm.",
 };
