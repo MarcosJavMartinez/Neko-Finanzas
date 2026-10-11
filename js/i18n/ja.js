@@ -1115,7 +1115,7 @@ export default {
   "Devolví": "返した",
   "Devolución borrada": "返済を削除しました",
   "Dólares ahorrados": "ドルの貯蓄",
-  " y se suma a lo que ya tienes": " 。すでにあるデータに追加されます",
+  " y se suma a lo que ya tienes": " （すでにあるデータに追加されます）",
   "¿Cuánto cobras por mes? (opcional)": "月にいくら受け取りますか？（任意）",
   "Ej.: Visa del banco": "例：銀行の Visa",
   "¿Cuánto debes hoy? (sin las cuotas que todavía no llegaron)": "今日時点でいくら借りていますか？（まだ来ていない分割払いは除く）",
@@ -1288,4 +1288,5 @@ export default {
   "Te falta cobrar de {0}": "{0} のうち、受け取る残り",
   "Te falta devolver de {0}": "{0} のうち、返す残り",
   "Movimientos: {0} · Facturas: {1} · Metas: {2}": "記録 {0} 件 · 請求 {1} 件 · 目標 {2} 件",
+  ". ": "。",
 };

@@ -176,6 +176,21 @@
 
   // Nombre y descripción al instalar, en el idioma de la persona (el mismo criterio que js/core/i18n.js).
   var MANIFESTS = ["en", "en-GB", "pt", "tr", "ru", "ja", "ar"];
+  function languageFromLink() {
+    try {
+      var params = new URLSearchParams(location.search);
+      var asked = params.get("lang");
+      if (!asked) return;
+      if (asked === "es" || MANIFESTS.indexOf(asked) >= 0) localStorage.setItem("nekoFinanzas.language", asked);
+      params.delete("lang");
+      var query = params.toString();
+      history.replaceState(null, "", location.pathname + (query ? "?" + query : "") + location.hash);
+    } catch (error) {
+      /* sin almacenamiento o sin history: la app arranca en el idioma del dispositivo */
+    }
+  }
+  languageFromLink();
+
   function manifestLanguage() {
     var saved = read("nekoFinanzas.language");
     if (saved) return saved;

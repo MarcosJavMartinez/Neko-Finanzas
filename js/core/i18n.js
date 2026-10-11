@@ -8,6 +8,10 @@
 //   en el diccionario, con los valores interpolados como {0}, {1}…
 // - Un texto suelto que llega como valor ("Guardar", el nombre de un mes) se
 //   traduce si está tal cual en el diccionario (`tr`).
+// - Plurales: una traducción puede elegir la palabra según el número, con las
+//   reglas de su idioma: "{0|one:# день|few:# дня|many:# дней|other:# дня}".
+//   "#" es el número; las categorías son las de Intl.PluralRules (zero, one,
+//   two, few, many, other) y "other" vale para lo que no esté.
 // - Un texto armado con variables fuera de `html` lleva la etiqueta `msg`:
 //   msg`Faltan ${n} días` → clave "Faltan {0} días".
 //
@@ -89,6 +93,7 @@ export async function applyLanguage(code) {
   language = entries || next === "es" ? next : "es";
   dict = entries ? new Map(Object.entries(entries)) : null;
   templates = new WeakMap();
+  pluralRules = null;
   if (typeof document !== "undefined") {
     document.documentElement.lang = language;
     document.documentElement.dir = isRTL() ? "rtl" : "ltr";
@@ -108,6 +113,7 @@ export function useDictionary(code, entries) {
   language = code;
   dict = entries ? new Map(Object.entries(entries)) : null;
   templates = new WeakMap();
+  pluralRules = null;
 }
 
 /** Traduce un texto si está tal cual en el diccionario; si no, lo devuelve igual. */
@@ -116,7 +122,25 @@ export function tr(text) {
   return dict.get(text) ?? text;
 }
 
-const fill = (text, values) => text.replace(/\{(\d+)\}/g, (_, k) => String(tr(values[k])));
+const PLURAL = /\{(\d+)\|([^{}]*)\}/g;
+let pluralRules = null;
+
+/** La forma que corresponde a ese número ("# дня" → "3 дня"). Si no es un número, la de "other". */
+export function pluralText(forms, value) {
+  const byCategory = {};
+  for (const part of forms.split("|")) {
+    const at = part.indexOf(":");
+    if (at > 0) byCategory[part.slice(0, at)] = part.slice(at + 1);
+  }
+  let category = "other";
+  if (typeof value === "number" && Number.isFinite(value)) {
+    pluralRules ??= new Intl.PluralRules(LANGUAGES[language].locale.split("-u-")[0]);
+    category = pluralRules.select(value);
+  }
+  return (byCategory[category] ?? byCategory.other ?? "").replace(/#/g, String(value));
+}
+
+const fill = (text, values) => text.replace(PLURAL, (_, k, forms) => pluralText(forms, values[k])).replace(/\{(\d+)\}/g, (_, k) => String(tr(values[k])));
 
 /** Texto con variables: msg`Faltan ${n} días`. */
 export function msg(strings, ...values) {
@@ -129,7 +153,8 @@ export function msg(strings, ...values) {
 
 const OPEN = "";
 const CLOSE = "";
-const MARK = /(\d+)/g;
+// Un valor dentro del texto: su número y, si es un plural, las formas entre las que elegir.
+const MARK = /(\d+)(?:\|([^]*))?/g;
 // Las etiquetas de formato quedan dentro del texto; cualquier otra lo corta.
 const CUT = /<(?!\/?(?:strong|em|b|i|u|small)>|br\s*\/?>)[^>]*>/g;
 const ATTR = /\b(aria-label|title|placeholder|alt)="([^"]*)"/g;
@@ -155,7 +180,10 @@ function translateRun(text, lookup) {
   if (!HAS_WORD.test(key.replace(/\{\d+\}|<[^>]*>|&\w+;/g, " "))) return text;
   const to = lookup(key);
   if (to == null) return text;
-  return lead + head + to.replace(/\{(\d+)\}/g, (_, k) => (ids[k] === undefined ? "" : OPEN + ids[k] + CLOSE)) + end + tail;
+  const placed = to
+    .replace(PLURAL, (_, k, forms) => (ids[k] === undefined ? "" : OPEN + ids[k] + "|" + forms + CLOSE))
+    .replace(/\{(\d+)\}/g, (_, k) => (ids[k] === undefined ? "" : OPEN + ids[k] + CLOSE));
+  return lead + head + placed + end + tail;
 }
 
 /** Aplica `lookup` a cada tramo de texto y atributo traducible de un template. */
@@ -172,17 +200,22 @@ export function translateSource(strings, lookup) {
 }
 
 /**
- * Para `html`: las partes fijas del template ya traducidas y el orden en que
- * van los valores (una traducción puede cambiarlos de lugar). `null` en
- * español: el template se usa como está.
+ * Para `html`: las partes fijas del template ya traducidas y, entre ellas,
+ * qué valor va en cada hueco (una traducción puede cambiarlos de lugar) y si
+ * es un plural. `null` en español: el template se usa como está.
  */
 export function localizeTemplate(strings) {
   if (!dict) return null;
   let entry = templates.get(strings);
   if (!entry) {
     const source = translateSource(strings, (key) => dict.get(key));
+    // split con dos grupos: texto, número del valor, formas del plural (o undefined), texto…
     const parts = source.split(MARK);
-    entry = { strings: parts.filter((_, i) => i % 2 === 0), order: parts.filter((_, i) => i % 2 === 1).map(Number) };
+    entry = { strings: [], slots: [] };
+    for (let i = 0; i < parts.length; i += 3) {
+      entry.strings.push(parts[i]);
+      if (i + 1 < parts.length) entry.slots.push({ index: Number(parts[i + 1]), forms: parts[i + 2] });
+    }
     templates.set(strings, entry);
   }
   return entry;

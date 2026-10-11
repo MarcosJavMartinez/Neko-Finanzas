@@ -116,7 +116,7 @@ export default {
   "este mes": "this month",
   "Gastos": "Expenses",
   "Metas": "Goals",
-  "{0} meta{1}": "{0} goal{1}",
+  "{0} meta{1}": "{0|one:# goal|other:# goals}",
   "Extras de este mes: <strong>{0}</strong>": "Extras this month: <strong>{0}</strong>",
   "Agregar extras": "Add extras",
   "Lo apartado y reservado supera lo que tienes. Revisa metas, facturas, cuotas o deudas.": "What you set aside and reserved is more than what you have. Check goals, bills, installments or debts.",

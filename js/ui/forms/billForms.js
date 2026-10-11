@@ -262,5 +262,5 @@ function repeatText(dueDate, recurring, frequency) {
   }[frequency] || msg`Vence el día ${day}`;
   // Día 29-31: en los meses más cortos vence el último día.
   const shortMonths = day > 28 && ["monthly", "bimonthly", "quarterly", "semiannual"].includes(frequency) ? " (o el último día, en los meses más cortos)" : "";
-  return `${rule}${shortMonths}. ${first}`;
+  return `${rule}${shortMonths}${tr(". ")}${first}`;
 }

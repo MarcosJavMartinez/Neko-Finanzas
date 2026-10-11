@@ -1,6 +1,6 @@
 // Más: acceso a las secciones secundarias.
 
-import { msg, tr } from "../core/i18n.js";
+import { msg, tr, getLanguage } from "../core/i18n.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { appFooter } from "../ui/components.js";
@@ -9,7 +9,9 @@ import { toast } from "../ui/toast.js";
 import { billReserve, budgetsOverview, loansSummary } from "../core/finance.js";
 import { currentMonthKey } from "../core/dates.js";
 
-const SHARE_URL = "https://nekotools.site/finanzas.html";
+// Enlace de la app en el idioma de quien comparte: su vista previa (WhatsApp, redes) sale en ese idioma.
+const APP_URL = "https://neko-finanzas.vercel.app/";
+const shareUrl = () => (getLanguage() === "es" ? APP_URL : `${APP_URL}${getLanguage().toLowerCase()}/`);
 
 function loanSub(state) {
   const l = loansSummary(state);
@@ -77,7 +79,7 @@ export default {
  * primero.
  */
 export async function shareApp() {
-  const data = { title: "Neko Finanzas", text: tr("Neko Finanzas: tus finanzas claras, gratis y privadas. Sin cuentas ni publicidad."), url: SHARE_URL };
+  const data = { title: "Neko Finanzas", text: tr("Neko Finanzas: tus finanzas claras, gratis y privadas. Sin cuentas ni publicidad."), url: shareUrl() };
   if (navigator.share) {
     try {
       await navigator.share(data);
@@ -87,9 +89,9 @@ export async function shareApp() {
     }
   }
   try {
-    await navigator.clipboard.writeText(SHARE_URL);
+    await navigator.clipboard.writeText(shareUrl());
     toast("Link copiado. Pégalo donde quieras compartirlo");
   } catch (error) {
-    window.prompt("Copia este link para compartirlo:", SHARE_URL);
+    window.prompt("Copia este link para compartirlo:", shareUrl());
   }
 }

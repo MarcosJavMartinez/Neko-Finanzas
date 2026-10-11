@@ -498,6 +498,11 @@ I.useDictionary("en", { "Hola {0}, tienes {1} mensajes": "{1} messages for you, 
 eq("idiomas: texto armado con msg", I.msg`Faltan ${4} días`, "4 days left");
 eq("idiomas: lo escrito por la persona se escapa igual", String(html`<p>Hola ${"<b>"}, tienes ${1} mensajes</p>`), "<p>1 messages for you, &lt;b&gt;</p>");
 eq("idiomas: sin traducción queda el español", String(html`<p>Texto sin traducir ${1}</p>`), "<p>Texto sin traducir 1</p>");
+I.useDictionary("ru", { "Faltan {0} días": "Осталось {0|one:# день|few:# дня|many:# дней|other:# дня}", "Tienes {0} metas": "У вас {0|one:# цель|few:# цели|many:# целей|other:# цели}" });
+eq("idiomas: plurales con las reglas del idioma (ruso)", [1, 2, 5, 11, 21, 22, 25].map((n) => I.msg`Faltan ${n} días`), ["Осталось 1 день", "Осталось 2 дня", "Осталось 5 дней", "Осталось 11 дней", "Осталось 21 день", "Осталось 22 дня", "Осталось 25 дней"]);
+eq("idiomas: plural dentro de un template", [1, 3, 5].map((n) => String(html`<p>Tienes ${n} metas</p>`)), ["<p>У вас 1 цель</p>", "<p>У вас 3 цели</p>", "<p>У вас 5 целей</p>"]);
+I.useDictionary("ar", { "Faltan {0} días": "باقٍ {0|one:يوم واحد|two:يومان|few:# أيام|many:# يومًا|other:# يوم}" });
+eq("idiomas: plurales en árabe (uno, dos, pocos, muchos)", [1, 2, 3, 11, 100].map((n) => I.msg`Faltan ${n} días`), ["باقٍ يوم واحد", "باقٍ يومان", "باقٍ 3 أيام", "باقٍ 11 يومًا", "باقٍ 100 يوم"]);
 I.useDictionary("es", null);
 eq("idiomas: en español no cambia nada", String(html`<p>Hola ${"Ana"}, tienes ${3} mensajes</p>`), "<p>Hola Ana, tienes 3 mensajes</p>");
 const i18nReport = await (await import(new URL("../tools/i18n.mjs", import.meta.url).href)).report();
