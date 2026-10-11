@@ -28,6 +28,8 @@ function topSheet() { return [...d.querySelectorAll(".sheet-root:not(.is-closing
 function fillForm(form) {
   for (const el of form.elements) {
     if (rnd() < 0.3 || el.disabled || el.type === "hidden" || el.type === "file" || el.tagName === "BUTTON") continue;
+    // Cambiar el idioma en el asistente recarga la página (y con ella se iría la prueba).
+    if (el.name === "setup-language") continue;
     if (el.type === "radio" || el.type === "checkbox") { if (rnd() < 0.5) el.click(); continue; }
     if (el.tagName === "SELECT") { el.selectedIndex = Math.floor(rnd() * el.options.length); el.dispatchEvent(new Event("change", { bubbles: true })); continue; }
     if (el.type === "date") { el.value = pick(DATE_POOL); el.dispatchEvent(new Event("change", { bubbles: true })); continue; }
