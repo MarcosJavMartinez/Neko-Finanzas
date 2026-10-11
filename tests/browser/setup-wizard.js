@@ -68,6 +68,8 @@ return (async () => {
     form().elements["bill-on-0"].click();
     await next();
     log("factura marcada sin monto: " + (error() || "sin error ✗"));
+    log("solo la factura marcada pide monto y día: " + (form().elements["bill-amount-0"] && !form().elements["bill-amount-4"] ? "sí" : "NO ✗"));
+    form().elements["bill-on-4"].click(); await wait(150);
     type("bill-amount-0", "250.000"); form().elements["bill-day-0"].value = "5";
     type("bill-amount-4", "27.000"); form().elements["bill-day-4"].value = "31";
     await next();

@@ -26,7 +26,7 @@ const STEPS = [
     icon: "plus",
     tone: "action",
     title: "Anota en segundos",
-    text: "Toca «Agregar transacción» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.",
+    text: "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.",
   },
   {
     art: html`<img class="ob-art-img" src="img/neko-seguro.webp" alt="" width="150" height="150" />`,

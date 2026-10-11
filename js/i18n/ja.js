@@ -1289,4 +1289,9 @@ export default {
   "Te falta devolver de {0}": "{0} のうち、返す残り",
   "Movimientos: {0} · Facturas: {1} · Metas: {2}": "記録 {0} 件 · 請求 {1} 件 · 目標 {2} 件",
   ". ": "。",
+  "¿Para qué sirve?": "何のため？",
+  "Toca las que pagas.": "支払っているものをタップしてください。",
+  "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "完了！すべて記録しました。これからは「追加」で支出を追加してください",
+  "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "「追加」をタップして支出や収入を記録します。請求を期限つきで追加すると、いくら取っておけばよいかお知らせします。",
+  "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "あとはふだんどおり、支出と収入を「追加」で記録していきます。",
 };

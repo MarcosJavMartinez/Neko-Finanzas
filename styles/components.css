@@ -1522,7 +1522,7 @@ button.row:hover,
 }
 
 .axis-label {
-  font-size: 10px;
+  font-size: 12px;
   fill: var(--muted);
   font-family: var(--font-ui);
   font-variant-numeric: tabular-nums;

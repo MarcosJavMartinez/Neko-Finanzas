@@ -128,8 +128,9 @@ export function openSheet({ title, body, onMount, onClose, wide = false }) {
 
   onMount?.(panel, close);
   const autofocus = panel.querySelector("[data-autofocus]");
-  // En teléfonos no forzamos el foco en inputs (abriría el teclado encima de la hoja).
-  if (autofocus && window.matchMedia("(pointer: fine)").matches) {
+  // En teléfonos no forzamos el foco en inputs (abriría el teclado encima de la hoja),
+  // salvo donde escribir es lo único que se viene a hacer: el monto de un movimiento nuevo.
+  if (autofocus && (autofocus.dataset.autofocus === "always" || window.matchMedia("(pointer: fine)").matches)) {
     autofocus.focus();
   } else {
     const heading = panel.querySelector(".sheet-title");

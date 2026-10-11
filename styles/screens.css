@@ -2524,3 +2524,22 @@ button.inline-link {
 .day-head > :last-child {
   margin-inline-start: auto;
 }
+
+/* Asistente: la explicación de cada paso, plegada bajo "¿Para qué sirve?" */
+.setup-why {
+  margin: -4px 0 4px;
+}
+
+.setup-why summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--brand-ink);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.setup-why .sheet-text {
+  margin-top: 4px;
+}

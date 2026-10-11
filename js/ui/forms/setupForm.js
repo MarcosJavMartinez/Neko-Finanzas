@@ -180,7 +180,7 @@ const RENDER = {
 
   accounts: (a) => html`
     <h3 class="setup-title">¿Dónde tienes tu dinero hoy?</h3>
-    <p class="sheet-text">Cada lugar es una <strong>cuenta</strong>. La suma de todas es tu dinero total, y cuando registres un gasto vas a elegir de cuál salió.</p>
+    <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Cada lugar es una <strong>cuenta</strong>. La suma de todas es tu dinero total, y cuando registres un gasto vas a elegir de cuál salió.</p></details>
     <div class="setup-list">
       ${a.accounts.map(
         (acc, i) => html`<div class="setup-item">
@@ -193,7 +193,7 @@ const RENDER = {
 
   card: (a) => html`
     <h3 class="setup-title">¿Usas tarjeta de crédito?</h3>
-    <p class="sheet-text">Lo que compras con tarjeta queda como <strong>deuda</strong> hasta que pagas el resumen. Las compras en cuotas se registran una por mes, y las que se acercan se descuentan de tu disponible.</p>
+    <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Lo que compras con tarjeta queda como <strong>deuda</strong> hasta que pagas el resumen. Las compras en cuotas se registran una por mes, y las que se acercan se descuentan de tu disponible.</p></details>
     <label class="toggle-field">
       <span><span class="toggle-label">Sí, tengo tarjeta</span></span>
       <input type="checkbox" class="switch" name="card-on" ${a.card.on ? "checked" : ""} />
@@ -220,28 +220,41 @@ const RENDER = {
 
   bills: (a) => html`
     <h3 class="setup-title">¿Qué pagas todos los meses?</h3>
-    <p class="sheet-text">Son tus <strong>facturas</strong>. La app reserva el dinero de las que vencen pronto, así tu disponible ya las tiene descontadas, y te avisa cuándo vencen.</p>
-    <div class="setup-list">
+    <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Son tus <strong>facturas</strong>. La app reserva el dinero de las que vencen pronto, así tu disponible ya las tiene descontadas, y te avisa cuándo vencen.</p></details>
+    <p class="field-hint">Toca las que pagas.</p>
+    <div class="currency-toggles">
       ${a.bills.map(
-        (b, i) => html`<div class="setup-item setup-item-bill">
-          <label class="setup-check"><input type="checkbox" class="switch" name="bill-on-${i}" ${b.on ? "checked" : ""} /><span>${b.icon} ${b.name}</span></label>
-          ${money(`bill-amount-${i}`, b.amount, a.currency, msg`Monto de ${b.name}`)}
-          <label class="setup-day"><span>día</span><select name="bill-day-${i}" aria-label="Día del mes en que vence ${b.name}">${Array.from({ length: 31 }, (_, d) => d + 1).map((d) => html`<option value="${d}" ${d === Number(b.day) ? "selected" : ""}>${d}</option>`)}</select></label>
-        </div>`
+        (b, i) => html`<label class="chip-check">
+          <input type="checkbox" name="bill-on-${i}" ${b.on ? "checked" : ""} />
+          <span>${b.icon} ${b.name}</span>
+        </label>`
       )}
     </div>
-    <p class="field-hint">Escribe el monto aproximado y el día del mes en que vence. Después puedes sumar otras en Facturas.</p>`,
+    ${a.bills.some((b) => b.on)
+      ? html`<div class="setup-list">
+            ${a.bills.map((b, i) =>
+              b.on
+                ? html`<div class="setup-item setup-item-bill">
+                    <span class="setup-check"><span>${b.icon} ${b.name}</span></span>
+                    ${money(`bill-amount-${i}`, b.amount, a.currency, msg`Monto de ${b.name}`)}
+                    <label class="setup-day"><span>día</span><select name="bill-day-${i}" aria-label="Día del mes en que vence ${b.name}">${Array.from({ length: 31 }, (_, d) => d + 1).map((d) => html`<option value="${d}" ${d === Number(b.day) ? "selected" : ""}>${d}</option>`)}</select></label>
+                  </div>`
+                : ""
+            )}
+          </div>
+          <p class="field-hint">Escribe el monto aproximado y el día del mes en que vence. Después puedes sumar otras en Facturas.</p>`
+      : ""}`,
 
   spending: (a) => html`
     <h3 class="setup-title">El supermercado y los gustos</h3>
-    <p class="sheet-text">Hay gastos que no son facturas pero igual los tienes todos los meses. La app puede <strong>reservar</strong> ese dinero para que no lo cuentes como libre. Lo que no gastes a fin de mes, te ofrece pasarlo a tus ahorros.</p>
+    <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Hay gastos que no son facturas pero igual los tienes todos los meses. La app puede <strong>reservar</strong> ese dinero para que no lo cuentes como libre. Lo que no gastes a fin de mes, te ofrece pasarlo a tus ahorros.</p></details>
     ${moneyField("groceries", "¿Cuánto gastas por mes en el supermercado? (aprox.)", a.groceries, a.currency)}
     ${moneyField("treats", "¿Cuánto quieres para gustos por día? (un café, un helado)", a.treats, a.currency)}
     <p class="field-hint">Los gustos se acumulan: si un día no gastas, al otro tienes el doble. Cuentan los gastos de Comida y Entretenimiento; lo puedes cambiar en Presupuestos.</p>`,
 
   loans: (a) => html`
     <h3 class="setup-title">¿Le debes dinero a alguien, o te deben?</h3>
-    <p class="sheet-text">Los <strong>préstamos</strong> no son gastos ni ingresos: la app lleva la cuenta de cuánto falta. Lo que debes con fecha se reserva de tu disponible cuando se acerca.</p>
+    <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Los <strong>préstamos</strong> no son gastos ni ingresos: la app lleva la cuenta de cuánto falta. Lo que debes con fecha se reserva de tu disponible cuando se acerca.</p></details>
     ${a.loans.map(
       (l, i) => html`<div class="setup-group">
         ${segmented(`loan-dir-${i}`, [{ value: "lent", label: "Me deben" }, { value: "borrowed", label: "Debo" }], l.direction)}
@@ -256,7 +269,7 @@ const RENDER = {
 
   goals: (a) => html`
     <h3 class="setup-title">¿Estás ahorrando para algo?</h3>
-    <p class="sheet-text">Una <strong>meta</strong> es dinero que apartas para algo. Sigue siendo tuyo, pero deja de contar como disponible para que no lo gastes sin querer.</p>
+    <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Una <strong>meta</strong> es dinero que apartas para algo. Sigue siendo tuyo, pero deja de contar como disponible para que no lo gastes sin querer.</p></details>
     ${a.goals.map(
       (g, i) => html`<div class="setup-group">
         ${textInput(`goal-name-${i}`, "¿Para qué?", g.name, "Ej.: Vacaciones")}
@@ -277,7 +290,7 @@ const RENDER = {
         ? html`<ul class="setup-summary">${lines.map(([emoji, text]) => html`<li><span aria-hidden="true">${emoji}</span><span>${text}</span></li>`)}</ul>`
         : html`<p class="notice notice-info">${icon("info", 16)}No ingresaste nada todavía. Puedes volver atrás, o empezar con la app vacía e ir sumando poco a poco.</p>`}
       <p class="sheet-text">Con eso, el Inicio te va a mostrar tu <strong>saldo disponible</strong>: tu dinero total, menos lo reservado (facturas, cuotas, deudas, supermercado y gustos), menos lo apartado en metas.</p>
-      <p class="field-hint">Después sigues con normalidad: registras cada gasto e ingreso con «Agregar transacción».</p>`;
+      <p class="field-hint">Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».</p>`;
   },
 };
 
@@ -334,7 +347,8 @@ function collect(step, form, a) {
     Object.assign(a.card, { on: on("card-on"), name: v("card-name"), debt: v("card-debt"), closingDay: Number(v("card-closing")) || 25, dueDay: Number(v("card-due")) || 5 });
     a.card.purchases.forEach((p, i) => Object.assign(p, { what: v(`pur-what-${i}`), per: v(`pur-per-${i}`), left: v(`pur-left-${i}`).trim() }));
   } else if (step === "bills") {
-    a.bills.forEach((b, i) => Object.assign(b, { on: on(`bill-on-${i}`), amount: v(`bill-amount-${i}`), day: Number(v(`bill-day-${i}`)) || 10 }));
+    // El monto y el día solo están en pantalla para las facturas elegidas: las demás conservan lo que tenían.
+    a.bills.forEach((b, i) => Object.assign(b, { on: on(`bill-on-${i}`), amount: form.elements[`bill-amount-${i}`] ? v(`bill-amount-${i}`) : b.amount, day: form.elements[`bill-day-${i}`] ? Number(v(`bill-day-${i}`)) || 10 : b.day }));
   } else if (step === "spending") {
     a.groceries = v("groceries");
     a.treats = v("treats");
@@ -526,6 +540,10 @@ export function openSetupWizard() {
             /* sin sessionStorage: se abre desde Configuración */
           }
           location.reload();
+        } else if (name.startsWith("bill-on-")) {
+          // Marcar una factura muestra su monto y su día; desmarcarla los saca.
+          collect(step(), form, answers);
+          show();
         } else if (name === "cur-add" || name.startsWith("cur-on-")) {
           // Marcar o agregar una moneda muestra su tipo de cambio; desmarcarla lo saca.
           collect(step(), form, answers);
@@ -572,7 +590,7 @@ export function openSetupWizard() {
         const backup = store.snapshot();
         applySetup(answers);
         close();
-        toast("¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar transacción»", { duration: 3500, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast("¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»", { duration: 3500, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
         whenHistorySettled(() => (location.hash = "#/inicio"));
       });
 

@@ -1288,4 +1288,9 @@ export default {
   "Te falta cobrar de {0}": "باقٍ أن تستلم من أصل {0}",
   "Te falta devolver de {0}": "باقٍ أن تردّ من أصل {0}",
   "Movimientos: {0} · Facturas: {1} · Metas: {2}": "المعاملات: {0} · الفواتير: {1} · الأهداف: {2}",
+  "¿Para qué sirve?": "ما الفائدة؟",
+  "Toca las que pagas.": "اضغط على ما تدفعه.",
+  "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "تمام! كل شيء مسجّل. الآن أضف مصروفاتك من «إضافة»",
+  "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "اضغط «إضافة» لتسجيل مصروف أو دخل. أضف فواتيرك مع استحقاقها ونخبرك كم تحجز.",
+  "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "بعدها تتابع كالمعتاد: تسجّل كل مصروف ودخل من «إضافة».",
 };

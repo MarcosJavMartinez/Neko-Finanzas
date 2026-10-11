@@ -1287,4 +1287,9 @@ export default {
   "Te falta cobrar de {0}": "Осталось получить из {0}",
   "Te falta devolver de {0}": "Осталось вернуть из {0}",
   "Movimientos: {0} · Facturas: {1} · Metas: {2}": "Операций: {0} · Счетов к оплате: {1} · Целей: {2}",
+  "¿Para qué sirve?": "Для чего это?",
+  "Toca las que pagas.": "Нажмите на те, что вы оплачиваете.",
+  "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "Готово! Всё записано. Теперь добавляйте расходы через «Добавить»",
+  "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "Нажмите «Добавить», чтобы записать расход или доход. Добавьте счета со сроками оплаты — и мы подскажем, сколько отложить.",
+  "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "Дальше всё как обычно: записывайте каждый расход и доход через «Добавить».",
 };

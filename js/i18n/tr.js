@@ -1287,4 +1287,9 @@ export default {
   "Te falta cobrar de {0}": "Alacağın kalan · toplam {0}",
   "Te falta devolver de {0}": "Ödemen gereken kalan · toplam {0}",
   "Movimientos: {0} · Facturas: {1} · Metas: {2}": "Hareket: {0} · Fatura: {1} · Hedef: {2}",
+  "¿Para qué sirve?": "Ne işe yarar?",
+  "Toca las que pagas.": "Ödediklerine dokun.",
+  "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "Tamam! Her şey kaydedildi. Şimdi giderlerini «Ekle» ile ekle",
+  "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "Bir gider veya gelir kaydetmek için «Ekle»ye dokun. Faturalarını son ödeme tarihiyle ekle, ne kadar ayırman gerektiğini söyleyelim.",
+  "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "Sonra normal şekilde devam edersin: her gideri ve geliri «Ekle» ile kaydedersin.",
 };

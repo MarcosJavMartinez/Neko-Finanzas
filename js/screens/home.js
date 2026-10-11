@@ -150,7 +150,7 @@ export default {
                 ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}
                 <span class="avail-pct">${Math.round(availablePct)}%</span>
               </div>
-              <a href="#/facturas" class="avail-reserve" data-pulse="reserve" title="Lo que vence en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${reserveLabel(summary)}</a>
+              ${summary.reserved > 0 ? html`<a href="#/facturas" class="avail-reserve" data-pulse="reserve" title="Lo que vence en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${reserveLabel(summary)}</a>` : ""}
             </div>`}
       ${trio}
       ${savings}
@@ -229,7 +229,7 @@ export default {
       ${sectionHeader("Recientes", { href: "#/transacciones", linkText: "Ver todos" })}
       ${recent.length
         ? html`<div class="tx-list">${recent.map((tx) => txRow(state, tx, { withDate: true }))}</div>`
-        : emptyState({ art: "neko-anotando", title: "Todavía no hay movimientos", text: "Registra tu primer ingreso o gasto y va a aparecer aquí.", actionLabel: "Agregar transacción", action: "add-expense", compact: true, mood: "sleepy" })}
+        : emptyState({ art: "neko-anotando", title: "Todavía no hay movimientos", text: "Registra tu primer ingreso o gasto y va a aparecer aquí.", actionLabel: "Agregar", action: "add-expense", compact: true, mood: "sleepy" })}
     </section>`;
 
     // Con más de una cuenta: cuánto hay en cada una.

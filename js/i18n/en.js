@@ -1287,4 +1287,9 @@ export default {
   "Te falta cobrar de {0}": "Still to collect, out of {0}",
   "Te falta devolver de {0}": "Still to pay back, out of {0}",
   "Movimientos: {0} · Facturas: {1} · Metas: {2}": "Transactions: {0} · Bills: {1} · Goals: {2}",
+  "¿Para qué sirve?": "What is it for?",
+  "Toca las que pagas.": "Tap the ones you pay.",
+  "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "Done! Everything is recorded. Now add your expenses with “Add”",
+  "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "Tap “Add” to record an expense or an income. Add your bills with their due date and we tell you how much to reserve.",
+  "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "After that you carry on as usual: you record each expense and income with “Add”.",
 };

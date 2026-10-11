@@ -1287,4 +1287,9 @@ export default {
   "Te falta cobrar de {0}": "Falta receber, de {0}",
   "Te falta devolver de {0}": "Falta devolver, de {0}",
   "Movimientos: {0} · Facturas: {1} · Metas: {2}": "Movimentações: {0} · Contas a pagar: {1} · Metas: {2}",
+  "¿Para qué sirve?": "Para que serve?",
+  "Toca las que pagas.": "Toque nas que você paga.",
+  "¡Listo! Ya está todo registrado. Ahora suma tus gastos con «Agregar»": "Pronto! Já está tudo registrado. Agora adicione seus gastos com «Adicionar»",
+  "Toca «Agregar» para anotar un gasto o un ingreso. Suma tus facturas con su vencimiento y te decimos cuánto reservar.": "Toque em «Adicionar» para anotar um gasto ou uma receita. Adicione suas contas com o vencimento e dizemos quanto reservar.",
+  "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "Depois você segue normalmente: registra cada gasto e receita com «Adicionar».",
 };
