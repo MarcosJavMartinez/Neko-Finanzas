@@ -1294,4 +1294,8 @@ export default {
   "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "Depois você segue normalmente: registra cada gasto e receita com «Adicionar».",
   "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "É o que você pode gastar com tranquilidade: seu dinheiro total, menos o reservado para o que vem (contas a pagar, parcelas, dívidas) e o que você guardou para suas metas. E dizemos quanto você pode gastar por dia.",
   "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.": "Toque em «Adicionar» para anotar um gasto, uma receita, uma compra no cartão ou um empréstimo. O app nunca move seu dinheiro sozinho: ele propõe e você confirma.",
+  "Ya lo estoy pagando": "Já estou pagando",
+  "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "Você recebeu o dinheiro antes de começar a usar o app: ele não é somado à sua conta. Anote só as parcelas que faltam.",
+  "¿De qué cuenta salen las cuotas?": "De qual conta saem as parcelas?",
+  "Préstamo en cuotas · ya lo venías pagando": "Empréstimo parcelado · você já vinha pagando",
 };

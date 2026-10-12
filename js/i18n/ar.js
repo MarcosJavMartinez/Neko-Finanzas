@@ -1295,4 +1295,8 @@ export default {
   "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "بعدها تتابع كالمعتاد: تسجّل كل مصروف ودخل من «إضافة».",
   "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "هو ما يمكنك إنفاقه مطمئنًا: إجمالي أموالك، ناقص المحجوز لما هو قادم (فواتير، أقساط، ديون) وما خصصته لأهدافك. ونخبرك أيضًا كم يمكنك أن تنفق يوميًا.",
   "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.": "اضغط «إضافة» لتسجيل مصروف أو دخل أو شراء بالبطاقة أو قرض. التطبيق لا يحرّك أموالك من تلقاء نفسه أبدًا: يقترح وأنت تؤكد.",
+  "Ya lo estoy pagando": "أسدّده بالفعل",
+  "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "استلمتَ المال قبل أن تبدأ استخدام التطبيق: لا يُضاف إلى حسابك. سجّل الأقساط الباقية فقط.",
+  "¿De qué cuenta salen las cuotas?": "من أي حساب تخرج الأقساط؟",
+  "Préstamo en cuotas · ya lo venías pagando": "قرض بالتقسيط · كنت تسدّده بالفعل",
 };

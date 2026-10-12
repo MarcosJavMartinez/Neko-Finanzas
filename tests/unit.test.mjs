@@ -465,6 +465,19 @@ mem.delete("nekoFinanzas.hideAmounts");
   eq("centavos según la moneda principal, no el país", expat, true);
 }
 
+// Préstamo en cuotas que ya se venía pagando: no entra dinero, solo quedan las cuotas que faltan
+{
+  store.startFresh({ keepSetup: false });
+  const before = F.balanceSummary(store.getState()).total;
+  const txBefore = store.getState().transactions.length;
+  const old = store.addCreditLoan({ lender: "Mercado Pago", received: 300, count: 3, installment: 100, firstDue: "2099-01-10", currency: store.getState().settings.mainCurrency, accountId: store.defaultAccountId(), alreadyReceived: true });
+  const st = store.getState();
+  const cleaned = sanitizeState(JSON.parse(JSON.stringify(st)));
+  eq("préstamo que ya se venía pagando: no suma dinero, programa las cuotas y es válido", [F.balanceSummary(st).total === before, st.transactions.length - txBefore, Boolean(old.txId), cleaned.loans.length, cleaned.transactions.length === st.transactions.length], [true, 3, false, 1, true]);
+  store.deleteLoan(old.id);
+  eq("préstamo que ya se venía pagando: borrarlo se lleva sus cuotas", [store.getState().loans.length, store.getState().transactions.length - txBefore], [0, 0]);
+}
+
 // Una moneda con datos no se saca de las que se usan
 store.loadDemo();
 store.toggleCurrency("USD", false);

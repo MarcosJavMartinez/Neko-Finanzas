@@ -1294,4 +1294,8 @@ export default {
   "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "Sonra normal şekilde devam edersin: her gideri ve geliri «Ekle» ile kaydedersin.",
   "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "Gönül rahatlığıyla harcayabileceğin tutar: toplam paran, eksi yaklaşan ödemeler için ayrılan (faturalar, taksitler, borçlar) ve hedeflerine ayırdığın tutar. Ayrıca günde ne kadar harcayabileceğini de söyleriz.",
   "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.": "Bir gider, gelir, kartla alışveriş veya borç kaydetmek için «Ekle»ye dokun. Uygulama paranı asla kendiliğinden taşımaz: önerir, sen onaylarsın.",
+  "Ya lo estoy pagando": "Zaten ödüyorum",
+  "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "Parayı uygulamayı kullanmaya başlamadan önce aldın: hesabına eklenmez. Yalnızca kalan taksitleri kaydet.",
+  "¿De qué cuenta salen las cuotas?": "Taksitler hangi hesaptan çıkıyor?",
+  "Préstamo en cuotas · ya lo venías pagando": "Taksitli kredi · zaten ödüyordun",
 };

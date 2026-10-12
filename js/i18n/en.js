@@ -1294,4 +1294,8 @@ export default {
   "Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».": "After that you carry on as usual: you record each expense and income with “Add”.",
   "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.": "It's what you can spend with peace of mind: your total money, minus what's reserved for what's coming (bills, installments, debts) and what you set aside for your goals. And we tell you how much you can spend per day.",
   "Toca «Agregar» para anotar un gasto, un ingreso, una compra con tarjeta o un préstamo. La app nunca mueve tu dinero sola: te propone y tú confirmas.": "Tap “Add” to record an expense, an income, a card purchase or a loan. The app never moves your money on its own: it suggests and you confirm.",
+  "Ya lo estoy pagando": "I'm already paying it",
+  "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "You received the money before you started using the app: it isn't added to your account. Note only the installments that are left.",
+  "¿De qué cuenta salen las cuotas?": "Which account do the installments come out of?",
+  "Préstamo en cuotas · ya lo venías pagando": "Installment loan · you were already paying it",
 };

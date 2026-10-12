@@ -157,9 +157,13 @@ export function openCreditLoanForm() {
     body: html`<form class="form" novalidate>
       <p class="sheet-text">Para un préstamo de un banco o una billetera que devuelves en cuotas fijas. Si te prestó una persona, usa "Me prestaron".</p>
       ${textField({ name: "person", label: "¿Quién te lo dio?", value: "", required: true, maxlength: 40, placeholder: "Ej.: tu banco o tu billetera digital" })}
-      ${amountField({ value: null, currency: state.settings.mainCurrency, label: "¿Cuánto recibiste?", autofocus: false, tone: "tone-goal" })}
+      <label class="toggle-field">
+        <span><span class="toggle-label">Ya lo estoy pagando</span><span class="field-hint">El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.</span></span>
+        <input type="checkbox" class="switch" name="running" />
+      </label>
+      <div data-loan-new>${amountField({ value: null, currency: state.settings.mainCurrency, label: "¿Cuánto recibiste?", autofocus: false, tone: "tone-goal" })}</div>
       <div class="field">
-        <label class="field-label" for="f-accountId">¿A qué cuenta entró?</label>
+        <label class="field-label" for="f-accountId"><span data-loan-new>¿A qué cuenta entró?</span><span data-loan-running hidden>¿De qué cuenta salen las cuotas?</span></label>
         <select id="f-accountId" name="accountId">
           ${accounts.map((a) => html`<option value="${a.id}" ${a.id === preferred ? "selected" : ""}>${a.icon} ${a.name}</option>`)}
         </select>
@@ -167,7 +171,7 @@ export function openCreditLoanForm() {
       </div>
       <div class="field-row">
         <div class="field">
-          <label class="field-label" for="f-count">Cantidad de cuotas</label>
+          <label class="field-label" for="f-count"><span data-loan-new>Cantidad de cuotas</span><span data-loan-running hidden>Cuotas que faltan</span></label>
           <select id="f-count" name="count">${counts.map((n) => html`<option value="${n}" ${n === 6 ? "selected" : ""}>${n} cuotas</option>`)}</select>
         </div>
         <div class="field">
@@ -192,7 +196,7 @@ export function openCreditLoanForm() {
         const count = Number(form.elements.count.value);
         const ready = received > 0 && each > 0;
         totalBox.hidden = !ready;
-        if (!ready) return;
+        if (!ready || running()) return (totalBox.hidden = true);
         const total = Math.round(each * count * 100) / 100;
         const extra = Math.round((total - received) * 100) / 100;
         totalBox.querySelector("span").textContent =
@@ -200,21 +204,31 @@ export function openCreditLoanForm() {
             ? msg`En total devuelves ${formatMoney(total, currency(), { reveal: true })}: ${formatMoney(extra, currency(), { reveal: true })} más de lo que recibiste.`
             : msg`En total devuelves ${formatMoney(total, currency(), { reveal: true })}.`;
       };
+      const running = () => form.elements.running.checked;
+      // "Ya lo estoy pagando": no se pregunta cuánto se recibió y las etiquetas hablan de lo que falta.
+      const syncRunning = () => {
+        form.querySelectorAll("[data-loan-new]").forEach((el) => (el.hidden = running()));
+        form.querySelectorAll("[data-loan-running]").forEach((el) => (el.hidden = !running()));
+        form.querySelector('label[for$="firstDue"]').textContent = tr(running() ? "La próxima cuota vence el" : "La primera cuota vence el");
+        if (running()) totalBox.hidden = true;
+      };
+      form.elements.running.addEventListener("change", syncRunning);
       form.addEventListener("input", sync);
       form.addEventListener("change", sync);
       form.addEventListener("submit", (event) => {
         event.preventDefault();
         clearErrors(form);
         const data = readForm(form);
-        const received = readAmount(form);
         const each = parseAmount(data.installment);
+        // Sin dinero recibido que anotar, el préstamo vale lo que falta pagar.
+        const received = running() ? Math.round(each * Number(data.count) * 100) / 100 : readAmount(form);
         const count = Number(data.count);
         if (!data.person.trim()) return fieldError(form, "person", "¿Quién te dio el préstamo?");
-        if (!(received > 0)) return fieldError(form, "amount", "Ingresa cuánto recibiste.");
+        if (!running() && !(received > 0)) return fieldError(form, "amount", "Ingresa cuánto recibiste.");
         if (!(each > 0)) return fieldError(form, "installment", "Ingresa el valor de la cuota.");
         if (!isISODate(data.firstDue)) return fieldError(form, "firstDue", "Elige una fecha válida.");
         if (data.firstDue < today) return fieldError(form, "firstDue", "La primera cuota tiene que vencer de hoy en adelante.");
-        const saved = store.addCreditLoan({ lender: data.person, received, count, installment: each, firstDue: data.firstDue, currency: data.currency, accountId: data.accountId });
+        const saved = store.addCreditLoan({ lender: data.person, received, count, installment: each, firstDue: data.firstDue, currency: data.currency, accountId: data.accountId, alreadyReceived: running() });
         close();
         toast(msg`Anotado: ${saved.plan.count} cuotas de ${formatMoney(saved.plan.amount, saved.currency)} a ${saved.person}`);
       });
@@ -316,7 +330,7 @@ function openCreditLoanDetail(state, loan) {
   openSheet({
     title: `🏦 ${loan.person}`,
     body: html`<div class="loan-detail">
-      <p class="account-detail-label">Préstamo en cuotas · recibiste ${formatMoney(loan.amount, loan.currency)} el ${formatDate(loan.date)}</p>
+      <p class="account-detail-label">${loan.txId ? msg`Préstamo en cuotas · recibiste ${formatMoney(loan.amount, loan.currency)} el ${formatDate(loan.date)}` : "Préstamo en cuotas · ya lo venías pagando"}</p>
       <p class="account-detail-balance">${done ? "Terminado de pagar" : formatMoney(plan.left, loan.currency)}</p>
       <p class="fine-print">${done ? msg`${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)}` : msg`Faltan ${plan.remaining} de ${plan.count} cuotas de ${formatMoney(plan.amount, loan.currency)} · la próxima vence el ${formatDate(plan.next)}`}</p>
       ${progressBar(percent(plan.paid, plan.count), { color: "var(--goal)", label: "Cuotas pagadas" })}

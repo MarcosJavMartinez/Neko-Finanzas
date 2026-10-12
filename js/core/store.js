@@ -407,7 +407,12 @@ export function deleteLoan(id) {
  * baja a medida que pasan. Lo recibido no es un ingreso; las cuotas sí son
  * gasto (incluyen el interés).
  */
-export function addCreditLoan({ lender, received, count, installment, firstDue, currency, accountId, date = todayISO(), note = "" }) {
+/**
+ * `alreadyReceived`: el préstamo es anterior a la app. El dinero ya está (o ya se
+ * gastó) en los saldos cargados, así que no se registra ninguna entrada: solo
+ * quedan programadas las cuotas que faltan.
+ */
+export function addCreditLoan({ lender, received, count, installment, firstDue, currency, accountId, date = todayISO(), note = "", alreadyReceived = false }) {
   const n = Math.max(2, Math.min(60, Math.trunc(count)));
   const amount = Math.round(received * 100) / 100;
   const each = Math.round(installment * 100) / 100;
@@ -427,9 +432,13 @@ export function addCreditLoan({ lender, received, count, installment, firstDue, 
       plan: { group, count: n, amount: each },
       createdAt: new Date().toISOString(),
     };
-    const tx = loanMovement(s, loan, { amount, accountId, date, isPayment: false });
-    s.transactions.push(tx);
-    loan.txId = tx.id;
+    if (!alreadyReceived) {
+      const tx = loanMovement(s, loan, { amount, accountId, date, isPayment: false });
+      s.transactions.push(tx);
+      loan.txId = tx.id;
+    }
+    // Las cuotas salen de la cuenta a la que entró el dinero; si ya se venía pagando, de la elegida.
+    const fromAccount = s.transactions.find((t) => t.id === loan.txId)?.accountId || accountId;
     const day = Number(firstDue.slice(8));
     for (let k = 0; k < n; k++) {
       s.transactions.push(
@@ -437,7 +446,7 @@ export function addCreditLoan({ lender, received, count, installment, firstDue, 
           s,
           withValidCategory(
             s,
-            { id: uid("tx"), type: "expense", amount: each, currency, date: addMonths(firstDue, k, day), time: "", categoryId: FALLBACK_CATEGORY.expense, subcategoryId: "", description: msg`Cuota préstamo ${loan.person}`.slice(0, 80), accountId: tx.accountId, installment: { group, n: k + 1, of: n }, createdAt: new Date().toISOString() },
+            { id: uid("tx"), type: "expense", amount: each, currency, date: addMonths(firstDue, k, day), time: "", categoryId: FALLBACK_CATEGORY.expense, subcategoryId: "", description: msg`Cuota préstamo ${loan.person}`.slice(0, 80), accountId: fromAccount, installment: { group, n: k + 1, of: n }, createdAt: new Date().toISOString() },
             "expense"
           )
         )
