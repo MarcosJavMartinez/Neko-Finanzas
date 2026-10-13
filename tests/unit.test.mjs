@@ -506,6 +506,23 @@ mem.delete("nekoFinanzas.hideAmounts");
   store.deleteLoan(made.id);
 }
 
+// Devolver una deuda en dólares pagando con pesos: la cuenta baja lo que costó, y no cambia si después cambia el tipo de cambio
+{
+  store.startFresh({ keepSetup: false });
+  const main = store.getState().settings.mainCurrency;
+  const pesos = store.defaultAccountId();
+  const owed = store.addLoan({ direction: "borrowed", person: "Gabriel", amount: 450, currency: "USD", accountId: "" });
+  const total0 = F.balanceSummary(store.getState()).total;
+  store.addLoanPayment(owed.id, { amount: 150, accountId: pesos, accountAmount: 210000 });
+  const afterPay = F.balanceSummary(store.getState()).total;
+  store.setRateInMain("USD", 2000);
+  const st = store.getState();
+  const cleaned = sanitizeState(JSON.parse(JSON.stringify(st)));
+  eq("devolver en otra moneda: sale lo que costó, queda fijo y es válido", [main, total0 - afterPay, total0 - F.balanceSummary(st).total, F.loanOutstanding(st.loans[0]), cleaned.transactions.find((t) => t.type === "loan")?.accountAmount], ["ARS", 210000, 210000, 300, 210000]);
+  store.setRateInMain("USD", 1350);
+  store.deleteLoan(owed.id);
+}
+
 // Una moneda con datos no se saca de las que se usan
 store.loadDemo();
 store.toggleCurrency("USD", false);

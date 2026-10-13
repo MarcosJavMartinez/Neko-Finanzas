@@ -319,8 +319,12 @@ const loanFlow = (loan, isPayment) => ((loan.direction === "lent") === isPayment
 const loanText = (loan, isPayment) =>
   loan.direction === "lent" ? (isPayment ? msg`${loan.person} te devolvió` : msg`Préstamo a ${loan.person}`) : isPayment ? msg`Le devolviste a ${loan.person}` : msg`Préstamo de ${loan.person}`;
 
-function loanMovement(s, loan, { amount, accountId, date, isPayment }) {
+function loanMovement(s, loan, { amount, accountId, date, isPayment, accountAmount }) {
+  const account = find(s.accounts, accountId);
+  // Cuenta en otra moneda que el préstamo: se guarda cuánto entró o salió de la cuenta de verdad.
+  const fixed = account && account.currency !== loan.currency && accountAmount > 0 ? { accountAmount: Math.round(accountAmount * 100) / 100, accountCurrency: account.currency } : {};
   return withValidAccount(s, {
+    ...fixed,
     id: uid("tx"),
     type: "loan",
     loanId: loan.id,
@@ -472,13 +476,13 @@ export function addCreditLoan({ lender, received, count, installment, firstDue, 
 }
 
 /** Registrar una devolución (parcial o total). */
-export function addLoanPayment(loanId, { amount, date = todayISO(), accountId } = {}) {
+export function addLoanPayment(loanId, { amount, date = todayISO(), accountId, accountAmount } = {}) {
   return commit((s) => {
     const loan = find(s.loans, loanId);
     if (!loan || !(amount > 0)) return null;
     const payment = { id: uid("pay"), date, amount: Math.round(amount * 100) / 100 };
     if (accountId) {
-      const tx = loanMovement(s, loan, { amount: payment.amount, accountId, date, isPayment: true });
+      const tx = loanMovement(s, loan, { amount: payment.amount, accountId, date, isPayment: true, accountAmount });
       s.transactions.push(tx);
       payment.txId = tx.id;
     }

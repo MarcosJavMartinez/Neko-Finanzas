@@ -1315,4 +1315,8 @@ export default {
   "Apartar por mes para devolverlo (opcional)": "Geri ödemek için ayda ayır (isteğe bağlı)",
   "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "Her ay bu tutar, borcun kadar birikene dek kullanılabilir bakiyenden ayrılır. Bir geri ödeme kaydettiğinde ayrılan tutar azalır.",
   "Reservado para devolver: {0} · {1} por mes": "Geri ödeme için ayrılan: {0} · ayda {1}",
+  "¿Cuánto te costó?": "Sana kaça mal oldu?",
+  "¿Cuánto entró a tu cuenta?": "Hesabına ne kadar girdi?",
+  "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "Döviz kuruna göre önerildi. Gerçek tutarı yaz: kur sonra değişse bile sabit kalır.",
+  "La juntas en {0} meses": "{0} ayda biriktirirsin",
 };

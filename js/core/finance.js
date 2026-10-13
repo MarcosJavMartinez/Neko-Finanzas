@@ -112,7 +112,10 @@ export function accountBalances(state, today = todayISO()) {
       add(tx.accountId, -tx.amount, tx.currency);
       add(tx.toAccountId, tx.toAmount, tx.toCurrency);
     } else if (tx.type === "loan") {
-      add(tx.accountId, tx.flow === "in" ? tx.amount : -tx.amount, tx.currency);
+      // Devolver dólares pagando con pesos: vale lo que costó de verdad, no la conversión de hoy.
+      const sign = tx.flow === "in" ? 1 : -1;
+      if (tx.accountAmount > 0 && tx.accountCurrency) add(tx.accountId, sign * tx.accountAmount, tx.accountCurrency);
+      else add(tx.accountId, sign * tx.amount, tx.currency);
     } else {
       add(tx.accountId, tx.type === "income" ? tx.amount : -tx.amount, tx.currency);
     }

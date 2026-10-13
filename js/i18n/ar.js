@@ -1316,4 +1316,8 @@ export default {
   "Apartar por mes para devolverlo (opcional)": "ما تخصصه شهريًا لردّه (اختياري)",
   "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "كل شهر يُحجز هذا المبلغ من رصيدك المتاح حتى تجمع ما عليك. عند تسجيل سداد، ينخفض المحجوز.",
   "Reservado para devolver: {0} · {1} por mes": "محجوز للردّ: {0} · {1} شهريًا",
+  "¿Cuánto te costó?": "كم كلّفك ذلك؟",
+  "¿Cuánto entró a tu cuenta?": "كم دخل إلى حسابك؟",
+  "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "مقترح حسب سعر الصرف لديك. اكتب المبلغ الفعلي: يبقى ثابتًا حتى لو تغيّر السعر لاحقًا.",
+  "La juntas en {0} meses": "تجمعه خلال {0|one:شهر واحد|two:شهرين|few:# أشهر|many:# شهرًا|other:# شهر}",
 };

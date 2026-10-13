@@ -142,6 +142,40 @@ return (async () => {
     sheet().querySelector("[data-confirm]").click(); await wait(700);
     const total2 = Math.round(F.balanceSummary(store.getState()).total);
     log(`borrado: préstamos de Mercado Pago=${store.getState().loans.filter((l) => l.person === "Mercado Pago").length} · cuotas=${store.getState().transactions.filter((t) => t.installment?.group === mp.plan.group).length} · total ${total2}${total2 === mpBefore ? "" : " ✗"}`);
+    // Devolver una deuda en dólares desde una cuenta en pesos: pregunta cuánto costó y eso queda fijo
+    const main = store.getState().settings.mainCurrency;
+    const gab = store.addLoan({ direction: "borrowed", person: "Gabriel", amount: 450, currency: "USD", accountId: "" });
+    const before = sum().total, cashBefore = bal(cash);
+    openLoanPayment(gab.id); await wait(500);
+    form = sheet().querySelector("form");
+    const cost = form.querySelector("[data-cost]");
+    form.elements.accountId.value = cash;
+    form.elements.accountId.dispatchEvent(new w.Event("change", { bubbles: true }));
+    form.elements.amount.value = "150";
+    form.elements.amount.dispatchEvent(new w.Event("input", { bubbles: true })); await wait(100);
+    const suggested = form.elements.accountAmount.value;
+    log(`devolver en otra moneda: pregunta=${cost.hidden ? "oculta ✗" : cost.querySelector("label").textContent.trim()} · sugiere ${suggested || "nada ✗"}`);
+    form.elements.accountAmount.value = "210.000,00";
+    form.elements.accountAmount.dispatchEvent(new w.Event("input", { bubbles: true }));
+    form.requestSubmit(); await wait(600);
+    const paidCash = cashBefore - bal(cash), left = F.loanOutstanding(store.getState().loans.find((l) => l.id === gab.id));
+    store.setRateInMain("USD", 9999); await wait(100);
+    const paidAfterRate = cashBefore - bal(cash);
+    log(`pagó ${paidCash} ${main} · faltan ${left} USD · tras cambiar el tipo de cambio ${paidAfterRate}${paidCash === 210000 && left === 300 && paidAfterRate === 210000 ? "" : " ✗"}`);
+    // La misma cuenta que la deuda no pregunta nada
+    const same = store.addLoan({ direction: "borrowed", person: "Sol", amount: 1000, currency: main, accountId: "" });
+    openLoanPayment(same.id); await wait(500);
+    log("misma moneda: pregunta " + (sheet().querySelector("[data-cost]").hidden ? "oculta" : "visible ✗"));
+    sheet().querySelector("[data-close], .sheet-close")?.click(); await wait(400);
+    // "La juntas en N meses"
+    openLoanForm({ direction: "borrowed" }); await wait(500);
+    form = sheet().querySelector("form");
+    form.elements.amount.value = "450";
+    form.elements.saveMonthly.value = "150";
+    form.elements.saveMonthly.dispatchEvent(new w.Event("input", { bubbles: true })); await wait(100);
+    const months = form.querySelector("[data-save-months]").textContent.trim();
+    log("apartar por mes: " + (months.includes("3") ? months : `"${months}" ✗`));
+    sheet().querySelector("[data-close], .sheet-close")?.click(); await wait(400);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {
     log("ERROR " + e.stack);

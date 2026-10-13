@@ -1315,4 +1315,8 @@ export default {
   "Apartar por mes para devolverlo (opcional)": "Откладывать в месяц на возврат (необязательно)",
   "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "Каждый месяц эта сумма резервируется из доступного остатка, пока не наберётся весь долг. Когда вы записываете возврат, резерв уменьшается.",
   "Reservado para devolver: {0} · {1} por mes": "Отложено на возврат: {0} · {1} в месяц",
+  "¿Cuánto te costó?": "Во сколько это вам обошлось?",
+  "¿Cuánto entró a tu cuenta?": "Сколько поступило на счёт?",
+  "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "Предложено по вашему курсу. Введите фактическую сумму: она останется неизменной, даже если курс потом изменится.",
+  "La juntas en {0} meses": "Накопите за {0|one:# месяц|few:# месяца|many:# месяцев|other:# месяца}",
 };

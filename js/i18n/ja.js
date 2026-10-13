@@ -1317,4 +1317,8 @@ export default {
   "Apartar por mes para devolverlo (opcional)": "返済のために毎月取り分ける額（任意）",
   "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "借りている額に達するまで、毎月この金額を使えるお金から予約します。返済を記録すると、予約額は減ります。",
   "Reservado para devolver: {0} · {1} por mes": "返済用の予約：{0} · 月 {1}",
+  "¿Cuánto te costó?": "いくらかかりましたか？",
+  "¿Cuánto entró a tu cuenta?": "口座にいくら入りましたか？",
+  "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "あなたの為替レートによる提案です。実際の金額を入力してください。あとでレートが変わっても、この額は変わりません。",
+  "La juntas en {0} meses": "{0} か月で貯まります",
 };

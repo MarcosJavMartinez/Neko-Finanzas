@@ -1315,4 +1315,8 @@ export default {
   "Apartar por mes para devolverlo (opcional)": "Set aside per month to pay it back (optional)",
   "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "Each month that amount is reserved from your available balance, until you have what you owe. When you record a repayment, the reserved amount goes down.",
   "Reservado para devolver: {0} · {1} por mes": "Reserved to pay back: {0} · {1} per month",
+  "¿Cuánto te costó?": "How much did it cost you?",
+  "¿Cuánto entró a tu cuenta?": "How much went into your account?",
+  "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "Suggested with your exchange rate. Enter the real amount: it stays fixed even if the rate changes later.",
+  "La juntas en {0} meses": "You'll have it in {0|one:# month|other:# months}",
 };

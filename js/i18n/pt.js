@@ -1315,4 +1315,8 @@ export default {
   "Apartar por mes para devolverlo (opcional)": "Guardar por mês para devolver (opcional)",
   "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "Todo mês esse valor é reservado do seu disponível, até juntar o que você deve. Quando você registra uma devolução, o reservado diminui.",
   "Reservado para devolver: {0} · {1} por mes": "Reservado para devolver: {0} · {1} por mês",
+  "¿Cuánto te costó?": "Quanto custou para você?",
+  "¿Cuánto entró a tu cuenta?": "Quanto entrou na sua conta?",
+  "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "Sugerido com o seu câmbio. Informe o valor real: ele fica fixo mesmo que o câmbio mude depois.",
+  "La juntas en {0} meses": "Você junta em {0|one:# mês|other:# meses}",
 };

@@ -12,7 +12,7 @@ import { amountField, textField, dateField, formActions, readForm, readAmount, f
 import * as store from "../../core/store.js";
 import { addMonths, formatDate, formatDue, todayISO } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
-import { amountToInput, formatMoney, parseAmount, zeroAmount } from "../../core/money.js";
+import { amountToInput, formatMoney, parseAmount, zeroAmount, convert, symbolOf } from "../../core/money.js";
 import { findAccount, loanOutstanding, loanPlanStatus, percent, loanSetAside } from "../../core/finance.js";
 import { getLastAccount } from "../../core/prefs.js";
 
@@ -58,6 +58,7 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
       <div class="field" data-save-monthly ${current.direction === "borrowed" ? "" : "hidden"}>
         <label class="field-label" for="f-saveMonthly">Apartar por mes para devolverlo (opcional)</label>
         <div class="amount-input amount-input-sm"><input id="f-saveMonthly" name="saveMonthly" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" value="${current.saveMonthly ? amountToInput(current.saveMonthly) : ""}" /></div>
+        <p class="field-hint setup-left" data-save-months></p>
         <p class="field-hint">Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.</p>
         <p class="field-error" data-error-for="saveMonthly"></p>
       </div>
@@ -82,6 +83,16 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
       };
       form.elements.spent.addEventListener("change", syncSpent);
       syncSpent();
+      // "La juntas en 3 meses": cuánto tarda en juntarse lo que falta con ese monto por mes.
+      const owed = isEdit ? loanOutstanding(loan) : null;
+      const syncMonths = () => {
+        const monthly = parseAmount(form.elements.saveMonthly.value);
+        const total = owed ?? readAmount(form);
+        const months = monthly > 0 && total > 0 ? Math.ceil(total / monthly - 1e-9) : 0;
+        form.querySelector("[data-save-months]").textContent = months ? msg`La juntas en ${months} meses` : "";
+      };
+      form.addEventListener("input", syncMonths);
+      syncMonths();
       form.addEventListener("change", (event) => {
         if (event.target.name !== "direction") return;
         syncSpent();
@@ -143,21 +154,48 @@ export function openLoanPayment(loanId) {
       ${amountField({ value: outstanding, currency: loan.currency, label: "Monto", autofocus: false, tone: "tone-goal" })}
       ${dateField({ name: "date", label: "Fecha", value: todayISO() })}
       ${accountChoice(state, state.accounts.find((a) => a.id === getLastAccount() && !a.archived)?.id || store.defaultAccountId(), lent ? "¿A qué cuenta entró?" : "¿De qué cuenta salió?")}
+      <div class="field" data-cost hidden>
+        <label class="field-label" for="f-accountAmount">${lent ? "¿Cuánto entró a tu cuenta?" : "¿Cuánto te costó?"}</label>
+        <div class="amount-input amount-input-sm"><span class="amount-currency amount-currency-static" data-cost-currency></span><input id="f-accountAmount" name="accountAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" /></div>
+        <p class="field-hint">Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.</p>
+        <p class="field-error" data-error-for="accountAmount"></p>
+      </div>
       ${formActions({ submitLabel: "Registrar" })}
     </form>`,
     onMount(panel, close) {
       const form = panel.querySelector("form");
       // La moneda es la del préstamo.
       form.querySelectorAll("input[name=currency]").forEach((el) => (el.disabled = el.value !== loan.currency));
+      // Cuenta en otra moneda: se pregunta cuánto fue en esa moneda (sugerido con el tipo de cambio).
+      const costBox = form.querySelector("[data-cost]");
+      const otherCurrency = () => {
+        const account = state.accounts.find((a) => a.id === form.elements.accountId.value);
+        return account && account.currency !== loan.currency ? account.currency : "";
+      };
+      let touched = false;
+      const syncCost = () => {
+        const currency = otherCurrency();
+        costBox.hidden = !currency;
+        if (!currency) return;
+        costBox.querySelector("[data-cost-currency]").textContent = symbolOf(currency);
+        const amount = readAmount(form);
+        if (!touched) form.elements.accountAmount.value = amount > 0 ? amountToInput(Math.round(convert(amount, loan.currency, currency, state.rates) * 100) / 100) : "";
+      };
+      form.elements.accountAmount.addEventListener("input", () => (touched = true));
+      form.elements.accountId.addEventListener("change", () => ((touched = false), syncCost()));
+      form.elements.amount.addEventListener("input", syncCost);
+      syncCost();
       form.addEventListener("submit", (event) => {
         event.preventDefault();
         clearErrors(form);
         const amount = readAmount(form);
+        const accountAmount = otherCurrency() ? parseAmount(form.elements.accountAmount.value) : 0;
+        if (otherCurrency() && !(accountAmount > 0)) return fieldError(form, "accountAmount", "Ingresa un monto mayor a cero.");
         if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
         if (amount > outstanding + 0.005) return fieldError(form, "amount", msg`Es más de lo que falta (${formatMoney(outstanding, loan.currency)}).`);
         const date = isISODate(form.elements.date.value) ? form.elements.date.value : todayISO();
         const backup = store.snapshot();
-        store.addLoanPayment(loan.id, { amount, date, accountId: form.elements.accountId.value });
+        store.addLoanPayment(loan.id, { amount, date, accountId: form.elements.accountId.value, accountAmount });
         close();
         const left = loanOutstanding(store.getState().loans.find((l) => l.id === loan.id));
         toast(left > 0 ? msg`Registrado. Faltan ${formatMoney(left, loan.currency)}` : "¡Préstamo saldado! 🎉", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });

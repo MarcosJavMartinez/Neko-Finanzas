@@ -207,6 +207,8 @@ export function sanitizeState(input) {
         description: str(t.description, 80),
         createdAt: str(t.createdAt, 40) || day,
       });
+      // Cuánto fue en la moneda de la cuenta, cuando no es la del préstamo.
+      if (positive(t.accountAmount) && CURRENCY_CODES.includes(t.accountCurrency)) Object.assign(transactions[transactions.length - 1], { accountAmount: positive(t.accountAmount), accountCurrency: t.accountCurrency });
       continue;
     }
     const type = t.type === "income" ? "income" : t.type === "expense" ? "expense" : "";
