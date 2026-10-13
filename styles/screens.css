@@ -2543,3 +2543,37 @@ button.inline-link {
 .setup-why .sheet-text {
   margin-top: 4px;
 }
+
+/* Asistente: los montos entran completos (152.456,43 y más) aunque el campo comparta la fila con el nombre */
+.setup-item {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.25fr);
+}
+
+.form .setup-item .amount-input input {
+  min-height: 48px;
+  padding: 0 10px;
+  font-size: 1.1rem;
+  text-align: end;
+}
+
+.setup-item .amount-currency {
+  min-width: 0;
+  padding-inline: 8px;
+}
+
+/* Facturas: el nombre arriba; el monto y el día comparten la fila de abajo */
+.setup-item-bill {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.setup-item-bill > .setup-check {
+  grid-column: 1 / -1;
+}
+
+/* En el teléfono: el nombre de la cuenta arriba y el monto abajo, a todo el ancho */
+@media (max-width: 639px) {
+  .setup-item:not(.setup-item-bill) {
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+  }
+}

@@ -2549,3 +2549,9 @@ details[open] > :not(summary) {
   position: absolute;
   inset: -11px 0;
 }
+
+/* Un monto que comparte la fila con otro campo (valor de la cuota): letra más chica para que entre completo */
+.form .field-row .amount-input input {
+  font-size: 1.15rem;
+  padding: 0 10px;
+}
