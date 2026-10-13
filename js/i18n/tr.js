@@ -1303,4 +1303,8 @@ export default {
   "Nombre de la cuenta": "Hesap adı",
   "Quitar esta cuenta": "Bu hesabı kaldır",
   "Cuánto tienes": "Ne kadar var",
+  "Agregar otro pago": "Başka bir ödeme ekle",
+  "Ej.: gimnasio, seguro, colegio": "Örn.: spor salonu, sigorta, okul",
+  "Nombre del pago": "Ödemenin adı",
+  "Quitar este pago": "Bu ödemeyi kaldır",
 };

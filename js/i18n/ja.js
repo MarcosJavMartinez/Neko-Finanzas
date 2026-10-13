@@ -1305,4 +1305,8 @@ export default {
   "Nombre de la cuenta": "口座の名前",
   "Quitar esta cuenta": "この口座を外す",
   "Cuánto tienes": "金額",
+  "Agregar otro pago": "別の支払いを追加",
+  "Ej.: gimnasio, seguro, colegio": "例：ジム、保険、学校",
+  "Nombre del pago": "支払いの名前",
+  "Quitar este pago": "この支払いを外す",
 };

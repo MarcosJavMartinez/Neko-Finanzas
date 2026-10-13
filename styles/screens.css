@@ -2609,3 +2609,9 @@ button.inline-link {
   font-size: 1.1rem;
   text-align: end;
 }
+
+/* Un pago propio: el monto ocupa lo que deja el día */
+.setup-custom-row > .amount-input {
+  flex: 1;
+  min-width: 0;
+}

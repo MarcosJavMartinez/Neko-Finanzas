@@ -79,6 +79,16 @@ return (async () => {
     form().elements["bill-on-4"].click(); await wait(150);
     type("bill-amount-0", "250.000"); form().elements["bill-day-0"].value = "5";
     type("bill-amount-4", "27.000"); form().elements["bill-day-4"].value = "31";
+    // Un pago propio: nombre, ícono, monto y día
+    form().querySelector("[data-setup=add-bill]").click(); await wait(200);
+    const pay = [...form().querySelectorAll("input[name^=bill-name-]")].pop();
+    const payIndex = pay.name.slice(10);
+    await next();
+    log("pago propio sin nombre ni monto: no molesta, se ignora=" + (step().startsWith("6") ? "sí" : "no ✗"));
+    form().querySelector("[data-setup=back]").click(); await wait(250);
+    form().elements["bill-name-" + payIndex].value = "Gimnasio";
+    form().elements["bill-icon-" + payIndex].value = "🏋️";
+    type("bill-amount-" + payIndex, "18.000"); form().elements["bill-day-" + payIndex].value = "12";
     await next();
 
     // 4b) Supermercado y gustos
@@ -119,13 +129,15 @@ return (async () => {
     log("hoja cerrada=" + !sheet() + " · pantalla=" + d.querySelector("#view").dataset.screen + " · aviso: " + ([...d.querySelectorAll(".toast")].pop()?.textContent.trim().split("\n")[0] || "ninguno ✗"));
     log("cuentas: " + s.accounts.map((a) => `${a.name} ${a.currency} ${a.opening}`).join(" · "));
     log(`otras monedas: ${s.settings.currencies.join(",")} · 1 USD = ${s.rates.USD}${s.settings.currencies.join(",") === "ARS,USD" && s.rates.USD === 1400 ? "" : " ✗"}`);
+    const gym = s.bills.find((b) => b.name === "Gimnasio");
+    log(`pago propio: ${gym ? `${gym.icon} ${gym.name} ${gym.amount} día ${gym.dueDay}` : "no se creó"}${gym && gym.icon === "🏋️" && gym.amount === 18000 && gym.dueDay === 12 ? "" : " ✗"}`);
     const own = s.accounts.find((a) => a.name === "Mercado Pago");
     log(`cuenta propia: ${own ? `${own.icon} ${own.name} · ${own.kind} · ${own.opening}` : "no se creó"}${own && own.icon === "💰" && own.kind === "wallet" && own.opening === 75000 ? "" : " ✗"}`);
     log("la primera cuenta reemplazó a «Mi dinero»: " + (s.accounts.length === 5 && !s.accounts.some((a) => a.name === "Mi dinero") ? "sí" : "NO ✗"));
     const card = s.accounts.find((a) => a.kind === "credit");
     const st = F.cardStatus(s, card, today);
     log(`tarjeta: ${card.name} deuda=${st.debt} vence día ${card.dueDay} · por venir=${st.upcomingTotal} en ${st.upcoming.map((g) => `${g.title} ${g.remaining}/${g.of}`).join(", ")}${st.debt === 80000 && st.upcomingTotal === 140000 ? "" : " ✗"}`);
-    log("facturas: " + s.bills.map((b) => `${b.name} ${b.amount} vence ${b.dueDate} (día ${b.dueDay})`).join(" · ") + (s.bills.every((b) => b.dueDate >= today && b.recurring) && s.bills.length === 2 ? "" : " ✗"));
+    log("facturas: " + s.bills.map((b) => `${b.name} ${b.amount} vence ${b.dueDate} (día ${b.dueDay})`).join(" · ") + (s.bills.every((b) => b.dueDate >= today && b.recurring) && s.bills.length === 3 ? "" : " ✗"));
     const loans = F.loansSummary(s);
     log(`préstamos: te deben ${loans.lent} · debes ${loans.borrowed} · movieron dinero=${s.transactions.some((t) => t.type === "loan")}${loans.lent === 10000 && loans.borrowed === 60000 ? "" : " ✗"}`);
     log("meta: " + s.goals.map((g) => `${g.name} ${F.goalSaved(g)}/${g.target}`).join(", ") + (F.goalSaved(s.goals[0]) === 40000 ? "" : " ✗"));

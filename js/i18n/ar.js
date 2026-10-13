@@ -1304,4 +1304,8 @@ export default {
   "Nombre de la cuenta": "اسم الحساب",
   "Quitar esta cuenta": "إزالة هذا الحساب",
   "Cuánto tienes": "كم لديك",
+  "Agregar otro pago": "إضافة دفعة أخرى",
+  "Ej.: gimnasio, seguro, colegio": "مثال: نادٍ رياضي، تأمين، مدرسة",
+  "Nombre del pago": "اسم الدفعة",
+  "Quitar este pago": "إزالة هذه الدفعة",
 };

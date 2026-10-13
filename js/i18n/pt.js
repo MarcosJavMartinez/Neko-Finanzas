@@ -1303,4 +1303,8 @@ export default {
   "Nombre de la cuenta": "Nome da conta",
   "Quitar esta cuenta": "Remover esta conta",
   "Cuánto tienes": "Quanto você tem",
+  "Agregar otro pago": "Adicionar outro pagamento",
+  "Ej.: gimnasio, seguro, colegio": "Ex.: academia, seguro, escola",
+  "Nombre del pago": "Nome do pagamento",
+  "Quitar este pago": "Remover este pagamento",
 };

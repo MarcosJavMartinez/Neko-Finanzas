@@ -57,6 +57,9 @@ const savingsAccount = (code) => ({ on: false, name: code === "USD" ? "Dólares 
 /** Una cuenta propia: otra billetera, otro banco… con el nombre y el ícono que elija la persona. */
 const customAccount = () => ({ on: true, custom: true, name: "", kind: "wallet", icon: "📱", color: "#3a86d4", amount: "", cur: "" });
 const CUSTOM_ICONS = ["📱", "💳", "🏦", "💵", "🐷", "💰", "🪙", "👛", "🏧", "💶", "💴", "🧾", "⭐", "🟦", "🟩", "🟨"];
+/** Un pago mensual propio (gimnasio, seguro, colegio…), con el nombre y el ícono que elija la persona. */
+const customBill = () => ({ on: true, custom: true, name: "", icon: "🧾", categoryId: "exp-servicios", subcategoryId: "", amount: "", day: 10 });
+const BILL_ICONS = ["🧾", "🏋️", "🛡️", "🎓", "🚗", "📱", "🌐", "💡", "🔥", "💧", "🏠", "📺", "🎵", "🐶", "💊", "⭐"];
 const KIND_COLORS = { cash: "#2ba66a", bank: "#08a7c8", wallet: "#3a86d4", savings: "#d99a2b" };
 
 /** Cada moneda extra tiene su cuenta de ahorros para completar; si se saca la moneda, se va su cuenta. */
@@ -248,17 +251,19 @@ const RENDER = {
     <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Son tus <strong>facturas</strong>. La app reserva el dinero de las que vencen pronto, así tu disponible ya las tiene descontadas, y te avisa cuándo vencen.</p></details>
     <p class="field-hint">Toca las que pagas.</p>
     <div class="currency-toggles">
-      ${a.bills.map(
-        (b, i) => html`<label class="chip-check">
-          <input type="checkbox" name="bill-on-${i}" ${b.on ? "checked" : ""} />
-          <span>${b.icon} ${b.name}</span>
-        </label>`
+      ${a.bills.map((b, i) =>
+        b.custom
+          ? ""
+          : html`<label class="chip-check">
+              <input type="checkbox" name="bill-on-${i}" ${b.on ? "checked" : ""} />
+              <span>${b.icon} ${b.name}</span>
+            </label>`
       )}
     </div>
-    ${a.bills.some((b) => b.on)
+    ${a.bills.some((b) => b.on && !b.custom)
       ? html`<div class="setup-list">
             ${a.bills.map((b, i) =>
-              b.on
+              b.on && !b.custom
                 ? html`<div class="setup-item setup-item-bill">
                     <span class="setup-check"><span>${b.icon} ${b.name}</span></span>
                     ${money(`bill-amount-${i}`, b.amount, a.currency, msg`Monto de ${b.name}`)}
@@ -268,7 +273,27 @@ const RENDER = {
             )}
           </div>
           <p class="field-hint">Escribe el monto aproximado y el día del mes en que vence. Después puedes sumar otras en Facturas.</p>`
-      : ""}`,
+      : ""}
+    ${a.bills.some((b) => b.custom)
+      ? html`<div class="setup-list">
+          ${a.bills.map((b, i) =>
+            b.custom
+              ? html`<div class="setup-custom">
+                  <div class="setup-custom-row">
+                    <select name="bill-icon-${i}" class="setup-icon" aria-label="Ícono">${[...new Set([b.icon, ...BILL_ICONS])].map((e) => html`<option value="${e}" ${e === b.icon ? "selected" : ""}>${e}</option>`)}</select>
+                    <input name="bill-name-${i}" type="text" value="${b.name}" maxlength="40" placeholder="Ej.: gimnasio, seguro, colegio" aria-label="Nombre del pago" autocomplete="off" />
+                    <button type="button" class="icon-btn" data-setup="rm-bill-${i}" aria-label="Quitar este pago">${icon("close", 18)}</button>
+                  </div>
+                  <div class="setup-custom-row">
+                    ${money(`bill-amount-${i}`, b.amount, a.currency, "Monto")}
+                    <label class="setup-day"><span>día</span><select name="bill-day-${i}" aria-label="Día del mes en que vence ${b.name}">${Array.from({ length: 31 }, (_, d) => d + 1).map((d) => html`<option value="${d}" ${d === Number(b.day) ? "selected" : ""}>${d}</option>`)}</select></label>
+                  </div>
+                </div>`
+              : ""
+          )}
+        </div>`
+      : ""}
+    ${a.bills.filter((b) => b.custom).length < MAX_ROWS ? html`<button type="button" class="btn btn-soft btn-sm" data-setup="add-bill">${icon("plus", 16)} Agregar otro pago</button>` : ""}`,
 
   spending: (a) => html`
     <h3 class="setup-title">El supermercado y los gustos</h3>
@@ -380,7 +405,12 @@ function collect(step, form, a) {
     a.card.purchases.forEach((p, i) => Object.assign(p, { what: v(`pur-what-${i}`), per: v(`pur-per-${i}`), left: v(`pur-left-${i}`).trim() }));
   } else if (step === "bills") {
     // El monto y el día solo están en pantalla para las facturas elegidas: las demás conservan lo que tenían.
-    a.bills.forEach((b, i) => Object.assign(b, { on: on(`bill-on-${i}`), amount: form.elements[`bill-amount-${i}`] ? v(`bill-amount-${i}`) : b.amount, day: form.elements[`bill-day-${i}`] ? Number(v(`bill-day-${i}`)) || 10 : b.day }));
+    a.bills.forEach((b, i) => {
+      Object.assign(b, { amount: form.elements[`bill-amount-${i}`] ? v(`bill-amount-${i}`) : b.amount, day: form.elements[`bill-day-${i}`] ? Number(v(`bill-day-${i}`)) || 10 : b.day });
+      // Un pago propio vale si tiene nombre o monto; los propuestos, si están marcados.
+      if (b.custom) Object.assign(b, { name: v(`bill-name-${i}`).trim(), icon: v(`bill-icon-${i}`) || b.icon, on: filled(v(`bill-name-${i}`), b.amount) });
+      else b.on = on(`bill-on-${i}`);
+    });
   } else if (step === "spending") {
     a.groceries = v("groceries");
     a.treats = v("treats");
@@ -410,6 +440,7 @@ function validate(step, a) {
       if (!Number.isInteger(left) || left < 1 || left > 60) return "Escribe cuántas cuotas faltan (un número entre 1 y 60).";
     }
   }
+  if (step === "bills" && a.bills.some((b) => b.custom && b.on && !b.name)) return "Escribe un nombre, por ejemplo “Internet”.";
   if (step === "bills" && a.bills.some((b) => b.on && !(num(b.amount) > 0))) return "Escribe el monto de las facturas que marcaste (o desmárcalas).";
   if (step === "spending" && (bad(a.groceries) || bad(a.treats))) return "Revisa los montos: alguno no es válido.";
   if (step === "loans") {
@@ -615,6 +646,8 @@ export function openSetupWizard() {
         else if (what === "add-loan") answers.loans.push({ direction: "lent", person: "", amount: "", due: "" });
         else if (what === "add-goal") answers.goals.push({ name: "", target: "", saved: "" });
         else if (what === "add-account") answers.accounts.push(customAccount());
+        else if (what === "add-bill") answers.bills.push(customBill());
+        else if (what.startsWith("rm-bill-")) answers.bills.splice(Number(what.slice(8)), 1);
         else if (what.startsWith("rm-account-")) answers.accounts.splice(Number(what.slice(11)), 1);
         show();
       });

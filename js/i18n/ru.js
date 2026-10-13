@@ -1303,4 +1303,8 @@ export default {
   "Nombre de la cuenta": "Название счёта",
   "Quitar esta cuenta": "Убрать этот счёт",
   "Cuánto tienes": "Сколько у вас",
+  "Agregar otro pago": "Добавить ещё один платёж",
+  "Ej.: gimnasio, seguro, colegio": "Напр.: спортзал, страховка, школа",
+  "Nombre del pago": "Название платежа",
+  "Quitar este pago": "Убрать этот платёж",
 };
