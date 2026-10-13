@@ -2577,3 +2577,35 @@ button.inline-link {
     row-gap: 6px;
   }
 }
+
+/* Asistente: una cuenta propia (ícono, nombre, tipo, moneda y monto) */
+.setup-custom {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.setup-custom-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.setup-custom-row > input,
+.setup-custom-row > select {
+  flex: 1;
+  min-width: 0;
+}
+
+.setup-custom-row > .setup-icon {
+  flex: 0 0 72px;
+  font-size: 1.2rem;
+}
+
+.form .setup-custom .amount-input input {
+  min-height: 48px;
+  font-size: 1.1rem;
+  text-align: end;
+}

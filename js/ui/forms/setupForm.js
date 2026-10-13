@@ -4,6 +4,7 @@
 // junto, así la persona entiende cómo funciona antes de empezar a usarla.
 // Lo que no tenga se deja vacío; todo se puede cambiar después.
 
+import { ACCOUNT_KINDS } from "../../data/defaults.js";
 import { msg, tr, LANGUAGES, getLanguage, saveLanguage } from "../../core/i18n.js";
 import { html, setHTML } from "../dom.js";
 import { icon } from "../icons.js";
@@ -51,13 +52,21 @@ function rateView(code, main, rates) {
   return inMain >= 1 ? { from: code, to: main, value: inMain, inverse: false } : { from: main, to: code, value: 1 / inMain, inverse: true };
 }
 
-const savingsAccount = (code) => ({ on: false, name: code === "USD" ? "Dólares ahorrados" : msg`Ahorros en ${code}`, kind: "savings", icon: "🐷", color: "#d99a2b", amount: "", cur: code });
+const savingsAccount = (code) => ({ on: false, name: code === "USD" ? "Dólares ahorrados" : msg`Ahorros en ${code}`, kind: "savings", icon: "🐷", color: "#d99a2b", amount: "", cur: code, auto: true });
+
+/** Una cuenta propia: otra billetera, otro banco… con el nombre y el ícono que elija la persona. */
+const customAccount = () => ({ on: true, custom: true, name: "", kind: "wallet", icon: "📱", color: "#3a86d4", amount: "", cur: "" });
+const CUSTOM_ICONS = ["📱", "💳", "🏦", "💵", "🐷", "💰", "🪙", "👛", "🏧", "💶", "💴", "🧾", "⭐", "🟦", "🟩", "🟨"];
+const KIND_COLORS = { cash: "#2ba66a", bank: "#08a7c8", wallet: "#3a86d4", savings: "#d99a2b" };
 
 /** Cada moneda extra tiene su cuenta de ahorros para completar; si se saca la moneda, se va su cuenta. */
 function syncAccounts(a) {
   a.extras = a.extras.filter((e) => e.code !== a.currency && CURRENCIES[e.code]);
-  const keep = a.accounts.filter((acc) => !acc.cur || a.extras.some((e) => e.code === acc.cur));
-  for (const e of a.extras) if (!keep.some((acc) => acc.cur === e.code)) keep.push(savingsAccount(e.code));
+  // Se van las cuentas de ahorro de una moneda que se sacó; una cuenta propia en esa moneda pasa a la principal.
+  const hasExtra = (code) => a.extras.some((e) => e.code === code);
+  const keep = a.accounts.filter((acc) => !acc.auto || hasExtra(acc.cur));
+  for (const acc of keep) if (acc.custom && acc.cur && !hasExtra(acc.cur)) acc.cur = "";
+  for (const e of a.extras) if (!keep.some((acc) => acc.auto && acc.cur === e.code)) keep.splice(keep.findIndex((acc) => acc.custom) < 0 ? keep.length : keep.findIndex((acc) => acc.custom), 0, savingsAccount(e.code));
   a.accounts = keep;
   return a;
 }
@@ -182,13 +191,29 @@ const RENDER = {
     <h3 class="setup-title">¿Dónde tienes tu dinero hoy?</h3>
     <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Cada lugar es una <strong>cuenta</strong>. La suma de todas es tu dinero total, y cuando registres un gasto vas a elegir de cuál salió.</p></details>
     <div class="setup-list">
-      ${a.accounts.map(
-        (acc, i) => html`<div class="setup-item">
-          <label class="setup-check"><input type="checkbox" class="switch" name="acc-on-${i}" ${acc.on ? "checked" : ""} /><span>${acc.icon} ${acc.name}</span></label>
-          ${money(`acc-amount-${i}`, acc.amount, acc.cur || a.currency, msg`Cuánto tienes en ${acc.name}`)}
-        </div>`
+      ${a.accounts.map((acc, i) =>
+        acc.custom
+          ? html`<div class="setup-custom">
+              <div class="setup-custom-row">
+                <select name="acc-icon-${i}" class="setup-icon" aria-label="Ícono">${[...new Set([acc.icon, ...CUSTOM_ICONS])].map((e) => html`<option value="${e}" ${e === acc.icon ? "selected" : ""}>${e}</option>`)}</select>
+                <input name="acc-name-${i}" type="text" value="${acc.name}" maxlength="40" placeholder="Ej.: otra billetera, otro banco" aria-label="Nombre de la cuenta" autocomplete="off" />
+                <button type="button" class="icon-btn" data-setup="rm-account-${i}" aria-label="Quitar esta cuenta">${icon("close", 18)}</button>
+              </div>
+              <div class="setup-custom-row">
+                <select name="acc-kind-${i}" aria-label="Tipo">${["wallet", "bank", "cash", "savings"].map((k) => html`<option value="${k}" ${k === acc.kind ? "selected" : ""}>${ACCOUNT_KINDS[k].label}</option>`)}</select>
+                ${a.extras.length
+                  ? html`<select name="acc-cur-${i}" aria-label="Moneda">${[a.currency, ...a.extras.map((e) => e.code)].map((code) => html`<option value="${code}" ${code === (acc.cur || a.currency) ? "selected" : ""}>${symbolOf(code)} ${code}</option>`)}</select>`
+                  : ""}
+              </div>
+              ${money(`acc-amount-${i}`, acc.amount, acc.cur || a.currency, "Cuánto tienes")}
+            </div>`
+          : html`<div class="setup-item">
+              <label class="setup-check"><input type="checkbox" class="switch" name="acc-on-${i}" ${acc.on ? "checked" : ""} /><span>${acc.icon} ${acc.name}</span></label>
+              ${money(`acc-amount-${i}`, acc.amount, acc.cur || a.currency, msg`Cuánto tienes en ${acc.name}`)}
+            </div>`
       )}
     </div>
+    ${a.accounts.filter((acc) => acc.custom).length < MAX_ROWS ? html`<button type="button" class="btn btn-soft btn-sm" data-setup="add-account">${icon("plus", 16)} Agregar otra cuenta</button>` : ""}
     <p class="field-hint">Escribe cuánto hay en cada una (se marca sola). Después puedes agregar más cuentas o cambiarles el nombre en Más → Cuentas.</p>`,
 
   card: (a) => html`
@@ -342,7 +367,14 @@ function collect(step, form, a) {
     a.extras.forEach((e) => (e.rate = v(`cur-rate-${e.code}`)));
     syncAccounts(a);
   } else if (step === "accounts") {
-    a.accounts.forEach((acc, i) => Object.assign(acc, { on: on(`acc-on-${i}`), amount: v(`acc-amount-${i}`) }));
+    a.accounts.forEach((acc, i) => {
+      if (!acc.custom) return Object.assign(acc, { on: on(`acc-on-${i}`), amount: v(`acc-amount-${i}`) });
+      // Cuenta propia: vale si tiene nombre o monto; el color sale del tipo.
+      const kind = v(`acc-kind-${i}`) || acc.kind;
+      const cur = v(`acc-cur-${i}`);
+      Object.assign(acc, { name: v(`acc-name-${i}`).trim(), icon: v(`acc-icon-${i}`) || acc.icon, kind, color: KIND_COLORS[kind] || acc.color, cur: cur && cur !== a.currency ? cur : "", amount: v(`acc-amount-${i}`) });
+      acc.on = filled(acc.name, acc.amount);
+    });
   } else if (step === "card") {
     Object.assign(a.card, { on: on("card-on"), name: v("card-name"), debt: v("card-debt"), closingDay: Number(v("card-closing")) || 25, dueDay: Number(v("card-due")) || 5 });
     a.card.purchases.forEach((p, i) => Object.assign(p, { what: v(`pur-what-${i}`), per: v(`pur-per-${i}`), left: v(`pur-left-${i}`).trim() }));
@@ -368,6 +400,7 @@ function validate(step, a) {
     if (wrong) return msg`El tipo de cambio de ${wrong.code} no es válido.`;
   }
   if (step === "accounts" && a.accounts.some((x) => x.on && bad(x.amount))) return "Revisa los montos de tus cuentas: alguno no es válido.";
+  if (step === "accounts" && a.accounts.some((x) => x.custom && x.on && !x.name)) return "Escribe un nombre para la cuenta.";
   if (step === "card" && a.card.on) {
     if (bad(a.card.debt)) return "La deuda de la tarjeta no es un monto válido.";
     for (const p of a.card.purchases) {
@@ -527,7 +560,9 @@ export function openSetupWizard() {
       // Escribir un monto marca solo esa cuenta o factura.
       form.addEventListener("input", (event) => {
         const match = /^(acc|bill)-amount-(\d+)$/.exec(event.target.name || "");
-        if (match && event.target.value.trim()) form.elements[`${match[1]}-on-${match[2]}`].checked = true;
+        // Las cuentas propias no tienen interruptor: valen con solo tener nombre o monto.
+        const box = match && form.elements[`${match[1]}-on-${match[2]}`];
+        if (box && event.target.value.trim()) box.checked = true;
       });
       form.addEventListener("change", (event) => {
         const { name, value } = event.target;
@@ -540,6 +575,10 @@ export function openSetupWizard() {
             /* sin sessionStorage: se abre desde Configuración */
           }
           location.reload();
+        } else if (/^acc-(cur|icon|kind)-/.test(name)) {
+          // Cambiar la moneda de una cuenta propia cambia el símbolo de su monto.
+          collect(step(), form, answers);
+          if (name.startsWith("acc-cur-")) show();
         } else if (name.startsWith("bill-on-")) {
           // Marcar una factura muestra su monto y su día; desmarcarla los saca.
           collect(step(), form, answers);
@@ -575,6 +614,8 @@ export function openSetupWizard() {
         } else if (what === "add-purchase") answers.card.purchases.push({ what: "", per: "", left: "" });
         else if (what === "add-loan") answers.loans.push({ direction: "lent", person: "", amount: "", due: "" });
         else if (what === "add-goal") answers.goals.push({ name: "", target: "", saved: "" });
+        else if (what === "add-account") answers.accounts.push(customAccount());
+        else if (what.startsWith("rm-account-")) answers.accounts.splice(Number(what.slice(11)), 1);
         show();
       });
 

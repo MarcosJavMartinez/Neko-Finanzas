@@ -1299,4 +1299,9 @@ export default {
   "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "استلمتَ المال قبل أن تبدأ استخدام التطبيق: لا يُضاف إلى حسابك. سجّل الأقساط الباقية فقط.",
   "¿De qué cuenta salen las cuotas?": "من أي حساب تخرج الأقساط؟",
   "Préstamo en cuotas · ya lo venías pagando": "قرض بالتقسيط · كنت تسدّده بالفعل",
+  "Agregar otra cuenta": "إضافة حساب آخر",
+  "Ej.: otra billetera, otro banco": "مثال: محفظة أخرى، بنك آخر",
+  "Nombre de la cuenta": "اسم الحساب",
+  "Quitar esta cuenta": "إزالة هذا الحساب",
+  "Cuánto tienes": "كم لديك",
 };

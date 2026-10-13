@@ -1300,4 +1300,9 @@ export default {
   "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "アプリを使いはじめる前に受け取ったお金です。口座には加算されません。残りの回だけを記録してください。",
   "¿De qué cuenta salen las cuotas?": "返済はどの口座から出ますか？",
   "Préstamo en cuotas · ya lo venías pagando": "分割ローン · すでに返済中でした",
+  "Agregar otra cuenta": "別の口座を追加",
+  "Ej.: otra billetera, otro banco": "例：別のウォレット、別の銀行",
+  "Nombre de la cuenta": "口座の名前",
+  "Quitar esta cuenta": "この口座を外す",
+  "Cuánto tienes": "金額",
 };

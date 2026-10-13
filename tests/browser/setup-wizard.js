@@ -41,6 +41,13 @@ return (async () => {
     type("acc-amount-0", "50.000");
     type("acc-amount-1", "400.000");
     type("acc-amount-3", "500");
+    // Una cuenta propia: otra billetera con su nombre, su ícono y su monto
+    form().querySelector("[data-setup=add-account]").click(); await wait(200);
+    const mine = [...form().querySelectorAll("input[name^=acc-name-]")].pop();
+    const mineIndex = mine.name.slice(9);
+    mine.value = "Mercado Pago";
+    form().elements["acc-icon-" + mineIndex].value = "💰";
+    type("acc-amount-" + mineIndex, "75.000");
     log("se marcan solas: " + [0, 1, 2, 3].map((i) => form().elements[`acc-on-${i}`].checked).join(","));
     await next();
 
@@ -112,7 +119,9 @@ return (async () => {
     log("hoja cerrada=" + !sheet() + " · pantalla=" + d.querySelector("#view").dataset.screen + " · aviso: " + ([...d.querySelectorAll(".toast")].pop()?.textContent.trim().split("\n")[0] || "ninguno ✗"));
     log("cuentas: " + s.accounts.map((a) => `${a.name} ${a.currency} ${a.opening}`).join(" · "));
     log(`otras monedas: ${s.settings.currencies.join(",")} · 1 USD = ${s.rates.USD}${s.settings.currencies.join(",") === "ARS,USD" && s.rates.USD === 1400 ? "" : " ✗"}`);
-    log("la primera cuenta reemplazó a «Mi dinero»: " + (s.accounts.length === 4 && !s.accounts.some((a) => a.name === "Mi dinero") ? "sí" : "NO ✗"));
+    const own = s.accounts.find((a) => a.name === "Mercado Pago");
+    log(`cuenta propia: ${own ? `${own.icon} ${own.name} · ${own.kind} · ${own.opening}` : "no se creó"}${own && own.icon === "💰" && own.kind === "wallet" && own.opening === 75000 ? "" : " ✗"}`);
+    log("la primera cuenta reemplazó a «Mi dinero»: " + (s.accounts.length === 5 && !s.accounts.some((a) => a.name === "Mi dinero") ? "sí" : "NO ✗"));
     const card = s.accounts.find((a) => a.kind === "credit");
     const st = F.cardStatus(s, card, today);
     log(`tarjeta: ${card.name} deuda=${st.debt} vence día ${card.dueDay} · por venir=${st.upcomingTotal} en ${st.upcoming.map((g) => `${g.title} ${g.remaining}/${g.of}`).join(", ")}${st.debt === 80000 && st.upcomingTotal === 140000 ? "" : " ✗"}`);

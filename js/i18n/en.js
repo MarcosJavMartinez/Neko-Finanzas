@@ -1298,4 +1298,9 @@ export default {
   "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "You received the money before you started using the app: it isn't added to your account. Note only the installments that are left.",
   "¿De qué cuenta salen las cuotas?": "Which account do the installments come out of?",
   "Préstamo en cuotas · ya lo venías pagando": "Installment loan · you were already paying it",
+  "Agregar otra cuenta": "Add another account",
+  "Ej.: otra billetera, otro banco": "E.g.: another wallet, another bank",
+  "Nombre de la cuenta": "Account name",
+  "Quitar esta cuenta": "Remove this account",
+  "Cuánto tienes": "How much you have",
 };

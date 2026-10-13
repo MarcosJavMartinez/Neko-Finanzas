@@ -1298,4 +1298,9 @@ export default {
   "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "Você recebeu o dinheiro antes de começar a usar o app: ele não é somado à sua conta. Anote só as parcelas que faltam.",
   "¿De qué cuenta salen las cuotas?": "De qual conta saem as parcelas?",
   "Préstamo en cuotas · ya lo venías pagando": "Empréstimo parcelado · você já vinha pagando",
+  "Agregar otra cuenta": "Adicionar outra conta",
+  "Ej.: otra billetera, otro banco": "Ex.: outra carteira, outro banco",
+  "Nombre de la cuenta": "Nome da conta",
+  "Quitar esta cuenta": "Remover esta conta",
+  "Cuánto tienes": "Quanto você tem",
 };

@@ -1298,4 +1298,9 @@ export default {
   "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "Parayı uygulamayı kullanmaya başlamadan önce aldın: hesabına eklenmez. Yalnızca kalan taksitleri kaydet.",
   "¿De qué cuenta salen las cuotas?": "Taksitler hangi hesaptan çıkıyor?",
   "Préstamo en cuotas · ya lo venías pagando": "Taksitli kredi · zaten ödüyordun",
+  "Agregar otra cuenta": "Başka bir hesap ekle",
+  "Ej.: otra billetera, otro banco": "Örn.: başka bir cüzdan, başka bir banka",
+  "Nombre de la cuenta": "Hesap adı",
+  "Quitar esta cuenta": "Bu hesabı kaldır",
+  "Cuánto tienes": "Ne kadar var",
 };

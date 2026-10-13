@@ -1298,4 +1298,9 @@ export default {
   "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "Вы получили деньги до того, как начали пользоваться приложением: они не прибавляются к счёту. Запишите только оставшиеся платежи.",
   "¿De qué cuenta salen las cuotas?": "С какого счёта списываются платежи?",
   "Préstamo en cuotas · ya lo venías pagando": "Кредит с платежами · вы уже его выплачивали",
+  "Agregar otra cuenta": "Добавить ещё один счёт",
+  "Ej.: otra billetera, otro banco": "Напр.: другой кошелёк, другой банк",
+  "Nombre de la cuenta": "Название счёта",
+  "Quitar esta cuenta": "Убрать этот счёт",
+  "Cuánto tienes": "Сколько у вас",
 };
