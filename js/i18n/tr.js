@@ -1307,4 +1307,5 @@ export default {
   "Ej.: gimnasio, seguro, colegio": "Örn.: spor salonu, sigorta, okul",
   "Nombre del pago": "Ödemenin adı",
   "Quitar este pago": "Bu ödemeyi kaldır",
+  "Faltan {0} (≈ {1})": "{0} kaldı (≈ {1})",
 };

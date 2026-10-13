@@ -1307,4 +1307,5 @@ export default {
   "Ej.: gimnasio, seguro, colegio": "Напр.: спортзал, страховка, школа",
   "Nombre del pago": "Название платежа",
   "Quitar este pago": "Убрать этот платёж",
+  "Faltan {0} (≈ {1})": "Осталось {0} (≈ {1})",
 };

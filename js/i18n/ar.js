@@ -1308,4 +1308,5 @@ export default {
   "Ej.: gimnasio, seguro, colegio": "مثال: نادٍ رياضي، تأمين، مدرسة",
   "Nombre del pago": "اسم الدفعة",
   "Quitar este pago": "إزالة هذه الدفعة",
+  "Faltan {0} (≈ {1})": "باقٍ {0} (≈ {1})",
 };

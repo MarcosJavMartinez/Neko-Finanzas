@@ -65,7 +65,23 @@ return (async () => {
       const rows = [...form().querySelectorAll("input[name^=acc-amount-]")];
       if (rows.length !== 4) bad.push(`filas de cuentas=${rows.length}`);
       change(rows[0], "1000"); change(rows[rows.length - 1], "100");
-      for (let i = 0; i < 12 && sheet()?.querySelector("form.setup"); i++) await next();
+      // Una deuda y una meta en la otra moneda: se guardan en esa moneda y "Faltan" muestra el equivalente
+      let goalHint = "";
+      for (let i = 0; i < 12 && sheet()?.querySelector("form.setup"); i++) {
+        const title = form().querySelector(".setup-title")?.textContent || "";
+        if (form().elements["loan-cur-0"] && !form().elements["loan-person-0"].value) {
+          change(form().elements["loan-cur-0"], c.extra); await wait(200);
+          form().querySelector("input[name=loan-dir-0][value=borrowed]").click();
+          change(form().elements["loan-person-0"], "Ana"); change(form().elements["loan-amount-0"], "20");
+        }
+        if (form().elements["goal-cur-0"] && !form().elements["goal-name-0"].value) {
+          change(form().elements["goal-cur-0"], c.extra); await wait(200);
+          change(form().elements["goal-name-0"], "Viaje"); change(form().elements["goal-target-0"], "50"); change(form().elements["goal-saved-0"], "10");
+          await wait(100);
+          goalHint = form().querySelector("[data-goal-left='0']").textContent;
+        }
+        await next();
+      }
       await wait(500);
 
       let s = store.getState();
@@ -74,6 +90,11 @@ return (async () => {
       if (s.settings.mainCurrency !== c.main || s.settings.region !== c.region) bad.push(`quedó ${s.settings.mainCurrency}/${s.settings.region}`);
       if (s.settings.currencies.slice().sort().join() !== [c.main, c.extra].sort().join()) bad.push(`monedas ${s.settings.currencies}`);
       let sum = F.balanceSummary(s);
+      const debt = s.loans.find((l) => l.person === "Ana"), trip = s.goals.find((g) => g.name === "Viaje");
+      if (!debt || debt.currency !== c.extra || debt.amount !== 20) bad.push(`deuda en ${debt?.currency} ${debt?.amount}`);
+      if (!trip || trip.currency !== c.extra || trip.target !== 50 || F.goalSaved(trip) !== 10) bad.push(`meta en ${trip?.currency} ${trip?.target}`);
+      if (!goalHint.includes("≈") || !goalHint.includes(M.formatMoney(40 * c.unitInMain, c.main, { reveal: true }))) bad.push(`faltan: "${goalHint}"`);
+      if (!near(sum.inGoals, 10 * c.unitInMain)) bad.push(`en metas ${sum.inGoals}`);
       if (!near(sum.total, 1000 + 100 * c.unitInMain)) bad.push(`total ${sum.total}, esperaba ${1000 + 100 * c.unitInMain}`);
 
       // 4) Un gasto en cada moneda y una transferencia entre las dos

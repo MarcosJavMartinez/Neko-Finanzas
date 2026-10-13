@@ -1307,4 +1307,5 @@ export default {
   "Ej.: gimnasio, seguro, colegio": "E.g.: gym, insurance, school",
   "Nombre del pago": "Payment name",
   "Quitar este pago": "Remove this payment",
+  "Faltan {0} (≈ {1})": "{0} to go (≈ {1})",
 };

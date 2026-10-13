@@ -2622,3 +2622,34 @@ button.inline-link {
   color: var(--text-2);
   font-weight: 600;
 }
+
+/* Asistente: cuánto falta para una meta */
+.setup-left:empty {
+  display: none;
+}
+
+.setup-left {
+  font-weight: 700;
+  color: var(--goal-ink, var(--text-2));
+}
+
+/* Dos montos lado a lado (meta, préstamo): el símbolo ocupa lo justo para que entre el número */
+.setup-group .field-row .amount-currency {
+  min-width: 0;
+  padding-inline: 8px;
+  font-size: 0.75rem;
+}
+
+.form .setup-group .field-row .amount-input input {
+  padding: 0 8px;
+  font-size: 1.05rem;
+  text-align: end;
+}
+
+/* En el teléfono, los campos de una meta o un préstamo van uno debajo del otro: los montos largos entran completos */
+@media (max-width: 639px) {
+  .setup-group .field-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

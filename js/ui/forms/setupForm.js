@@ -57,6 +57,34 @@ const savingsAccount = (code) => ({ on: false, name: code === "USD" ? "Dólares 
 /** Una cuenta propia: otra billetera, otro banco… con el nombre y el ícono que elija la persona. */
 const customAccount = () => ({ on: true, custom: true, name: "", kind: "wallet", icon: "📱", color: "#3a86d4", amount: "", cur: "" });
 const CUSTOM_ICONS = ["📱", "💳", "🏦", "💵", "🐷", "💰", "🪙", "👛", "🏧", "💶", "💴", "🧾", "⭐", "🟦", "🟩", "🟨"];
+/** La moneda de un préstamo o una meta: la elegida si sigue entre las que se usan; si no, la principal. */
+const curOf = (item, a) => (item.cur && a.extras.some((e) => e.code === item.cur) ? item.cur : a.currency);
+
+/** Selector de moneda de una fila; no aparece si la persona maneja una sola moneda. */
+const curSelect = (name, item, a) =>
+  a.extras.length
+    ? html`<label class="field"><span class="field-label">Moneda</span><select name="${name}">${[a.currency, ...a.extras.map((e) => e.code)].map((code) => html`<option value="${code}" ${code === curOf(item, a) ? "selected" : ""}>${symbolOf(code)} · ${CURRENCIES[code].name}</option>`)}</select></label>`
+    : "";
+
+/** Los tipos de cambio con lo que la persona escribió en el paso de monedas (todavía sin guardar). */
+function wizardRates(a, state) {
+  const rates = { ...state.rates };
+  for (const e of a.extras) {
+    const value = parseAmount(e.rate || "");
+    if (value > 0) rates[e.code] = (rateView(e.code, a.currency, state.rates).inverse ? 1 / value : value) * rates[a.currency];
+  }
+  return rates;
+}
+
+/** "Faltan US$ 1.350 (≈ $ 1.890.000)": lo que falta para una meta, y cuánto es en la moneda principal. */
+function goalLeftText(g, a, state) {
+  const left = Math.round(((num(g.target) || 0) - (num(g.saved) || 0)) * 100) / 100;
+  if (!(left > 0)) return "";
+  const currency = curOf(g, a);
+  const own = formatMoney(left, currency, { reveal: true });
+  return currency === a.currency ? msg`Faltan ${own}` : msg`Faltan ${own} (≈ ${formatMoney(convert(left, currency, a.currency, wizardRates(a, state)), a.currency, { reveal: true })})`;
+}
+
 /** Un pago mensual propio (gimnasio, seguro, colegio…), con el nombre y el ícono que elija la persona. */
 const customBill = () => ({ on: true, custom: true, name: "", icon: "🧾", categoryId: "exp-servicios", subcategoryId: "", amount: "", day: 10 });
 const BILL_ICONS = ["🧾", "🏋️", "🛡️", "🎓", "🚗", "📱", "🌐", "💡", "🔥", "💧", "🏠", "📺", "🎵", "🐶", "💊", "⭐"];
@@ -310,23 +338,26 @@ const RENDER = {
         ${segmented(`loan-dir-${i}`, [{ value: "lent", label: "Me deben" }, { value: "borrowed", label: "Debo" }], l.direction)}
         <div class="field-row">
           ${textInput(`loan-person-${i}`, "¿Quién?", l.person, "Ej.: Caro")}
-          ${moneyField(`loan-amount-${i}`, "¿Cuánto falta?", l.amount, a.currency)}
+          ${moneyField(`loan-amount-${i}`, "¿Cuánto falta?", l.amount, curOf(l, a))}
         </div>
+        ${curSelect(`loan-cur-${i}`, l, a)}
         <label class="field"><span class="field-label">Fecha para devolver (opcional)</span><input name="loan-due-${i}" type="date" value="${l.due}" /></label>
       </div>`
     )}
     ${addButton("add-loan", "Otro préstamo", a.loans.length)}`,
 
-  goals: (a) => html`
+  goals: (a, additive, state) => html`
     <h3 class="setup-title">¿Estás ahorrando para algo?</h3>
     <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Una <strong>meta</strong> es dinero que apartas para algo. Sigue siendo tuyo, pero deja de contar como disponible para que no lo gastes sin querer.</p></details>
     ${a.goals.map(
       (g, i) => html`<div class="setup-group">
         ${textInput(`goal-name-${i}`, "¿Para qué?", g.name, "Ej.: Vacaciones")}
+        ${curSelect(`goal-cur-${i}`, g, a)}
         <div class="field-row">
-          ${moneyField(`goal-target-${i}`, "¿Cuánto quieres reunir?", g.target, a.currency)}
-          ${moneyField(`goal-saved-${i}`, "¿Cuánto ya tienes?", g.saved, a.currency)}
+          ${moneyField(`goal-target-${i}`, "¿Cuánto quieres reunir?", g.target, curOf(g, a))}
+          ${moneyField(`goal-saved-${i}`, "¿Cuánto ya tienes?", g.saved, curOf(g, a))}
         </div>
+        <p class="field-hint setup-left" data-goal-left="${i}">${goalLeftText(g, a, state)}</p>
       </div>`
     )}
     ${addButton("add-goal", "Otra meta", a.goals.length)}
@@ -362,11 +393,14 @@ function summaryLines(a, state) {
   if (num(a.groceries) > 0) lines.push(["🛒", msg`Supermercado: ${m(num(a.groceries))} reservados por mes`]);
   if (num(a.treats) > 0) lines.push(["☕", msg`Gustos: ${m(num(a.treats))} por día, acumulables`]);
   const loans = validLoans(a);
-  const lent = loans.filter((l) => l.direction === "lent").reduce((s, l) => s + num(l.amount), 0);
-  const borrowed = loans.filter((l) => l.direction === "borrowed").reduce((s, l) => s + num(l.amount), 0);
+  // Lo que está en otra moneda se suma convertido, con los tipos de cambio escritos en el asistente.
+  const rates = wizardRates(a, state);
+  const inMain = (amount, item) => convert(amount, curOf(item, a), a.currency, rates);
+  const lent = loans.filter((l) => l.direction === "lent").reduce((s, l) => s + inMain(num(l.amount), l), 0);
+  const borrowed = loans.filter((l) => l.direction === "borrowed").reduce((s, l) => s + inMain(num(l.amount), l), 0);
   if (loans.length) lines.push(["🤝", [lent > 0 && msg`Te deben ${m(lent)}`, borrowed > 0 && msg`debes ${m(borrowed)}`].filter(Boolean).join(" · ")]);
   const goals = validGoals(a);
-  if (goals.length) lines.push(["🎯", msg`${goals.length} meta${goals.length === 1 ? "" : "s"}: ${goals.map((g) => g.name.trim()).join(", ")} · ${m(goals.reduce((s, g) => s + (num(g.saved) || 0), 0))} ya apartados`]);
+  if (goals.length) lines.push(["🎯", msg`${goals.length} meta${goals.length === 1 ? "" : "s"}: ${goals.map((g) => g.name.trim()).join(", ")} · ${m(goals.reduce((s, g) => s + inMain(num(g.saved) || 0, g), 0))} ya apartados`]);
   // Las otras monedas solo acompañan: si no se respondió nada más, el resumen sigue vacío.
   if (lines.length && a.extras.length) lines.unshift(["💱", msg`Otras monedas: ${a.extras.map((e) => e.code).join(", ")}`]);
   return lines;
@@ -415,9 +449,9 @@ function collect(step, form, a) {
     a.groceries = v("groceries");
     a.treats = v("treats");
   } else if (step === "loans") {
-    a.loans.forEach((l, i) => Object.assign(l, { direction: v(`loan-dir-${i}`) || "lent", person: v(`loan-person-${i}`), amount: v(`loan-amount-${i}`), due: v(`loan-due-${i}`) }));
+    a.loans.forEach((l, i) => Object.assign(l, { direction: v(`loan-dir-${i}`) || "lent", person: v(`loan-person-${i}`), amount: v(`loan-amount-${i}`), due: v(`loan-due-${i}`), cur: v(`loan-cur-${i}`) || l.cur || "" }));
   } else if (step === "goals") {
-    a.goals.forEach((g, i) => Object.assign(g, { name: v(`goal-name-${i}`), target: v(`goal-target-${i}`), saved: v(`goal-saved-${i}`) }));
+    a.goals.forEach((g, i) => Object.assign(g, { name: v(`goal-name-${i}`), target: v(`goal-target-${i}`), saved: v(`goal-saved-${i}`), cur: v(`goal-cur-${i}`) || g.cur || "" }));
   }
 }
 
@@ -525,12 +559,12 @@ export function applySetup(a) {
 
   // Préstamos: solo se anotan (ese dinero ya está reflejada en lo que cargaste en tus cuentas)
   for (const l of validLoans(a)) {
-    store.addLoan({ person: l.person, direction: l.direction, amount: num(l.amount), currency: a.currency, date: today, dueDate: isISODate(l.due) ? l.due : "", accountId: "" });
+    store.addLoan({ person: l.person, direction: l.direction, amount: num(l.amount), currency: curOf(l, a), date: today, dueDate: isISODate(l.due) ? l.due : "", accountId: "" });
   }
 
   // Metas, con lo que ya tenían ahorrado
   for (const g of validGoals(a)) {
-    const goal = store.addGoal({ name: g.name.trim().slice(0, 60), icon: "🎯", color: "#8a63d2", target: num(g.target), currency: a.currency, targetDate: "" });
+    const goal = store.addGoal({ name: g.name.trim().slice(0, 60), icon: "🎯", color: "#8a63d2", target: num(g.target), currency: curOf(g, a), targetDate: "" });
     if (num(g.saved) > 0) store.moveGoalMoney(goal.id, num(g.saved), "Lo que ya tenía ahorrado");
   }
   // Al final, cuando las cuentas ya están en su moneda: se sacan las monedas que no se eligieron (las que tienen datos quedan).
@@ -591,6 +625,13 @@ export function openSetupWizard() {
       // Escribir un monto marca solo esa cuenta o factura.
       form.addEventListener("input", (event) => {
         const match = /^(acc|bill)-amount-(\d+)$/.exec(event.target.name || "");
+        // Metas: "Faltan…" se actualiza mientras se escribe.
+        const goal = /^goal-(target|saved)-(\d+)$/.exec(event.target.name || "");
+        if (goal) {
+          collect(step(), form, answers);
+          const hint = form.querySelector(`[data-goal-left="${goal[2]}"]`);
+          if (hint) hint.textContent = goalLeftText(answers.goals[Number(goal[2])], answers, store.getState());
+        }
         // Las cuentas propias no tienen interruptor: valen con solo tener nombre o monto.
         const box = match && form.elements[`${match[1]}-on-${match[2]}`];
         if (box && event.target.value.trim()) box.checked = true;
@@ -606,6 +647,9 @@ export function openSetupWizard() {
             /* sin sessionStorage: se abre desde Configuración */
           }
           location.reload();
+        } else if (/^(loan|goal)-cur-/.test(name)) {
+          collect(step(), form, answers);
+          show();
         } else if (/^acc-(cur|icon|kind)-/.test(name)) {
           // Cambiar la moneda de una cuenta propia cambia el símbolo de su monto.
           collect(step(), form, answers);

@@ -1309,4 +1309,5 @@ export default {
   "Ej.: gimnasio, seguro, colegio": "例：ジム、保険、学校",
   "Nombre del pago": "支払いの名前",
   "Quitar este pago": "この支払いを外す",
+  "Faltan {0} (≈ {1})": "あと {0}（≈ {1}）",
 };
