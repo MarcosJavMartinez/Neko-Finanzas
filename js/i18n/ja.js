@@ -1314,4 +1314,7 @@ export default {
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "お金はもう口座にありません。どの口座にも加算されず、返す借金だけが残ります。",
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "お金はもう口座にありません。どの口座にも加算されません。残りの回だけを記録してください。",
   "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "このローンを記録したときに口座に加算されたお金を取り除きます。返済の回は変わりません。",
+  "Apartar por mes para devolverlo (opcional)": "返済のために毎月取り分ける額（任意）",
+  "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "借りている額に達するまで、毎月この金額を使えるお金から予約します。返済を記録すると、予約額は減ります。",
+  "Reservado para devolver: {0} · {1} por mes": "返済用の予約：{0} · 月 {1}",
 };

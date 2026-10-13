@@ -347,6 +347,18 @@ function loanValues(data) {
   };
 }
 
+/** "Apartar por mes" de una deuda: se guarda desde cuándo, y se vuelve a contar si cambia el monto. */
+function applySetAside(loan, monthly) {
+  const value = loan.direction === "borrowed" && !loan.plan && monthly > 0 ? Math.round(monthly * 100) / 100 : 0;
+  if (!value) {
+    delete loan.saveMonthly;
+    delete loan.saveSince;
+  } else if (loan.saveMonthly !== value || !loan.saveSince) {
+    loan.saveMonthly = value;
+    loan.saveSince = todayISO();
+  }
+}
+
 /**
  * Nuevo préstamo. Si se indica una cuenta, el dinero sale de ella (le
  * prestaste) o entra (te prestaron); si no, solo queda anotado.
@@ -354,6 +366,7 @@ function loanValues(data) {
 export function addLoan(data) {
   return commit((s) => {
     const loan = { id: uid("loan"), direction: data.direction === "borrowed" ? "borrowed" : "lent", ...loanValues(data), payments: [], createdAt: new Date().toISOString() };
+    applySetAside(loan, data.saveMonthly);
     if (data.accountId) {
       const tx = loanMovement(s, loan, { amount: loan.amount, accountId: data.accountId, date: loan.date, isPayment: false });
       s.transactions.push(tx);
@@ -370,6 +383,7 @@ export function updateLoan(id, data) {
     const loan = find(s.loans, id);
     if (!loan) return;
     Object.assign(loan, loanValues(data));
+    if ("saveMonthly" in data) applySetAside(loan, data.saveMonthly);
     const tx = loan.txId && find(s.transactions, loan.txId);
     if (data.accountId) {
       const values = loanMovement(s, loan, { amount: loan.amount, accountId: data.accountId, date: loan.date, isPayment: false });

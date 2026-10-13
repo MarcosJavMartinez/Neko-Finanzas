@@ -332,6 +332,11 @@ export function sanitizeState(input) {
       createdAt: str(l.createdAt, 40) || date(l.date),
     };
     if (loanTx(l.txId)) loan.txId = l.txId;
+    // Deuda con "apartar por mes": cuánto y desde cuándo.
+    if (l.direction === "borrowed" && !isObj(l.plan) && positive(l.saveMonthly) && isISODate(l.saveSince)) {
+      loan.saveMonthly = positive(l.saveMonthly);
+      loan.saveSince = l.saveSince;
+    }
     // Préstamo en cuotas: cuántas son y de cuánto (las cuotas son gastos programados).
     if (isObj(l.plan) && id(l.plan.group) && l.direction === "borrowed") {
       const count = Math.trunc(finite(l.plan.count));

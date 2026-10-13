@@ -310,11 +310,35 @@ export function loansSummary(state, today = todayISO()) {
   return { items, lent: sum("lent"), borrowed: sum("borrowed"), open: items.filter((i) => i.outstanding > 0).length };
 }
 
-/** Lo que debes de préstamos con vencimiento dentro del horizonte (o ya vencidos). */
+/**
+ * "Apartar por mes": lo que ya debería estar juntado para devolver una deuda.
+ * Un monto por cada mes desde que se empezó a apartar (el primero cuenta
+ * entero), menos lo devuelto desde entonces, y nunca más de lo que falta.
+ */
+export function loanSetAside(loan, outstanding, today = todayISO()) {
+  if (!(loan.saveMonthly > 0) || !loan.saveSince || loan.plan) return 0;
+  const [y1, m1] = loan.saveSince.split("-").map(Number);
+  const [y2, m2] = today.split("-").map(Number);
+  const months = Math.max(1, (y2 - y1) * 12 + (m2 - m1) + 1);
+  const paid = loan.payments.filter((p) => p.date >= loan.saveSince).reduce((s, p) => s + p.amount, 0);
+  return Math.max(0, Math.min(outstanding, Math.round((loan.saveMonthly * months - paid) * 100) / 100));
+}
+
+/**
+ * Lo que se reserva por lo que debes: entero si vence dentro del horizonte (o
+ * ya venció); si no, lo que se viene apartando por mes.
+ */
 export function loansReserve(state, today = todayISO()) {
   const until = reserveHorizonEnd(state, today);
-  const items = loansSummary(state).items.filter((i) => i.loan.direction === "borrowed" && i.outstanding > 0 && i.loan.dueDate && i.loan.dueDate <= until);
-  return { amount: items.reduce((s, i) => s + i.outstandingMain, 0), items, until };
+  const items = loansSummary(state)
+    .items.filter((i) => i.loan.direction === "borrowed" && i.outstanding > 0)
+    .map((i) => {
+      const dueSoon = i.loan.dueDate && i.loan.dueDate <= until;
+      const reserved = dueSoon ? i.outstanding : loanSetAside(i.loan, i.outstanding, today);
+      return { ...i, reserved, reservedMain: toMain(state, reserved, i.loan.currency) };
+    })
+    .filter((i) => i.reserved > 0);
+  return { amount: items.reduce((s, i) => s + i.reservedMain, 0), items, until };
 }
 
 export function balanceSummary(state, today = todayISO()) {

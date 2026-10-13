@@ -1312,4 +1312,7 @@ export default {
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "The money is no longer in your accounts: it isn't added to any of them. Only the debt to pay remains.",
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "The money is no longer in your accounts: it isn't added to any of them. Note only the installments that are left.",
   "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "Removes from your account the money that was added when you noted this loan. The installments don't change.",
+  "Apartar por mes para devolverlo (opcional)": "Set aside per month to pay it back (optional)",
+  "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "Each month that amount is reserved from your available balance, until you have what you owe. When you record a repayment, the reserved amount goes down.",
+  "Reservado para devolver: {0} · {1} por mes": "Reserved to pay back: {0} · {1} per month",
 };

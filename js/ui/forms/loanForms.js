@@ -13,7 +13,7 @@ import * as store from "../../core/store.js";
 import { addMonths, formatDate, formatDue, todayISO } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
 import { amountToInput, formatMoney, parseAmount, zeroAmount } from "../../core/money.js";
-import { findAccount, loanOutstanding, loanPlanStatus, percent } from "../../core/finance.js";
+import { findAccount, loanOutstanding, loanPlanStatus, percent, loanSetAside } from "../../core/finance.js";
 import { getLastAccount } from "../../core/prefs.js";
 
 /** Cuenta por la que pasó el dinero, o "no pasó por mis cuentas". */
@@ -55,6 +55,12 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         ${dateField({ name: "date", label: "Fecha", value: current.date })}
         ${dateField({ name: "dueDate", label: "Devolver antes del", value: current.dueDate, required: false })}
       </div>
+      <div class="field" data-save-monthly ${current.direction === "borrowed" ? "" : "hidden"}>
+        <label class="field-label" for="f-saveMonthly">Apartar por mes para devolverlo (opcional)</label>
+        <div class="amount-input amount-input-sm"><input id="f-saveMonthly" name="saveMonthly" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" value="${current.saveMonthly ? amountToInput(current.saveMonthly) : ""}" /></div>
+        <p class="field-hint">Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.</p>
+        <p class="field-error" data-error-for="saveMonthly"></p>
+      </div>
       ${textField({ name: "note", label: "Nota", value: current.note, maxlength: 120, placeholder: "Ej.: para el auto, en 3 partes" })}
       <p class="field-hint" data-loan-hint>${current.direction === "lent" ? "No es un gasto: el dinero vuelve cuando te lo devuelvan." : "No es un ingreso: si pones fecha para devolverlo, la app lo reserva de tu disponible cuando se acerque."}</p>
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Guardar préstamo", deletable: isEdit })}
@@ -69,6 +75,7 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         const borrowed = direction() === "borrowed";
         const spent = borrowed && form.elements.spent.checked;
         form.querySelector("[data-spent-toggle]").hidden = !borrowed;
+        form.querySelector("[data-save-monthly]").hidden = !borrowed;
         form.querySelector("[data-loan-account]").hidden = spent;
         if (spent) form.elements.accountId.value = "";
         else if (borrowed && form.elements.accountId.value === "") form.elements.accountId.value = accountId || preferred;
@@ -93,7 +100,9 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
         if (!isISODate(data.date)) return fieldError(form, "date", "Elige una fecha válida.");
         if (data.dueDate && !isISODate(data.dueDate)) return fieldError(form, "dueDate", "Elige una fecha válida.");
-        const values = { person: data.person, amount, currency: data.currency, date: data.date, dueDate: data.dueDate || "", note: data.note, accountId: data.accountId };
+        const monthly = data.saveMonthly?.trim() ? parseAmount(data.saveMonthly) : 0;
+        if (!(monthly >= 0)) return fieldError(form, "saveMonthly", "Ese monto no es válido.");
+        const values = { person: data.person, amount, currency: data.currency, date: data.date, dueDate: data.dueDate || "", note: data.note, accountId: data.accountId, saveMonthly: monthly };
         if (isEdit) {
           store.updateLoan(loan.id, values);
           toast("Préstamo actualizado");
@@ -421,6 +430,7 @@ export function openLoanDetail(loanId) {
       <p class="account-detail-balance">${outstanding > 0 ? formatMoney(outstanding, loan.currency) : "Saldado"}</p>
       <p class="fine-print">${outstanding > 0 ? loan.direction === "lent" ? msg`Te falta cobrar de ${formatMoney(loan.amount, loan.currency)}` : msg`Te falta devolver de ${formatMoney(loan.amount, loan.currency)}` : msg`${formatMoney(loan.amount, loan.currency)} devueltos`}${loan.dueDate && outstanding > 0 ? ` · ${formatDue(loan.dueDate, today)}` : ""}</p>
       ${progressBar(percent(paid, loan.amount), { color: "var(--goal)", label: "Parte devuelta" })}
+      ${loan.saveMonthly > 0 && outstanding > 0 ? html`<p class="notice notice-info">${icon("info", 16)}<span>${msg`Reservado para devolver: ${formatMoney(loanSetAside(loan, outstanding, today), loan.currency)} · ${formatMoney(loan.saveMonthly, loan.currency)} por mes`}</span></p>` : ""}
       ${loan.note ? html`<p class="sheet-text">${loan.note}</p>` : ""}
       <div class="account-detail-actions">
         ${outstanding > 0 ? html`<button type="button" class="btn btn-primary btn-sm" data-do="pay">${icon("check", 16)} ${loan.direction === "lent" ? "Me devolvió" : "Devolví"}</button>` : ""}

@@ -1312,4 +1312,7 @@ export default {
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "Этих денег уже нет на ваших счетах: они никуда не прибавляются. Остаётся только долг.",
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "Этих денег уже нет на ваших счетах: они никуда не прибавляются. Запишите только оставшиеся платежи.",
   "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "Убирает со счёта деньги, которые были прибавлены при записи этого кредита. Платежи не меняются.",
+  "Apartar por mes para devolverlo (opcional)": "Откладывать в месяц на возврат (необязательно)",
+  "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "Каждый месяц эта сумма резервируется из доступного остатка, пока не наберётся весь долг. Когда вы записываете возврат, резерв уменьшается.",
+  "Reservado para devolver: {0} · {1} por mes": "Отложено на возврат: {0} · {1} в месяц",
 };

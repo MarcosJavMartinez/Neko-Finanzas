@@ -1312,4 +1312,7 @@ export default {
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "O dinheiro já não está nas suas contas: não é somado a nenhuma. Só fica a dívida a pagar.",
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "O dinheiro já não está nas suas contas: não é somado a nenhuma. Anote só as parcelas que faltam.",
   "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "Tira da sua conta o dinheiro que foi somado ao anotar este empréstimo. As parcelas não mudam.",
+  "Apartar por mes para devolverlo (opcional)": "Guardar por mês para devolver (opcional)",
+  "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "Todo mês esse valor é reservado do seu disponível, até juntar o que você deve. Quando você registra uma devolução, o reservado diminui.",
+  "Reservado para devolver: {0} · {1} por mes": "Reservado para devolver: {0} · {1} por mês",
 };

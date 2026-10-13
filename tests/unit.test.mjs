@@ -490,6 +490,22 @@ mem.delete("nekoFinanzas.hideAmounts");
   store.deleteLoan(lo.id);
 }
 
+// Deuda sin fecha con "apartar por mes": se reserva un monto por mes, baja al devolver y no pasa de lo que falta
+{
+  const debt = { id: "d", direction: "borrowed", person: "Ana", amount: 1000, currency: "ARS", date: "2026-01-10", dueDate: "", payments: [], saveMonthly: 300, saveSince: "2026-01-10" };
+  eq("apartar por mes: primer mes, tercer mes y tope en lo que falta", [F.loanSetAside(debt, 1000, "2026-01-20"), F.loanSetAside(debt, 1000, "2026-03-02"), F.loanSetAside(debt, 1000, "2026-09-01")], [300, 900, 1000]);
+  const paying = { ...debt, payments: [{ id: "p", date: "2026-02-05", amount: 400 }] };
+  eq("apartar por mes: lo devuelto baja lo reservado", [F.loanSetAside(paying, 600, "2026-02-10"), F.loanSetAside(paying, 600, "2026-03-10")], [200, 500]);
+  store.startFresh({ keepSetup: false });
+  const free = F.balanceSummary(store.getState()).available;
+  const made = store.addLoan({ direction: "borrowed", person: "Ana", amount: 1000, currency: store.getState().settings.mainCurrency, accountId: "", saveMonthly: 300 });
+  const st = store.getState();
+  eq("apartar por mes: baja el disponible desde hoy y los datos son válidos", [free - F.balanceSummary(st).available, sanitizeState(JSON.parse(JSON.stringify(st))).loans[0].saveMonthly], [300, 300]);
+  store.updateLoan(made.id, { ...st.loans[0], accountId: "", saveMonthly: 0 });
+  eq("apartar por mes: al quitarlo deja de reservar", [free - F.balanceSummary(store.getState()).available, "saveMonthly" in store.getState().loans[0]], [0, false]);
+  store.deleteLoan(made.id);
+}
+
 // Una moneda con datos no se saca de las que se usan
 store.loadDemo();
 store.toggleCurrency("USD", false);

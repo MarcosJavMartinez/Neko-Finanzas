@@ -1312,4 +1312,7 @@ export default {
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "Para artık hesaplarında değil: hiçbirine eklenmez. Yalnızca ödenecek borç kalır.",
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "Para artık hesaplarında değil: hiçbirine eklenmez. Yalnızca kalan taksitleri kaydet.",
   "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "Bu krediyi kaydederken hesabına eklenen parayı çıkarır. Taksitler değişmez.",
+  "Apartar por mes para devolverlo (opcional)": "Geri ödemek için ayda ayır (isteğe bağlı)",
+  "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "Her ay bu tutar, borcun kadar birikene dek kullanılabilir bakiyenden ayrılır. Bir geri ödeme kaydettiğinde ayrılan tutar azalır.",
+  "Reservado para devolver: {0} · {1} por mes": "Geri ödeme için ayrılan: {0} · ayda {1}",
 };

@@ -1313,4 +1313,7 @@ export default {
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "المال لم يعد في حساباتك: لا يُضاف إلى أي منها. يبقى الدين الذي عليك فقط.",
   "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "المال لم يعد في حساباتك: لا يُضاف إلى أي منها. سجّل الأقساط الباقية فقط.",
   "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "يزيل من حسابك المال الذي أُضيف عند تسجيل هذا القرض. الأقساط لا تتغير.",
+  "Apartar por mes para devolverlo (opcional)": "ما تخصصه شهريًا لردّه (اختياري)",
+  "Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.": "كل شهر يُحجز هذا المبلغ من رصيدك المتاح حتى تجمع ما عليك. عند تسجيل سداد، ينخفض المحجوز.",
+  "Reservado para devolver: {0} · {1} por mes": "محجوز للردّ: {0} · {1} شهريًا",
 };
