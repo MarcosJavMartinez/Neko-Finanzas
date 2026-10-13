@@ -2653,3 +2653,21 @@ button.inline-link {
     grid-template-columns: 1fr;
   }
 }
+
+/* Deuda: cuánto llevas apartado para devolverla */
+.loan-aside {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md, 14px);
+  background: var(--action-soft);
+}
+
+.loan-aside-title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.loan-aside .fine-print {
+  margin: 0;
+}

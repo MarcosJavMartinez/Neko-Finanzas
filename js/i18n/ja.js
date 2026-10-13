@@ -1321,4 +1321,10 @@ export default {
   "¿Cuánto entró a tu cuenta?": "口座にいくら入りましたか？",
   "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "あなたの為替レートによる提案です。実際の金額を入力してください。あとでレートが変わっても、この額は変わりません。",
   "La juntas en {0} meses": "{0} か月で貯まります",
+  "La juntas en {0} meses (≈ {1} por mes)": "{0} か月で貯まります（≈ 月 {1}）",
+  "Llevas apartado {0} de {1}": "{1} のうち {0} を取り分け済み",
+  "{0} por mes · la juntas en {1} meses": "月 {0} · {1} か月で貯まります",
+  "Ya tienes apartado todo lo que debes.": "借りている額はすべて取り分け済みです。",
+  "Lo que falta cambia con el tipo de cambio.": "残りの額は為替レートによって変わります。",
+  "Apartado para devolver": "返済用に取り分けた額",
 };

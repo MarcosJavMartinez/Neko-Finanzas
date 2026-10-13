@@ -1319,4 +1319,10 @@ export default {
   "¿Cuánto entró a tu cuenta?": "How much went into your account?",
   "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "Suggested with your exchange rate. Enter the real amount: it stays fixed even if the rate changes later.",
   "La juntas en {0} meses": "You'll have it in {0|one:# month|other:# months}",
+  "La juntas en {0} meses (≈ {1} por mes)": "You'll have it in {0|one:# month|other:# months} (≈ {1} per month)",
+  "Llevas apartado {0} de {1}": "You've set aside {0} of {1}",
+  "{0} por mes · la juntas en {1} meses": "{0} per month · you'll have it in {1|one:# month|other:# months}",
+  "Ya tienes apartado todo lo que debes.": "You've already set aside everything you owe.",
+  "Lo que falta cambia con el tipo de cambio.": "What's left changes with the exchange rate.",
+  "Apartado para devolver": "Set aside to pay back",
 };

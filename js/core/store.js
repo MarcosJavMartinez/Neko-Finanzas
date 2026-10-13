@@ -352,14 +352,19 @@ function loanValues(data) {
 }
 
 /** "Apartar por mes" de una deuda: se guarda desde cuándo, y se vuelve a contar si cambia el monto. */
-function applySetAside(loan, monthly) {
+function applySetAside(loan, monthly, currency) {
   const value = loan.direction === "borrowed" && !loan.plan && monthly > 0 ? Math.round(monthly * 100) / 100 : 0;
+  // Se puede apartar en otra moneda que la de la deuda (deber dólares y juntar pesos).
+  const other = value && CURRENCY_CODES.includes(currency) && currency !== loan.currency ? currency : "";
   if (!value) {
     delete loan.saveMonthly;
     delete loan.saveSince;
-  } else if (loan.saveMonthly !== value || !loan.saveSince) {
+    delete loan.saveCurrency;
+  } else if (loan.saveMonthly !== value || !loan.saveSince || (loan.saveCurrency || "") !== other) {
     loan.saveMonthly = value;
     loan.saveSince = todayISO();
+    if (other) loan.saveCurrency = other;
+    else delete loan.saveCurrency;
   }
 }
 
@@ -370,7 +375,7 @@ function applySetAside(loan, monthly) {
 export function addLoan(data) {
   return commit((s) => {
     const loan = { id: uid("loan"), direction: data.direction === "borrowed" ? "borrowed" : "lent", ...loanValues(data), payments: [], createdAt: new Date().toISOString() };
-    applySetAside(loan, data.saveMonthly);
+    applySetAside(loan, data.saveMonthly, data.saveCurrency);
     if (data.accountId) {
       const tx = loanMovement(s, loan, { amount: loan.amount, accountId: data.accountId, date: loan.date, isPayment: false });
       s.transactions.push(tx);
@@ -387,7 +392,7 @@ export function updateLoan(id, data) {
     const loan = find(s.loans, id);
     if (!loan) return;
     Object.assign(loan, loanValues(data));
-    if ("saveMonthly" in data) applySetAside(loan, data.saveMonthly);
+    if ("saveMonthly" in data) applySetAside(loan, data.saveMonthly, data.saveCurrency);
     const tx = loan.txId && find(s.transactions, loan.txId);
     if (data.accountId) {
       const values = loanMovement(s, loan, { amount: loan.amount, accountId: data.accountId, date: loan.date, isPayment: false });

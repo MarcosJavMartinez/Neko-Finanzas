@@ -13,7 +13,7 @@ import * as store from "../../core/store.js";
 import { addMonths, formatDate, formatDue, todayISO } from "../../core/dates.js";
 import { isISODate } from "../../core/sanitize.js";
 import { amountToInput, formatMoney, parseAmount, zeroAmount, convert, symbolOf } from "../../core/money.js";
-import { findAccount, loanOutstanding, loanPlanStatus, percent, loanSetAside } from "../../core/finance.js";
+import { findAccount, loanOutstanding, loanPlanStatus, percent, loanSetAsideStatus } from "../../core/finance.js";
 import { getLastAccount } from "../../core/prefs.js";
 
 /** Cuenta por la que pasó el dinero, o "no pasó por mis cuentas". */
@@ -25,6 +25,18 @@ function accountChoice(state, value, label) {
       ${options.map((a) => html`<option value="${a.id}" ${a.id === value ? "selected" : ""}>${a.icon} ${a.name}</option>`)}
       <option value="" ${value === "" ? "selected" : ""}>No pasó por mis cuentas (solo anotarlo)</option>
     </select>
+  </div>`;
+}
+
+/** Detalle de una deuda: cuánto llevas apartado para devolverla, de cuánto, y cuánto falta. */
+function setAsideCard(state, loan, outstanding, today) {
+  const st = loanSetAsideStatus(state, loan, outstanding, today);
+  const money = (n) => formatMoney(n, st.currency);
+  return html`<div class="loan-aside">
+    <p class="loan-aside-title">${msg`Llevas apartado ${money(st.saved)} de ${money(st.target)}`}</p>
+    ${progressBar(percent(st.saved, st.target), { color: "var(--action)", label: "Apartado para devolver" })}
+    <p class="fine-print">${st.monthsLeft > 0 ? msg`${money(loan.saveMonthly)} por mes · la juntas en ${st.monthsLeft} meses` : "Ya tienes apartado todo lo que debes."}</p>
+    ${st.currency !== loan.currency && st.monthsLeft > 0 ? html`<p class="fine-print">Lo que falta cambia con el tipo de cambio.</p>` : ""}
   </div>`;
 }
 
@@ -57,7 +69,9 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
       </div>
       <div class="field" data-save-monthly ${current.direction === "borrowed" ? "" : "hidden"}>
         <label class="field-label" for="f-saveMonthly">Apartar por mes para devolverlo (opcional)</label>
-        <div class="amount-input amount-input-sm"><input id="f-saveMonthly" name="saveMonthly" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" value="${current.saveMonthly ? amountToInput(current.saveMonthly) : ""}" /></div>
+        <div class="amount-input amount-input-sm">${state.settings.currencies.length > 1
+          ? html`<select class="amount-currency" name="saveCurrency" aria-label="Moneda">${state.settings.currencies.map((code) => html`<option value="${code}" ${code === (current.saveCurrency || current.currency) ? "selected" : ""}>${symbolOf(code)}</option>`)}</select>`
+          : ""}<input id="f-saveMonthly" name="saveMonthly" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" value="${current.saveMonthly ? amountToInput(current.saveMonthly) : ""}" /></div>
         <p class="field-hint setup-left" data-save-months></p>
         <p class="field-hint">Cada mes se reserva ese monto de tu disponible, hasta juntar lo que debes. Cuando registras una devolución, baja lo reservado.</p>
         <p class="field-error" data-error-for="saveMonthly"></p>
@@ -85,12 +99,28 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
       syncSpent();
       // "La juntas en 3 meses": cuánto tarda en juntarse lo que falta con ese monto por mes.
       const owed = isEdit ? loanOutstanding(loan) : null;
+      // Se puede apartar en otra moneda que la de la deuda: se convierte con tu tipo de cambio.
+      const debtCurrency = () => form.querySelector("input[name=currency]:checked")?.value || current.currency;
+      const saveSelect = form.elements.saveCurrency;
+      let pickedSave = Boolean(current.saveCurrency);
       const syncMonths = () => {
         const monthly = parseAmount(form.elements.saveMonthly.value);
-        const total = owed ?? readAmount(form);
+        const debt = debtCurrency();
+        const saving = saveSelect?.value || debt;
+        const total = convert(owed ?? readAmount(form), debt, saving, state.rates);
         const months = monthly > 0 && total > 0 ? Math.ceil(total / monthly - 1e-9) : 0;
-        form.querySelector("[data-save-months]").textContent = months ? msg`La juntas en ${months} meses` : "";
+        const hint = form.querySelector("[data-save-months]");
+        if (!months) hint.textContent = "";
+        else if (saving === debt) hint.textContent = msg`La juntas en ${months} meses`;
+        else hint.textContent = msg`La juntas en ${months} meses (≈ ${formatMoney(convert(monthly, saving, debt, state.rates), debt, { reveal: true })} por mes)`;
       };
+      saveSelect?.addEventListener("change", () => ((pickedSave = true), syncMonths()));
+      form.addEventListener("change", (event) => {
+        if (event.target.name !== "currency") return;
+        // Mientras no elijas otra, se aparta en la moneda de la deuda.
+        if (saveSelect && !pickedSave) saveSelect.value = event.target.value;
+        syncMonths();
+      });
       form.addEventListener("input", syncMonths);
       syncMonths();
       form.addEventListener("change", (event) => {
@@ -113,7 +143,7 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         if (data.dueDate && !isISODate(data.dueDate)) return fieldError(form, "dueDate", "Elige una fecha válida.");
         const monthly = data.saveMonthly?.trim() ? parseAmount(data.saveMonthly) : 0;
         if (!(monthly >= 0)) return fieldError(form, "saveMonthly", "Ese monto no es válido.");
-        const values = { person: data.person, amount, currency: data.currency, date: data.date, dueDate: data.dueDate || "", note: data.note, accountId: data.accountId, saveMonthly: monthly };
+        const values = { person: data.person, amount, currency: data.currency, date: data.date, dueDate: data.dueDate || "", note: data.note, accountId: data.accountId, saveMonthly: monthly, saveCurrency: data.saveCurrency || data.currency };
         if (isEdit) {
           store.updateLoan(loan.id, values);
           toast("Préstamo actualizado");
@@ -468,7 +498,7 @@ export function openLoanDetail(loanId) {
       <p class="account-detail-balance">${outstanding > 0 ? formatMoney(outstanding, loan.currency) : "Saldado"}</p>
       <p class="fine-print">${outstanding > 0 ? loan.direction === "lent" ? msg`Te falta cobrar de ${formatMoney(loan.amount, loan.currency)}` : msg`Te falta devolver de ${formatMoney(loan.amount, loan.currency)}` : msg`${formatMoney(loan.amount, loan.currency)} devueltos`}${loan.dueDate && outstanding > 0 ? ` · ${formatDue(loan.dueDate, today)}` : ""}</p>
       ${progressBar(percent(paid, loan.amount), { color: "var(--goal)", label: "Parte devuelta" })}
-      ${loan.saveMonthly > 0 && outstanding > 0 ? html`<p class="notice notice-info">${icon("info", 16)}<span>${msg`Reservado para devolver: ${formatMoney(loanSetAside(loan, outstanding, today), loan.currency)} · ${formatMoney(loan.saveMonthly, loan.currency)} por mes`}</span></p>` : ""}
+      ${loan.saveMonthly > 0 && outstanding > 0 ? setAsideCard(state, loan, outstanding, today) : ""}
       ${loan.note ? html`<p class="sheet-text">${loan.note}</p>` : ""}
       <div class="account-detail-actions">
         ${outstanding > 0 ? html`<button type="button" class="btn btn-primary btn-sm" data-do="pay">${icon("check", 16)} ${loan.direction === "lent" ? "Me devolvió" : "Devolví"}</button>` : ""}

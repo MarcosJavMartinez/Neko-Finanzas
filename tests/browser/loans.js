@@ -175,6 +175,24 @@ return (async () => {
     form.elements.saveMonthly.dispatchEvent(new w.Event("input", { bubbles: true })); await wait(100);
     const months = form.querySelector("[data-save-months]").textContent.trim();
     log("apartar por mes: " + (months.includes("3") ? months : `"${months}" ✗`));
+    // Deber dólares y apartar pesos: se elige la moneda en la casilla
+    form.elements.person.value = "Zoe";
+    form.querySelector("input[name=currency][value=USD]").click(); await wait(100);
+    const followed = form.elements.saveCurrency.value;
+    form.elements.saveCurrency.value = main;
+    form.elements.saveCurrency.dispatchEvent(new w.Event("change", { bubbles: true }));
+    form.elements.saveMonthly.value = "100.000,00";
+    form.elements.saveMonthly.dispatchEvent(new w.Event("input", { bubbles: true })); await wait(100);
+    const hint2 = form.querySelector("[data-save-months]").textContent.trim();
+    form.elements.spent.checked = true; form.elements.spent.dispatchEvent(new w.Event("change", { bubbles: true }));
+    form.requestSubmit(); await wait(600);
+    const lu = store.getState().loans.find((l) => l.person === "Zoe");
+    log(`apartar en otra moneda: sigue a la deuda=${followed} · ${hint2}${followed === "USD" && hint2.includes("≈") ? "" : " ✗"} · guardado en ${lu?.saveCurrency || "nada ✗"}`);
+    openLoanDetail(lu.id); await wait(500);
+    const aside = sheet().querySelector(".loan-aside");
+    log("detalle: " + (aside ? aside.innerText.replace(/\s+/g, " ").trim() : "sin apartado ✗"));
+    sheet().querySelector("[data-close], .sheet-close")?.click(); await wait(400);
+    openLoanForm({ direction: "borrowed" }); await wait(500);
     sheet().querySelector("[data-close], .sheet-close")?.click(); await wait(400);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {

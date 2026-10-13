@@ -1319,4 +1319,10 @@ export default {
   "¿Cuánto entró a tu cuenta?": "Quanto entrou na sua conta?",
   "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "Sugerido com o seu câmbio. Informe o valor real: ele fica fixo mesmo que o câmbio mude depois.",
   "La juntas en {0} meses": "Você junta em {0|one:# mês|other:# meses}",
+  "La juntas en {0} meses (≈ {1} por mes)": "Você junta em {0|one:# mês|other:# meses} (≈ {1} por mês)",
+  "Llevas apartado {0} de {1}": "Você já guardou {0} de {1}",
+  "{0} por mes · la juntas en {1} meses": "{0} por mês · você junta em {1|one:# mês|other:# meses}",
+  "Ya tienes apartado todo lo que debes.": "Você já guardou tudo o que deve.",
+  "Lo que falta cambia con el tipo de cambio.": "O que falta muda com o câmbio.",
+  "Apartado para devolver": "Guardado para devolver",
 };

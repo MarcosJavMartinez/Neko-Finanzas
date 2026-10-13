@@ -1320,4 +1320,10 @@ export default {
   "¿Cuánto entró a tu cuenta?": "كم دخل إلى حسابك؟",
   "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "مقترح حسب سعر الصرف لديك. اكتب المبلغ الفعلي: يبقى ثابتًا حتى لو تغيّر السعر لاحقًا.",
   "La juntas en {0} meses": "تجمعه خلال {0|one:شهر واحد|two:شهرين|few:# أشهر|many:# شهرًا|other:# شهر}",
+  "La juntas en {0} meses (≈ {1} por mes)": "تجمعه خلال {0|one:شهر واحد|two:شهرين|few:# أشهر|many:# شهرًا|other:# شهر} (≈ {1} شهريًا)",
+  "Llevas apartado {0} de {1}": "خصّصت {0} من {1}",
+  "{0} por mes · la juntas en {1} meses": "{0} شهريًا · تجمعه خلال {1|one:شهر واحد|two:شهرين|few:# أشهر|many:# شهرًا|other:# شهر}",
+  "Ya tienes apartado todo lo que debes.": "خصّصت بالفعل كل ما عليك.",
+  "Lo que falta cambia con el tipo de cambio.": "المتبقي يتغير مع سعر الصرف.",
+  "Apartado para devolver": "المخصص للردّ",
 };

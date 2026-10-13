@@ -1319,4 +1319,10 @@ export default {
   "¿Cuánto entró a tu cuenta?": "Сколько поступило на счёт?",
   "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "Предложено по вашему курсу. Введите фактическую сумму: она останется неизменной, даже если курс потом изменится.",
   "La juntas en {0} meses": "Накопите за {0|one:# месяц|few:# месяца|many:# месяцев|other:# месяца}",
+  "La juntas en {0} meses (≈ {1} por mes)": "Накопите за {0|one:# месяц|few:# месяца|many:# месяцев|other:# месяца} (≈ {1} в месяц)",
+  "Llevas apartado {0} de {1}": "Отложено {0} из {1}",
+  "{0} por mes · la juntas en {1} meses": "{0} в месяц · накопите за {1|one:# месяц|few:# месяца|many:# месяцев|other:# месяца}",
+  "Ya tienes apartado todo lo que debes.": "Вы уже отложили всю сумму долга.",
+  "Lo que falta cambia con el tipo de cambio.": "Остаток меняется вместе с курсом.",
+  "Apartado para devolver": "Отложено на возврат",
 };

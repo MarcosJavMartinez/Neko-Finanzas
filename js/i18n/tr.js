@@ -1319,4 +1319,10 @@ export default {
   "¿Cuánto entró a tu cuenta?": "Hesabına ne kadar girdi?",
   "Sugerido con tu tipo de cambio. Escribe el monto real: queda fijo aunque después cambie el tipo de cambio.": "Döviz kuruna göre önerildi. Gerçek tutarı yaz: kur sonra değişse bile sabit kalır.",
   "La juntas en {0} meses": "{0} ayda biriktirirsin",
+  "La juntas en {0} meses (≈ {1} por mes)": "{0} ayda biriktirirsin (≈ ayda {1})",
+  "Llevas apartado {0} de {1}": "{1} tutarın {0} kadarını ayırdın",
+  "{0} por mes · la juntas en {1} meses": "Ayda {0} · {1} ayda biriktirirsin",
+  "Ya tienes apartado todo lo que debes.": "Borcunun tamamını zaten ayırdın.",
+  "Lo que falta cambia con el tipo de cambio.": "Kalan tutar döviz kuruna göre değişir.",
+  "Apartado para devolver": "Geri ödeme için ayrılan",
 };

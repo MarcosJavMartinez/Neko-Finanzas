@@ -318,13 +318,45 @@ export function loansSummary(state, today = todayISO()) {
  * Un monto por cada mes desde que se empezó a apartar (el primero cuenta
  * entero), menos lo devuelto desde entonces, y nunca más de lo que falta.
  */
-export function loanSetAside(loan, outstanding, today = todayISO()) {
+export function loanSetAside(loan, outstanding, today = todayISO(), state = null) {
   if (!(loan.saveMonthly > 0) || !loan.saveSince || loan.plan) return 0;
+  if (state && loanSaveCurrency(loan) !== loan.currency) return loanSetAsideStatus(state, loan, outstanding, today).saved;
   const [y1, m1] = loan.saveSince.split("-").map(Number);
   const [y2, m2] = today.split("-").map(Number);
   const months = Math.max(1, (y2 - y1) * 12 + (m2 - m1) + 1);
   const paid = loan.payments.filter((p) => p.date >= loan.saveSince).reduce((s, p) => s + p.amount, 0);
   return Math.max(0, Math.min(outstanding, Math.round((loan.saveMonthly * months - paid) * 100) / 100));
+}
+
+/** La moneda en la que se aparta para devolver una deuda: la elegida, o la de la deuda. */
+export const loanSaveCurrency = (loan) => loan.saveCurrency || loan.currency;
+
+/**
+ * Cómo viene lo apartado para una deuda, en la moneda en la que se aparta:
+ * cuánto hay juntado, cuánto hace falta (lo que se debe, al tipo de cambio de
+ * hoy) y en cuántos meses más se llega. Si se devolvió pagando con esa moneda,
+ * se descuenta lo que costó de verdad.
+ */
+export function loanSetAsideStatus(state, loan, outstanding, today = todayISO()) {
+  const currency = loanSaveCurrency(loan);
+  const round = (n) => Math.round(n * 100) / 100;
+  const target = round(convert(outstanding, loan.currency, currency, state.rates));
+  if (!(loan.saveMonthly > 0) || !loan.saveSince || loan.plan) return { currency, saved: 0, target, monthsLeft: 0 };
+  let saved;
+  if (currency === loan.currency) saved = loanSetAside(loan, outstanding, today);
+  else {
+    const [y1, m1] = loan.saveSince.split("-").map(Number);
+    const [y2, m2] = today.split("-").map(Number);
+    const months = Math.max(1, (y2 - y1) * 12 + (m2 - m1) + 1);
+    const paid = loan.payments
+      .filter((p) => p.date >= loan.saveSince)
+      .reduce((s, p) => {
+        const tx = p.txId && state.transactions.find((t) => t.id === p.txId);
+        return s + (tx?.accountCurrency === currency && tx.accountAmount > 0 ? tx.accountAmount : convert(p.amount, loan.currency, currency, state.rates));
+      }, 0);
+    saved = Math.max(0, Math.min(target, round(loan.saveMonthly * months - paid)));
+  }
+  return { currency, saved, target, monthsLeft: Math.ceil((target - saved) / loan.saveMonthly - 1e-9) };
 }
 
 /**
@@ -337,8 +369,8 @@ export function loansReserve(state, today = todayISO()) {
     .items.filter((i) => i.loan.direction === "borrowed" && i.outstanding > 0)
     .map((i) => {
       const dueSoon = i.loan.dueDate && i.loan.dueDate <= until;
-      const reserved = dueSoon ? i.outstanding : loanSetAside(i.loan, i.outstanding, today);
-      return { ...i, reserved, reservedMain: toMain(state, reserved, i.loan.currency) };
+      const reserved = dueSoon ? i.outstanding : loanSetAside(i.loan, i.outstanding, today, state);
+      return { ...i, reserved, reservedMain: toMain(state, reserved, dueSoon ? i.loan.currency : loanSaveCurrency(i.loan)) };
     })
     .filter((i) => i.reserved > 0);
   return { amount: items.reduce((s, i) => s + i.reservedMain, 0), items, until };

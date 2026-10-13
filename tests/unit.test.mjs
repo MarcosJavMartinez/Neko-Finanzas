@@ -523,6 +523,25 @@ mem.delete("nekoFinanzas.hideAmounts");
   store.deleteLoan(owed.id);
 }
 
+// Deber dólares y apartar pesos: se reserva en pesos, la meta sigue el tipo de cambio y devolver descuenta lo que costó
+{
+  store.startFresh({ keepSetup: false });
+  store.setRateInMain("USD", 1350);
+  const pesos = store.defaultAccountId();
+  const free = F.balanceSummary(store.getState()).available;
+  const made = store.addLoan({ direction: "borrowed", person: "Gabriel", amount: 450, currency: "USD", accountId: "", saveMonthly: 81000, saveCurrency: "ARS" });
+  let st = store.getState();
+  const s1 = F.loanSetAsideStatus(st, st.loans[0], 450);
+  eq("apartar en otra moneda: reserva pesos, meta convertida y meses", [st.loans[0].saveCurrency, free - F.balanceSummary(st).available, s1.currency, s1.saved, s1.target, s1.monthsLeft, sanitizeState(JSON.parse(JSON.stringify(st))).loans[0].saveCurrency], ["ARS", 81000, "ARS", 81000, 607500, 7, "ARS"]);
+  store.addLoanPayment(made.id, { amount: 50, accountId: pesos, accountAmount: 70000 });
+  st = store.getState();
+  const s2 = F.loanSetAsideStatus(st, st.loans[0], 400);
+  eq("apartar en otra moneda: devolver descuenta lo que costó", [s2.saved, s2.target], [11000, 540000]);
+  store.updateLoan(made.id, { ...st.loans[0], accountId: "", saveMonthly: 60, saveCurrency: "USD" });
+  eq("apartar en la moneda de la deuda: no guarda otra moneda", ["saveCurrency" in store.getState().loans[0], store.getState().loans[0].saveMonthly], [false, 60]);
+  store.deleteLoan(made.id);
+}
+
 // Una moneda con datos no se saca de las que se usan
 store.loadDemo();
 store.toggleCurrency("USD", false);

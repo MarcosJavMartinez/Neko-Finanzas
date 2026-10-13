@@ -338,6 +338,7 @@ export function sanitizeState(input) {
     if (l.direction === "borrowed" && !isObj(l.plan) && positive(l.saveMonthly) && isISODate(l.saveSince)) {
       loan.saveMonthly = positive(l.saveMonthly);
       loan.saveSince = l.saveSince;
+      if (CURRENCY_CODES.includes(l.saveCurrency) && l.saveCurrency !== loan.currency) loan.saveCurrency = l.saveCurrency;
     }
     // Préstamo en cuotas: cuántas son y de cuánto (las cuotas son gastos programados).
     if (isObj(l.plan) && id(l.plan.group) && l.direction === "borrowed") {
