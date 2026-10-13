@@ -267,7 +267,7 @@ const RENDER = {
                 ? html`<div class="setup-item setup-item-bill">
                     <span class="setup-check"><span>${b.icon} ${b.name}</span></span>
                     ${money(`bill-amount-${i}`, b.amount, a.currency, msg`Monto de ${b.name}`)}
-                    <label class="setup-day"><span>día</span><select name="bill-day-${i}" aria-label="Día del mes en que vence ${b.name}">${Array.from({ length: 31 }, (_, d) => d + 1).map((d) => html`<option value="${d}" ${d === Number(b.day) ? "selected" : ""}>${d}</option>`)}</select></label>
+                    <label class="setup-day"><span>Vence el día</span><select name="bill-day-${i}" aria-label="Día del mes en que vence ${b.name}">${Array.from({ length: 31 }, (_, d) => d + 1).map((d) => html`<option value="${d}" ${d === Number(b.day) ? "selected" : ""}>${d}</option>`)}</select></label>
                   </div>`
                 : ""
             )}
@@ -286,7 +286,7 @@ const RENDER = {
                   </div>
                   <div class="setup-custom-row">
                     ${money(`bill-amount-${i}`, b.amount, a.currency, "Monto")}
-                    <label class="setup-day"><span>día</span><select name="bill-day-${i}" aria-label="Día del mes en que vence ${b.name}">${Array.from({ length: 31 }, (_, d) => d + 1).map((d) => html`<option value="${d}" ${d === Number(b.day) ? "selected" : ""}>${d}</option>`)}</select></label>
+                    <label class="setup-day"><span>Vence el día</span><select name="bill-day-${i}" aria-label="Día del mes en que vence ${b.name}">${Array.from({ length: 31 }, (_, d) => d + 1).map((d) => html`<option value="${d}" ${d === Number(b.day) ? "selected" : ""}>${d}</option>`)}</select></label>
                   </div>
                 </div>`
               : ""

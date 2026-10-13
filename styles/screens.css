@@ -2615,3 +2615,10 @@ button.inline-link {
   flex: 1;
   min-width: 0;
 }
+
+/* "Vence el día 10": la etiqueta no se parte y el número se lee como parte de la frase */
+.setup-day {
+  white-space: nowrap;
+  color: var(--text-2);
+  font-weight: 600;
+}
