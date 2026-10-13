@@ -1309,4 +1309,8 @@ export default {
   "Nombre del pago": "اسم الدفعة",
   "Quitar este pago": "إزالة هذه الدفعة",
   "Faltan {0} (≈ {1})": "باقٍ {0} (≈ {1})",
+  "Ya lo gasté": "أنفقته بالفعل",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "المال لم يعد في حساباتك: لا يُضاف إلى أي منها. يبقى الدين الذي عليك فقط.",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "المال لم يعد في حساباتك: لا يُضاف إلى أي منها. سجّل الأقساط الباقية فقط.",
+  "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "يزيل من حسابك المال الذي أُضيف عند تسجيل هذا القرض. الأقساط لا تتغير.",
 };

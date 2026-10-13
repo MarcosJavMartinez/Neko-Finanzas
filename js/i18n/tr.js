@@ -1308,4 +1308,8 @@ export default {
   "Nombre del pago": "Ödemenin adı",
   "Quitar este pago": "Bu ödemeyi kaldır",
   "Faltan {0} (≈ {1})": "{0} kaldı (≈ {1})",
+  "Ya lo gasté": "Zaten harcadım",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "Para artık hesaplarında değil: hiçbirine eklenmez. Yalnızca ödenecek borç kalır.",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "Para artık hesaplarında değil: hiçbirine eklenmez. Yalnızca kalan taksitleri kaydet.",
+  "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "Bu krediyi kaydederken hesabına eklenen parayı çıkarır. Taksitler değişmez.",
 };

@@ -112,4 +112,6 @@ export default {
   "El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.": "You received the money before you started using the app: it isn't added to your account. Note only the instalments that are left.",
   "¿De qué cuenta salen las cuotas?": "Which account do the instalments come out of?",
   "Préstamo en cuotas · ya lo venías pagando": "Instalment loan · you were already paying it",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "The money is no longer in your accounts: it isn't added to any of them. Note only the instalments that are left.",
+  "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "Removes from your account the money that was added when you noted this loan. The instalments don't change.",
 };

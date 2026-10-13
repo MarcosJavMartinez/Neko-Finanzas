@@ -1308,4 +1308,8 @@ export default {
   "Nombre del pago": "Payment name",
   "Quitar este pago": "Remove this payment",
   "Faltan {0} (≈ {1})": "{0} to go (≈ {1})",
+  "Ya lo gasté": "I already spent it",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "The money is no longer in your accounts: it isn't added to any of them. Only the debt to pay remains.",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "The money is no longer in your accounts: it isn't added to any of them. Note only the installments that are left.",
+  "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "Removes from your account the money that was added when you noted this loan. The installments don't change.",
 };

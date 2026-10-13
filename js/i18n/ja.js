@@ -1310,4 +1310,8 @@ export default {
   "Nombre del pago": "支払いの名前",
   "Quitar este pago": "この支払いを外す",
   "Faltan {0} (≈ {1})": "あと {0}（≈ {1}）",
+  "Ya lo gasté": "すでに使った",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "お金はもう口座にありません。どの口座にも加算されず、返す借金だけが残ります。",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "お金はもう口座にありません。どの口座にも加算されません。残りの回だけを記録してください。",
+  "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "このローンを記録したときに口座に加算されたお金を取り除きます。返済の回は変わりません。",
 };

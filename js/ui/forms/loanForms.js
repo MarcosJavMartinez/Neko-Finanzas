@@ -46,7 +46,11 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         : segmented("direction", [{ value: "lent", label: "Le presté" }, { value: "borrowed", label: "Me prestaron" }], current.direction, { size: "segmented-lg" })}
       ${textField({ name: "person", label: "¿Quién?", value: current.person, required: true, maxlength: 40, placeholder: "Ej.: Caro, mi hermano, Juan" })}
       ${amountField({ value: current.amount, currency: current.currency, autofocus: false, tone: "tone-goal" })}
-      ${accountChoice(state, accountId, current.direction === "lent" ? "¿De qué cuenta salió?" : "¿A qué cuenta entró?")}
+      <label class="toggle-field" data-spent-toggle ${current.direction === "borrowed" ? "" : "hidden"}>
+        <span><span class="toggle-label">Ya lo gasté</span><span class="field-hint">El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.</span></span>
+        <input type="checkbox" class="switch" name="spent" ${current.direction === "borrowed" && accountId === "" ? "checked" : ""} />
+      </label>
+      <div data-loan-account>${accountChoice(state, accountId, current.direction === "lent" ? "¿De qué cuenta salió?" : "¿A qué cuenta entró?")}</div>
       <div class="field-row">
         ${dateField({ name: "date", label: "Fecha", value: current.date })}
         ${dateField({ name: "dueDate", label: "Devolver antes del", value: current.dueDate, required: false })}
@@ -59,8 +63,21 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
       const form = panel.querySelector("form");
       // Con devoluciones registradas la moneda queda fija: cambiarla les cambiaría el valor.
       if (isEdit && loan.payments.length) form.querySelectorAll("input[name=currency]").forEach((el) => (el.disabled = el.value !== loan.currency));
+      // "Ya lo gasté" (solo cuando te prestaron): la deuda se anota sin sumar dinero a ninguna cuenta.
+      const direction = () => form.querySelector("input[name=direction]:checked")?.value || current.direction;
+      const syncSpent = () => {
+        const borrowed = direction() === "borrowed";
+        const spent = borrowed && form.elements.spent.checked;
+        form.querySelector("[data-spent-toggle]").hidden = !borrowed;
+        form.querySelector("[data-loan-account]").hidden = spent;
+        if (spent) form.elements.accountId.value = "";
+        else if (borrowed && form.elements.accountId.value === "") form.elements.accountId.value = accountId || preferred;
+      };
+      form.elements.spent.addEventListener("change", syncSpent);
+      syncSpent();
       form.addEventListener("change", (event) => {
         if (event.target.name !== "direction") return;
+        syncSpent();
         const lent = event.target.value === "lent";
         form.querySelector('label[for$="accountId"]').textContent = tr(lent ? "¿De qué cuenta salió?" : "¿A qué cuenta entró?");
         form.querySelector("[data-loan-hint]").textContent = tr(
@@ -158,7 +175,7 @@ export function openCreditLoanForm() {
       <p class="sheet-text">Para un préstamo de un banco o una billetera que devuelves en cuotas fijas. Si te prestó una persona, usa "Me prestaron".</p>
       ${textField({ name: "person", label: "¿Quién te lo dio?", value: "", required: true, maxlength: 40, placeholder: "Ej.: tu banco o tu billetera digital" })}
       <label class="toggle-field">
-        <span><span class="toggle-label">Ya lo estoy pagando</span><span class="field-hint">El dinero lo recibiste antes de empezar a usar la app: no se suma a tu cuenta. Anota solo las cuotas que faltan.</span></span>
+        <span><span class="toggle-label">Ya lo gasté</span><span class="field-hint">El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.</span></span>
         <input type="checkbox" class="switch" name="running" />
       </label>
       <div data-loan-new>${amountField({ value: null, currency: state.settings.mainCurrency, label: "¿Cuánto recibiste?", autofocus: false, tone: "tone-goal" })}</div>
@@ -262,6 +279,12 @@ function openCreditLoanEdit(loanId) {
         </div>
       </div>
       ${dateField({ name: "nextDue", label: "La próxima cuota vence el", value: plan.next || addMonths(today, 1) })}
+      ${loan.txId
+        ? html`<label class="toggle-field">
+            <span><span class="toggle-label">Ya lo gasté</span><span class="field-hint">Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.</span></span>
+            <input type="checkbox" class="switch" name="spent" />
+          </label>`
+        : ""}
       ${formActions({ submitLabel: "Guardar cambios" })}
     </form>`,
     onMount(panel, close) {
@@ -276,6 +299,7 @@ function openCreditLoanEdit(loanId) {
         if (!isISODate(data.nextDue) || data.nextDue <= today) return fieldError(form, "nextDue", "La próxima cuota tiene que vencer después de hoy.");
         const backup = store.snapshot();
         store.updateCreditLoan(loan.id, { lender: data.person, count: Number(data.count), installment: each, nextDue: data.nextDue });
+        if (form.elements.spent?.checked) store.detachLoanEntry(loan.id);
         close();
         toast("Préstamo actualizado", { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });

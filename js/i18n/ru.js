@@ -1308,4 +1308,8 @@ export default {
   "Nombre del pago": "Название платежа",
   "Quitar este pago": "Убрать этот платёж",
   "Faltan {0} (≈ {1})": "Осталось {0} (≈ {1})",
+  "Ya lo gasté": "Эти деньги уже потрачены",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Solo queda la deuda por pagar.": "Этих денег уже нет на ваших счетах: они никуда не прибавляются. Остаётся только долг.",
+  "El dinero ya no está en tus cuentas: no se suma a ninguna. Anota solo las cuotas que faltan.": "Этих денег уже нет на ваших счетах: они никуда не прибавляются. Запишите только оставшиеся платежи.",
+  "Quita de tu cuenta el dinero que se sumó al anotar este préstamo. Las cuotas no cambian.": "Убирает со счёта деньги, которые были прибавлены при записи этого кредита. Платежи не меняются.",
 };

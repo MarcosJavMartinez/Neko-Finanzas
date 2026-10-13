@@ -478,6 +478,18 @@ mem.delete("nekoFinanzas.hideAmounts");
   eq("préstamo que ya se venía pagando: borrarlo se lleva sus cuotas", [store.getState().loans.length, store.getState().transactions.length - txBefore], [0, 0]);
 }
 
+// "Ya lo gasté" al editar un préstamo en cuotas: se va el dinero que se había sumado, quedan las cuotas
+{
+  store.startFresh({ keepSetup: false });
+  const base = F.balanceSummary(store.getState()).total;
+  const lo = store.addCreditLoan({ lender: "Banco", received: 500, count: 2, installment: 300, firstDue: "2099-01-10", currency: store.getState().settings.mainCurrency, accountId: store.defaultAccountId() });
+  const withMoney = F.balanceSummary(store.getState()).total;
+  store.detachLoanEntry(lo.id);
+  const st = store.getState();
+  eq("ya lo gasté: el saldo deja de contar lo recibido y las cuotas siguen", [withMoney - base, F.balanceSummary(st).total - base, st.transactions.filter((t) => t.installment).length, Boolean(st.loans[0].txId)], [500, 0, 2, false]);
+  store.deleteLoan(lo.id);
+}
+
 // Una moneda con datos no se saca de las que se usan
 store.loadDemo();
 store.toggleCurrency("USD", false);

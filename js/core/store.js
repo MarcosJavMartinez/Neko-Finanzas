@@ -499,6 +499,19 @@ function renumberPlan(s, loan) {
  * cuántas son, de cuánto y cuándo vence la próxima. Las que ya pasaron no se
  * tocan. `count` es el total (pagadas + por venir).
  */
+/**
+ * "Ya lo gasté": saca el movimiento con el que el dinero del préstamo entró a una
+ * cuenta. La deuda y sus cuotas quedan igual; el saldo deja de contar ese dinero.
+ */
+export function detachLoanEntry(id) {
+  commit((s) => {
+    const loan = find(s.loans, id);
+    if (!loan?.txId) return;
+    s.transactions = without(s.transactions, loan.txId);
+    delete loan.txId;
+  });
+}
+
 export function updateCreditLoan(id, { lender, count, installment, nextDue }, today = todayISO()) {
   commit((s) => {
     const loan = find(s.loans, id);
