@@ -32,6 +32,7 @@ export default {
     const activeAccounts = state.accounts.filter((a) => !a.archived).length;
     const groups = [
       { title: "Tu dinero", items: [
+      { href: "#/tu-dinero", icon: "coinStack", title: "¿A dónde va tu dinero?", sub: "Lo apartado, lo reservado y lo que pasó este mes" },
       { href: "#/cuentas", icon: "wallet", title: "Cuentas", sub: activeAccounts > 1 ? msg`${activeAccounts} cuentas · efectivo, banco, billeteras` : "Efectivo, banco, billeteras virtuales" },
       { href: "#/presupuestos", icon: "pie", title: "Presupuestos", sub: state.budgets.length ? msg`${state.budgets.length} activos${alerts ? msg` · ${alerts} para revisar` : ""}` : "Reparte tus ingresos" },
       { href: "#/prestamos", icon: "swap", title: "Préstamos", sub: loanSub(state) },

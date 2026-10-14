@@ -218,7 +218,7 @@ function loanRow(state, tx, { withDate, hideAccount }) {
 }
 
 /** "Hoy", "Ayer" o "24 sep". */
-function shortDay(iso) {
+export function shortDay(iso) {
   const today = todayISO();
   if (iso === today) return "Hoy";
   if (daysBetween(iso, today) === 1) return "Ayer";

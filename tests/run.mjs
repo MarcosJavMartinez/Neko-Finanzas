@@ -134,6 +134,7 @@ for (const [name, file, opts] of [
   ["Cuentas y transferencias", "accounts.js"],
   ["Tarjeta de crédito y cuotas", "credit-card.js"],
   ["Préstamos", "loans.js"],
+  ["¿A dónde va tu dinero?", "flow.js"],
   ["Avisos de vencimientos", "reminders.js"],
   ["Recorrido completo de un usuario nuevo", "journey.js"],
   ["Cuestionario de inicio", "setup-wizard.js"],

@@ -2671,3 +2671,128 @@ button.inline-link {
 .loan-aside .fine-print {
   margin: 0;
 }
+
+/* ¿A dónde va tu dinero? */
+.flow-lines {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.flow-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.flow-line dt {
+  color: var(--text-2);
+}
+
+.flow-line dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.flow-line.is-minus dd {
+  color: var(--text-2);
+}
+
+.flow-line.is-total {
+  padding-top: 8px;
+  border-top: 1.5px solid var(--border);
+  font-size: 1.1rem;
+}
+
+.flow-line.is-total dt {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.flow-line.is-total dd {
+  color: var(--brand-ink, var(--text));
+}
+
+.flow-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.flow-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 0;
+  text-align: start;
+  color: inherit;
+  text-decoration: none;
+}
+
+.flow-row + .flow-row {
+  border-top: 1px solid var(--border);
+}
+
+.flow-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.flow-text {
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.flow-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.flow-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  min-height: 40px;
+}
+
+.card + .card.reveal {
+  margin-top: var(--gap, 14px);
+}
+
+.flow-title {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.flow-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 2px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--track);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.flow-group a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.flow-group span {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

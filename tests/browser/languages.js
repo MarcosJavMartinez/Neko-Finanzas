@@ -47,7 +47,7 @@ return (async () => {
       if (d.documentElement.scrollWidth > w.innerWidth + 1) wide.add(where);
     }
 
-    const routes = ["inicio", "transacciones", "metas", "mas", "cuentas", "prestamos", "facturas", "presupuestos", "reportes", "categorias", "monedas", "ajustes", "ajustes-calculo", "ajustes-apariencia", "ajustes-dispositivo", "ajustes-datos"];
+    const routes = ["inicio", "tu-dinero", "transacciones", "metas", "mas", "cuentas", "prestamos", "facturas", "presupuestos", "reportes", "categorias", "monedas", "ajustes", "ajustes-calculo", "ajustes-apariencia", "ajustes-dispositivo", "ajustes-datos"];
     for (const r of routes) {
       w.location.hash = "#/" + r; await wait(350);
       scan(d.body, r);

@@ -43,6 +43,7 @@ import home from "./screens/home.js";
 import transactions from "./screens/transactions.js";
 import goals from "./screens/goals.js";
 import more, { shareApp } from "./screens/more.js";
+import flow from "./screens/flow.js";
 import accounts from "./screens/accounts.js";
 import loans from "./screens/loans.js";
 import bills from "./screens/bills.js";
@@ -52,7 +53,7 @@ import categories from "./screens/categories.js";
 import currencies from "./screens/currencies.js";
 import settings, { settingsCalc, settingsLook, settingsDevice, settingsData } from "./screens/settings.js";
 
-const SCREENS = [home, transactions, goals, more, accounts, loans, bills, budgets, reports, categories, currencies, settings, settingsCalc, settingsLook, settingsDevice, settingsData];
+const SCREENS = [home, transactions, goals, more, flow, accounts, loans, bills, budgets, reports, categories, currencies, settings, settingsCalc, settingsLook, settingsDevice, settingsData];
 const ROUTES = Object.fromEntries(SCREENS.map((s) => [s.id, s]));
 const DEFAULT_ROUTE = "inicio";
 
