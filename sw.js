@@ -4,7 +4,7 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v85";
+const CACHE_VERSION = "neko-finanzas-v87";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -89,6 +89,8 @@ const APP_SHELL = [
   "js/screens/home.js",
   "js/screens/more.js",
   "./js/screens/flow.js",
+  "./js/core/transfer.js",
+  "./js/ui/transfer.js",
   "js/screens/reports.js",
   "js/screens/settings.js",
   "js/screens/transactions.js",
@@ -139,7 +141,8 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
-  // Solo archivos de la app: no hay pedidos a otros servidores.
+  // Solo archivos de la app. Lo único que va a otro servidor es "Pasar a otro
+  // dispositivo" (nekotools.site), y eso nunca se guarda en cache.
   if (url.origin !== self.location.origin) return;
 
   // Fuentes: cache primero (no cambian nunca).

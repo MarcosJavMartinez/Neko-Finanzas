@@ -2796,3 +2796,139 @@ button.inline-link {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* Inicio: entrada a "¿A dónde va tu dinero?" */
+.hero-flow-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.hero-flow-link span {
+  flex: 1;
+}
+
+[dir="rtl"] .hero-flow-link .icon:last-child {
+  transform: scaleX(-1);
+}
+
+/* Pasar a otro dispositivo */
+.settings-action-main {
+  color: var(--text);
+}
+
+.transfer {
+  display: grid;
+  gap: 14px;
+}
+
+.transfer-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.transfer-option {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--action);
+  text-align: start;
+}
+
+.transfer-option span {
+  display: grid;
+  gap: 2px;
+  color: var(--text-2);
+  font-size: 0.82rem;
+}
+
+.transfer-option strong {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.transfer-option[aria-pressed="true"] {
+  border-color: var(--action);
+  background: var(--action-soft);
+}
+
+.transfer-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.transfer-result {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.transfer-qr {
+  width: min(240px, 70vw);
+  height: auto;
+  border-radius: var(--radius-md);
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.transfer-code {
+  margin: 0;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  direction: ltr;
+  user-select: all;
+}
+
+.transfer-status {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.transfer-status[data-state="used"] {
+  color: var(--income-ink);
+}
+
+.transfer-status[data-state="expired"] {
+  color: var(--expense-ink);
+}
+
+.transfer-input {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  direction: ltr;
+}
+
+.transfer-camera {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.transfer-camera video {
+  width: 100%;
+  max-height: 50vh;
+  border-radius: var(--radius-md);
+  background: #000;
+  object-fit: cover;
+}
+

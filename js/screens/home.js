@@ -152,6 +152,7 @@ export default {
               </div>
               ${summary.reserved > 0 ? html`<a href="#/tu-dinero" class="avail-reserve" data-pulse="reserve" title="Lo que vence en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${reserveLabel(summary)}</a>` : ""}
             </div>`}
+      ${isEmpty ? "" : html`<a href="#/tu-dinero" class="hero-flow-link">${icon("coinStack", 16)}<span>¿A dónde va tu dinero?</span>${icon("chevronRight", 16)}</a>`}
       ${trio}
       ${savings}
     </section>`;

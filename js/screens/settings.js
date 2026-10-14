@@ -12,6 +12,7 @@ import { amountToInput, parseAmount, zeroAmount, symbolOf } from "../core/money.
 import { MAX_AMOUNT } from "../core/sanitize.js";
 import * as store from "../core/store.js";
 import { openSnapshots } from "../ui/snapshots.js";
+import { openTransfer } from "../ui/transfer.js";
 import { canPickFile, backupFileKnown } from "../ui/backupFile.js";
 import { remindersSupported, reminderPermission, enableReminders, disableReminders, syncPlan, fireDue, testReminder } from "../ui/reminders.js";
 import { remindersEnabled, getReminderDays, setReminderDays } from "../core/prefs.js";
@@ -131,6 +132,9 @@ const handlers = {
     },
     "open-snapshots"() {
       openSnapshots();
+    },
+    "transfer-data"() {
+      openTransfer();
     },
     async "reset-all"() {
       const ok = await confirmDialog({ title: "¿Borrar todo?", text: "Se eliminan todos tus datos y las copias automáticas de este dispositivo. No se puede deshacer.", confirmLabel: "Borrar todo", danger: true });
@@ -420,6 +424,7 @@ export const settingsData = sub("ajustes-datos", "Tus datos", () => html`
           <span class="field-hint">Te avisamos en el inicio cuando pase ese tiempo sin backup.</span>
         </div>
         <div class="settings-actions">
+          <button type="button" class="settings-action settings-action-main" data-action="transfer-data">${icon("phone", 20)}<span><strong>Pasar a otro dispositivo</strong><span>Con un QR o un código, sin cuenta. Para cambiar de celular o usar la compu</span></span></button>
           <button type="button" class="settings-action" data-action="export-data">${icon("download", 20)}<span><strong>${backupFileKnown() ? "Actualizar backup" : "Exportar backup"}</strong><span>${backupFileKnown() ? msg`Reemplaza “${backupFileKnown()}” con tus datos de ahora` : canPickFile() ? "Eliges dónde guardarlo una vez; los próximos reemplazan ese mismo archivo" : "Un archivo .json con todo. Guárdalo siempre con el mismo nombre para reemplazar el anterior"}</span></span></button>
           ${backupFileKnown() ? html`<button type="button" class="settings-action" data-action="export-data" data-choose="1">${icon("edit", 20)}<span><strong>Guardar el backup en otro archivo</strong><span>Elige otro lugar o nombre; pasa a ser el que se reemplaza</span></span></button>` : ""}
           <button type="button" class="settings-action" data-action="export-csv">${icon("table", 20)}<span><strong>Exportar a planilla</strong><span>Tus movimientos en .csv, para abrir en Excel o Google Sheets</span></span></button>
