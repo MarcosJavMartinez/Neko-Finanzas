@@ -148,7 +148,7 @@
 
 .btn-primary:hover {
   filter: brightness(1.04);
-  box-shadow: 0 6px 18px rgba(207, 69, 13, 0.38);
+  box-shadow: 0 8px 22px var(--action-glow);
 }
 
 .btn-soft {

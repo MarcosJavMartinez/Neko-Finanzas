@@ -804,3 +804,94 @@
 [dir="rtl"] select {
   background-position: left 12px center;
 }
+
+/* ---------------------------------------------------------------------------
+   Tarjetas flotantes y movimiento
+   Las tarjetas blancas flotan con una sombra en capas. Con mouse se levantan
+   al pasar por encima; en el celular (sin hover) se hunden un poco al
+   tocarlas, si se pueden tocar. Quien pide menos movimiento en su sistema
+   ve solo el cambio de sombra, sin desplazamientos.
+--------------------------------------------------------------------------- */
+
+.card:not(.card-soft),
+.goal-card,
+.summary-card,
+.hero-card {
+  box-shadow: var(--shadow-float);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.transfer-option,
+.qa,
+.more-icon,
+.more-chevron,
+.faq-chevron {
+  transition: transform var(--dur) var(--ease-spring), box-shadow var(--dur) var(--ease), background var(--dur-fast), border-color var(--dur-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:not(.card-soft):hover,
+  .summary-card:hover,
+  .hero-card:hover {
+    box-shadow: var(--shadow-lift);
+  }
+
+  .goal-card:hover,
+  .transfer-option:hover,
+  .qa:hover {
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  /* Contenedores grandes: se levantan poco; lo que se toca, un poco más. */
+  .card:not(.card-soft):hover,
+  .summary-card:hover,
+  .hero-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .goal-card:hover,
+  .transfer-option:hover,
+  .qa:hover {
+    transform: translateY(-4px);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  /* Menú: el ícono salta y la flecha se adelanta */
+  .more-item:hover .more-icon {
+    transform: scale(1.08) rotate(-4deg);
+  }
+
+  .more-item:hover .more-chevron {
+    transform: translateX(3px);
+  }
+
+  [dir="rtl"] .more-item:hover .more-chevron {
+    transform: translateX(-3px);
+  }
+}
+
+/* En el celular: al tocar algo que se puede tocar, se hunde un poco */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .goal-card:active,
+  .transfer-option:active,
+  .qa:active,
+  a.card:active,
+  button.card:active {
+    transform: scale(0.97);
+    transition-duration: var(--dur-fast);
+  }
+
+  .more-item:active .more-icon {
+    transform: scale(0.92);
+  }
+}
+
+/* Preguntas frecuentes: la respuesta entra deslizándose */
+.faq-item[open] .faq-a {
+  animation: reveal 300ms var(--ease) both;
+}
