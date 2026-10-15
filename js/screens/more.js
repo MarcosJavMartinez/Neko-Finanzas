@@ -45,6 +45,7 @@ export default {
       { href: "#/ajustes", icon: "settings", title: "Configuración", sub: "Apariencia, tus datos, instalar la app" },
       ] },
       { title: "Ayuda", items: [
+      { href: "#/ayuda", icon: "search", title: "Preguntas frecuentes", sub: "Cómo se hace cada cosa, con buscador" },
       { action: "show-onboarding", icon: "help", title: "Cómo funciona", sub: "Un repaso rápido en 4 pasos" },
       { action: "share-app", icon: "share", title: "Compartir Neko Finanzas", sub: "Pásale la app a alguien" },
       ] },

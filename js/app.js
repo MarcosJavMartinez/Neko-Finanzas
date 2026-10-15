@@ -44,6 +44,7 @@ import transactions from "./screens/transactions.js";
 import goals from "./screens/goals.js";
 import more, { shareApp } from "./screens/more.js";
 import flow from "./screens/flow.js";
+import help from "./screens/help.js";
 import accounts from "./screens/accounts.js";
 import loans from "./screens/loans.js";
 import bills from "./screens/bills.js";
@@ -53,7 +54,7 @@ import categories from "./screens/categories.js";
 import currencies from "./screens/currencies.js";
 import settings, { settingsCalc, settingsLook, settingsDevice, settingsData } from "./screens/settings.js";
 
-const SCREENS = [home, transactions, goals, more, flow, accounts, loans, bills, budgets, reports, categories, currencies, settings, settingsCalc, settingsLook, settingsDevice, settingsData];
+const SCREENS = [home, transactions, goals, more, flow, help, accounts, loans, bills, budgets, reports, categories, currencies, settings, settingsCalc, settingsLook, settingsDevice, settingsData];
 const ROUTES = Object.fromEntries(SCREENS.map((s) => [s.id, s]));
 const DEFAULT_ROUTE = "inicio";
 
@@ -258,7 +259,7 @@ function renderHeader() {
             ${icon("search", 18)}
             <input type="search" value="${search.value}" placeholder="${search.placeholder}" aria-label="${search.placeholder}" data-input="${search.input}" autocomplete="off" />
           </label>
-          <button type="button" class="header-filter-btn ${search.filtersOn ? "is-on" : ""}" data-action="${search.filtersAction}" aria-label="Filtros">${icon("filter", 16)}Filtros</button>
+          ${search.filtersAction ? html`<button type="button" class="header-filter-btn ${search.filtersOn ? "is-on" : ""}" data-action="${search.filtersAction}" aria-label="Filtros">${icon("filter", 16)}Filtros</button>` : ""}
         </div>`
       : ""}`
   );
