@@ -53,11 +53,11 @@ function readMoney(form, name) {
 // Crear / editar cuenta
 // ---------------------------------------------------------------------------
 
-export function openAccountForm({ account, kind: presetKind } = {}) {
+export function openAccountForm({ account, kind: presetKind, currency: presetCurrency, onSaved } = {}) {
   const state = store.getState();
   const isEdit = Boolean(account);
   const startKind = Object.prototype.hasOwnProperty.call(ACCOUNT_KINDS, presetKind || "") ? presetKind : "bank";
-  const current = account || { name: "", icon: ACCOUNT_KINDS[startKind].icon, color: "#08a7c8", currency: state.settings.mainCurrency, kind: startKind, opening: 0, closingDay: 25, dueDay: 5 };
+  const current = account || { name: "", icon: ACCOUNT_KINDS[startKind].icon, color: "#08a7c8", currency: presetCurrency || state.settings.mainCurrency, kind: startKind, opening: 0, closingDay: 25, dueDay: 5 };
   const used = isEdit ? store.countAccountUsage(account.id) : 0;
   const isCard = current.kind === "credit";
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -150,6 +150,7 @@ export function openAccountForm({ account, kind: presetKind } = {}) {
         });
         close();
         toast(isEdit ? "Cuenta actualizada" : msg`Cuenta “${saved.name}” creada`);
+        onSaved?.(saved);
       });
       form.querySelector("[data-form-delete]")?.addEventListener("click", async () => {
         const ok = await confirmDialog({ title: msg`¿Eliminar “${account.name}”?`, text: "La cuenta no tiene movimientos, así que no se pierde nada.", confirmLabel: "Eliminar", danger: true });

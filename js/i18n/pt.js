@@ -1496,4 +1496,7 @@ export default {
   "¿Cómo creo una meta y le pongo o le saco dinero?": "Como crio uma meta e coloco ou tiro dinheiro dela?",
   "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.": "Na aba Metas, toque em “Nova meta”: informe o nome, quanto quer juntar, a moeda e, se quiser, uma Data objetivo. Depois, no detalhe da meta, use “Depositar” para guardar dinheiro e “Retirar” para tirar. Guardar não é uma despesa: o dinheiro continua no seu total, mas deixa de contar como disponível.",
   "¡Cumpliste tu meta!": "Você atingiu sua meta!",
+  "“{0}” está en {1}: lo que cargues en {2} se suma convertido con tu tipo de cambio.": "“{0}” está em {1}: o que você registrar em {2} é somado convertido com o seu câmbio.",
+  "Crear una cuenta en {0}": "Criar uma conta em {0}",
+  "Cuenta cambiada a “{0}”, que está en {1}": "Conta trocada para “{0}”, que está em {1}",
 };

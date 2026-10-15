@@ -1496,4 +1496,7 @@ export default {
   "¿Cómo creo una meta y le pongo o le saco dinero?": "Nasıl hedef oluşturur, ona para koyar ya da çekerim?",
   "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.": "Hedefler sekmesinde “Yeni hedef” düğmesine dokun: adını, ne kadar biriktirmek istediğini, para birimini ve istersen bir Hedef tarih gir. Sonra hedefin ayrıntısında para ayırmak için “Yatır”, çekmek için “Çek” kullan. Ayırmak gider değildir: para toplamında kalır ama kullanılabilir sayılmaz.",
   "¡Cumpliste tu meta!": "Hedefine ulaştın!",
+  "“{0}” está en {1}: lo que cargues en {2} se suma convertido con tu tipo de cambio.": "“{0}” {1} cinsinden: {2} olarak girdiğin tutar, döviz kuruna göre çevrilerek eklenir.",
+  "Crear una cuenta en {0}": "{0} cinsinden hesap oluştur",
+  "Cuenta cambiada a “{0}”, que está en {1}": "Hesap, {1} cinsinden olan “{0}” olarak değiştirildi",
 };

@@ -1498,4 +1498,7 @@ export default {
   "¿Cómo creo una meta y le pongo o le saco dinero?": "目標を作って、お金を入れたり出したりするには？",
   "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.": "目標 タブで「新しい目標」をタップし、名前、貯めたい額、通貨、必要なら目標日を入れます。そのあと目標の詳細で「入金」で取り分け、「引き出す」で引き出します。取り分けは支出ではなく、お金は合計に残ったまま、使えるお金に数えなくなるだけです。",
   "¡Cumpliste tu meta!": "目標を達成しました！",
+  "“{0}” está en {1}: lo que cargues en {2} se suma convertido con tu tipo de cambio.": "「{0}」は {1} の口座です。{2} で入れた額は、あなたの為替レートで換算して加算されます。",
+  "Crear una cuenta en {0}": "{0} の口座を作る",
+  "Cuenta cambiada a “{0}”, que está en {1}": "{1} の口座「{0}」に切り替えました",
 };

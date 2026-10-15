@@ -1497,4 +1497,7 @@ export default {
   "¿Cómo creo una meta y le pongo o le saco dinero?": "كيف أنشئ هدفًا وأضع فيه مالًا أو أسحب منه؟",
   "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.": "في تبويب الأهداف اضغط «هدف جديد»: أدخل الاسم وكم تريد أن تجمع والعملة، والتاريخ المستهدف إن أردت. ثم في تفاصيل الهدف استخدم «إيداع» لتخصيص المال و«سحب» لسحبه. التخصيص ليس مصروفًا: يبقى المال ضمن إجماليك لكنه لا يُحسب متاحًا.",
   "¡Cumpliste tu meta!": "حقّقت هدفك!",
+  "“{0}” está en {1}: lo que cargues en {2} se suma convertido con tu tipo de cambio.": "«{0}» بعملة {1}: ما تسجّله بعملة {2} يُضاف بعد تحويله بسعر صرفك.",
+  "Crear una cuenta en {0}": "إنشاء حساب بعملة {0}",
+  "Cuenta cambiada a “{0}”, que está en {1}": "تم التبديل إلى «{0}» بعملة {1}",
 };

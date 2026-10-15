@@ -1496,4 +1496,7 @@ export default {
   "¿Cómo creo una meta y le pongo o le saco dinero?": "How do I create a goal and put money in or take it out?",
   "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.": "In the Goals tab, tap “New goal”: enter the name, how much you want to save, the currency and, if you like, a Target date. Then, in the goal's detail, use “Deposit” to set money aside and “Withdraw” to take it out. Setting it aside isn't an expense: the money stays in your total but stops counting as available.",
   "¡Cumpliste tu meta!": "You reached your goal!",
+  "“{0}” está en {1}: lo que cargues en {2} se suma convertido con tu tipo de cambio.": "“{0}” is in {1}: whatever you enter in {2} is added converted with your exchange rate.",
+  "Crear una cuenta en {0}": "Create an account in {0}",
+  "Cuenta cambiada a “{0}”, que está en {1}": "Account switched to “{0}”, which is in {1}",
 };

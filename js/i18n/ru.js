@@ -1496,4 +1496,7 @@ export default {
   "¿Cómo creo una meta y le pongo o le saco dinero?": "Как создать цель и положить на неё деньги или снять их?",
   "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.": "На вкладке «Цели» нажмите «Новая цель»: укажите название, сколько хотите накопить, валюту и, при желании, «Целевая дата». Затем в подробностях цели используйте «Внести», чтобы отложить деньги, и «Снять», чтобы снять. Откладывать — не расход: деньги остаются в общей сумме, но перестают считаться доступными.",
   "¡Cumpliste tu meta!": "Цель достигнута!",
+  "“{0}” está en {1}: lo que cargues en {2} se suma convertido con tu tipo de cambio.": "Счёт «{0}» в {1}: всё, что вы вносите в {2}, добавляется по вашему курсу.",
+  "Crear una cuenta en {0}": "Создать счёт в {0}",
+  "Cuenta cambiada a “{0}”, que está en {1}": "Счёт изменён на «{0}» в {1}",
 };
