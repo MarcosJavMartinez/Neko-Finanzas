@@ -72,6 +72,18 @@ export function openSheet({ title, body, onMount, onClose, wide = false }) {
   document.body.classList.add("has-sheet");
   const panel = root.querySelector(".sheet");
   requestAnimationFrame(() => root.classList.add("is-open"));
+  // En el celular la hoja sale desde abajo: si al elegir una opción (Ingreso o
+  // Gasto…) cambia cuánto contenido hay, crecería hacia arriba y movería los
+  // botones. Se queda con su altura y lo de más se desplaza adentro. (Se mide
+  // antes de que el formulario cambie: por eso va en la fase de captura.)
+  panel.addEventListener(
+    "change",
+    (event) => {
+      if (!event.target.closest(".segmented") || panel.style.height || !window.matchMedia("(max-width: 719px)").matches) return;
+      panel.style.height = `${panel.getBoundingClientRect().height}px`;
+    },
+    true
+  );
 
   let closed = false;
   let pushed = false;

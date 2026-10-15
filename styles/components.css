@@ -1297,9 +1297,10 @@ button.row:hover,
 }
 
 @media (min-width: 720px) {
+  /* Anclada arriba (no centrada): si el contenido cambia, crece solo hacia abajo */
   .sheet-root {
-    align-items: center;
-    padding: 24px;
+    align-items: flex-start;
+    padding: max(24px, 7vh) 24px 24px;
   }
 
   .sheet {
@@ -1307,7 +1308,8 @@ button.row:hover,
     transform: translateY(24px) scale(0.98);
     opacity: 0;
     transition: transform 280ms var(--ease), opacity 200ms ease;
-    max-height: 88vh;
+    max-height: calc(100vh - max(24px, 7vh) - 24px);
+    max-height: calc(100dvh - max(24px, 7vh) - 24px);
   }
 
   .sheet-root.is-open .sheet {
