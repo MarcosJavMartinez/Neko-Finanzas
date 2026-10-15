@@ -33,6 +33,7 @@ import { downloadFile } from "./ui/download.js";
 import { saveBackup, initBackupFile } from "./ui/backupFile.js";
 import { syncPlan, fireDue } from "./ui/reminders.js";
 import "./ui/amountInput.js";
+import { startSegmentedPills } from "./ui/segmentedPill.js";
 import { snoozeIosNotice, markBackup, snoozeBackupReminder, amountsHidden, setAmountsHidden, onboardingSeen, markOnboardingSeen, setupOffered } from "./core/prefs.js";
 import { openOnboarding } from "./ui/onboarding.js";
 import { openSetupWizard, REOPEN_KEY } from "./ui/forms/setupForm.js";
@@ -404,8 +405,9 @@ function animateCounts(entered) {
     const before = lastCounts.get(key);
     lastCounts.set(key, target);
     const from = entered || before === undefined ? 0 : before;
-    if (from === target || !Number.isFinite(target) || isMasked() || prefersReducedMotion()) continue;
-    const money = (v) => formatMoney(v, el.dataset.currency || currency);
+    if (from === target || !Number.isFinite(target) || (isMasked() && el.dataset.countFormat !== "pct") || prefersReducedMotion()) continue;
+    // Porcentajes (data-count-format="pct") o montos en la moneda principal.
+    const money = el.dataset.countFormat === "pct" ? (v) => `${Math.round(v)}%` : (v) => formatMoney(v, el.dataset.currency || currency);
     const duration = 700;
     let start = null;
     const step = (now) => {
@@ -616,6 +618,7 @@ async function start() {
   }
   setMasked(amountsHidden());
   showCustomImage();
+  if (!prefersReducedMotion()) startSegmentedPills();
   initBackupFile().then(() => currentScreen?.id === "ajustes-datos" && render());
   try {
     await store.initStore();

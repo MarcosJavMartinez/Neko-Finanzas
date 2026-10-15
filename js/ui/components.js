@@ -268,14 +268,14 @@ export function billRow(state, bill, { today = todayISO(), dueDate = bill.dueDat
 
 export function goalCard(state, goal, { compact = false } = {}) {
   const p = goalProgress(goal);
-  return html`<button type="button" class="goal-card ${compact ? "goal-card-compact" : ""}" data-action="goal-detail" data-id="${goal.id}" style="--c:${goal.color}">
+  return html`<button type="button" class="goal-card ${compact ? "goal-card-compact" : ""} ${p.done ? "is-done" : ""}" data-action="goal-detail" data-id="${goal.id}" style="--c:${goal.color}">
     <span class="goal-top">
       <span class="cat-bubble cat-bubble-md is-tinted" style="--c:${goal.color}" aria-hidden="true">${goal.icon}</span>
       <span class="row-main">
         <span class="row-title">${goal.name}</span>
         <span class="row-meta">${p.done ? "¡Meta cumplida! 🎉" : goal.targetDate ? msg`Para el ${formatDate(goal.targetDate, { withYear: true })}` : msg`Faltan ${formatMoney(p.remaining, goal.currency)}`}</span>
       </span>
-      <span class="goal-pct">${Math.floor(p.pct)}%</span>
+      <span class="goal-pct" data-count-up="${Math.floor(p.pct)}" data-count-format="pct" data-count-key="goal-${goal.id}">${Math.floor(p.pct)}%</span>
     </span>
     ${progressBar(p.pct, { color: goal.color, level: p.done ? "done" : "ok", label: msg`Progreso de ${goal.name}` })}
     <span class="goal-amounts">

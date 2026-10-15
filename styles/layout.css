@@ -759,7 +759,9 @@
 [dir="rtl"] .transfer-arrow .icon,
 [dir="rtl"] .cb-toggle .icon,
 [dir="rtl"] .month-nav .icon,
-[dir="rtl"] [data-action="bills-month"] .icon {
+[dir="rtl"] [data-action="bills-month"] .icon,
+[dir="rtl"] .icon-chevronRight:not(.faq-chevron),
+[dir="rtl"] .icon-chevronLeft {
   transform: scaleX(-1);
 }
 
@@ -871,7 +873,7 @@
   }
 
   [dir="rtl"] .more-item:hover .more-chevron {
-    transform: translateX(-3px);
+    transform: scaleX(-1) translateX(3px);
   }
 }
 
@@ -1024,5 +1026,218 @@
 @media (prefers-reduced-motion: reduce) {
   .celebrate-card {
     transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Movimiento adentro de las tarjetas
+--------------------------------------------------------------------------- */
+
+/* Selector de opciones: la píldora se desliza hasta la opción elegida */
+.segmented.has-pill {
+  position: relative;
+}
+
+.seg-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow-xs), inset 0 0 0 2px var(--action);
+  pointer-events: none;
+  transition: transform 340ms var(--ease-spring), width 300ms var(--ease), height 300ms var(--ease), opacity 160ms;
+}
+
+.seg-pill.no-slide {
+  transition: none;
+}
+
+.segmented.has-pill .segmented-option {
+  z-index: 1;
+}
+
+.segmented.has-pill .segmented-option input:checked + span {
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+}
+
+.form[data-type="income"] .segmented-lg .seg-pill {
+  background: var(--income-ink);
+  box-shadow: 0 3px 10px rgba(47, 158, 90, 0.3);
+}
+
+.form[data-type="expense"] .segmented-lg .seg-pill {
+  background: var(--expense-ink);
+  box-shadow: 0 3px 10px rgba(179, 72, 58, 0.3);
+}
+
+/* Filas que se pueden tocar: fondo suave y la burbuja del ícono salta */
+:is(.tx-row, button.row, a.row, .flow-row:is(a, button)) :is(.cat-bubble, .mini-icon) {
+  transition: transform var(--dur) var(--ease-spring);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is(.flow-row:is(a, button), button.row, a.row):hover {
+    background: var(--track);
+    box-shadow: 0 0 0 6px var(--track);
+    border-radius: 8px;
+  }
+}
+
+@media (hover: none) {
+  :is(.tx-row, .flow-row:is(a, button), button.row, a.row):active {
+    background: var(--track);
+    box-shadow: 0 0 0 6px var(--track);
+    border-radius: 8px;
+  }
+}
+
+/* Campos de monto: al enfocarlos, el borde se enciende con un brillo */
+.amount-input:focus-within {
+  animation: focus-glow 520ms var(--ease);
+}
+
+@keyframes focus-glow {
+  0% { box-shadow: 0 0 0 0 var(--action-soft); }
+  55% { box-shadow: 0 0 0 8px var(--action-soft); }
+  100% { box-shadow: 0 0 0 4px var(--action-soft); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Filas que entran en cascada cuando aparece su tarjeta (solo las primeras) */
+  .view-enter .reveal :is(.tx-row:not(.is-new), button.row, a.row, .flow-row, .faq-item, .loan-row):nth-child(-n + 12) {
+    animation: row-in 420ms var(--ease) both;
+  }
+
+  .view-enter .reveal :is(.tx-row, button.row, a.row, .flow-row, .faq-item, .loan-row):nth-child(2) { animation-delay: 40ms; }
+  .view-enter .reveal :is(.tx-row, button.row, a.row, .flow-row, .faq-item, .loan-row):nth-child(3) { animation-delay: 75ms; }
+  .view-enter .reveal :is(.tx-row, button.row, a.row, .flow-row, .faq-item, .loan-row):nth-child(4) { animation-delay: 110ms; }
+  .view-enter .reveal :is(.tx-row, button.row, a.row, .flow-row, .faq-item, .loan-row):nth-child(5) { animation-delay: 145ms; }
+  .view-enter .reveal :is(.tx-row, button.row, a.row, .flow-row, .faq-item, .loan-row):nth-child(6) { animation-delay: 180ms; }
+  .view-enter .reveal :is(.tx-row, button.row, a.row, .flow-row, .faq-item, .loan-row):nth-child(7) { animation-delay: 210ms; }
+  .view-enter .reveal :is(.tx-row, button.row, a.row, .flow-row, .faq-item, .loan-row):nth-child(8) { animation-delay: 240ms; }
+  .view-enter .reveal :is(.tx-row, button.row, a.row, .flow-row, .faq-item, .loan-row):nth-child(n + 9) { animation-delay: 270ms; }
+
+  /* Las de una tarjeta que todavía espera (más abajo) arrancan al aparecer */
+  .reveal-later:not(.is-in) :is(.tx-row, button.row, a.row, .flow-row, .faq-item, .loan-row) {
+    animation-play-state: paused;
+  }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Ingresos y gastos del Inicio: la flecha baja (entra) o sube (sale) */
+  .view-enter .mini-income .mini-icon .icon {
+    animation: nudge-down 900ms 350ms var(--ease) both;
+  }
+
+  .view-enter .mini-expense .mini-icon .icon {
+    animation: nudge-up 900ms 350ms var(--ease) both;
+  }
+
+  @keyframes nudge-down {
+    40% { transform: translateY(4px); }
+  }
+
+  @keyframes nudge-up {
+    40% { transform: translateY(-4px); }
+  }
+
+  /* Meta cumplida: un brillo recorre la barra */
+  .goal-card.is-done .progress {
+    overflow: hidden;
+  }
+
+  .goal-card.is-done .progress-fill {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .goal-card.is-done .progress-fill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 25%, rgba(255, 255, 255, 0.6) 50%, transparent 75%);
+    transform: translateX(-100%);
+    animation: shine 1.3s 750ms ease-in-out both;
+  }
+
+  @keyframes shine {
+    to { transform: translateX(100%); }
+  }
+
+  /* Factura vencida: el ícono late despacio */
+  .chip-overdue .icon {
+    animation: overdue-beat 2.4s ease-in-out infinite;
+  }
+
+  @keyframes overdue-beat {
+    0%, 70%, 100% { transform: scale(1); }
+    78% { transform: scale(1.25); }
+    86% { transform: scale(0.95); }
+    92% { transform: scale(1.12); }
+  }
+
+  /* Ilustraciones de los resúmenes: flotan muy despacio */
+  .hero-art,
+  .summary-art {
+    animation: float-slow 6s ease-in-out infinite;
+  }
+
+  @keyframes float-slow {
+    50% { transform: translateY(-5px) rotate(-1.5deg); }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  :is(.tx-row, button.row, a.row, .flow-row:is(a, button)):hover :is(.cat-bubble, .mini-icon) {
+    transform: scale(1.12) rotate(-4deg);
+  }
+
+  .mini-income:hover .mini-icon .icon {
+    transform: translateY(3px);
+  }
+
+  .mini-expense:hover .mini-icon .icon {
+    transform: translateY(-3px);
+  }
+
+  .mini-icon .icon,
+  .icon-plus,
+  .icon-chevronRight:not(.faq-chevron),
+  .icon-chevronLeft {
+    transition: transform var(--dur) var(--ease-spring);
+  }
+
+  /* "+": gira; flechas: se adelantan */
+  :is(button, a):hover > .icon-plus {
+    transform: rotate(90deg);
+  }
+
+  :is(button, a):hover .icon-chevronRight:not(.faq-chevron) {
+    transform: translateX(3px);
+  }
+
+  [dir="rtl"] :is(button, a):hover .icon-chevronRight:not(.faq-chevron) {
+    transform: scaleX(-1) translateX(3px);
+  }
+
+  :is(button, a):hover > .icon-chevronLeft {
+    transform: translateX(-3px);
+  }
+
+  [dir="rtl"] :is(button, a):hover > .icon-chevronLeft {
+    transform: scaleX(-1) translateX(-3px);
   }
 }

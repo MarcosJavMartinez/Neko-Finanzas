@@ -148,7 +148,7 @@ export default {
           : html`<div class="avail">
               <div class="avail-bar">
                 ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}
-                <span class="avail-pct">${Math.round(availablePct)}%</span>
+                <span class="avail-pct" data-count-up="${Math.round(availablePct)}" data-count-format="pct" data-count-key="avail">${Math.round(availablePct)}%</span>
               </div>
               ${summary.reserved > 0 ? html`<a href="#/tu-dinero" class="avail-reserve" data-pulse="reserve" title="Lo que vence en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${reserveLabel(summary)}</a>` : ""}
             </div>`}
