@@ -895,3 +895,134 @@
 .faq-item[open] .faq-a {
   animation: reveal 300ms var(--ease) both;
 }
+
+/* Tarjetas de más abajo: esperan ocultas y aparecen al llegar a ellas */
+.view-enter .reveal.reveal-later {
+  animation: none;
+  opacity: 0;
+  transform: translateY(26px) scale(0.98);
+  transition: opacity 520ms var(--ease), transform 640ms var(--ease);
+}
+
+.view-enter .reveal.reveal-later.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.view-enter .reveal.revealed {
+  animation: none;
+}
+
+/* Aviso de "listo": el check se dibuja y el círculo da un saltito */
+@media (prefers-reduced-motion: no-preference) {
+  .toast-success .toast-icon {
+    animation: check-pop 460ms var(--ease-spring) both;
+  }
+
+  .toast-success .toast-icon path {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: check-draw 420ms 160ms var(--ease) forwards;
+  }
+}
+
+@keyframes check-pop {
+  from {
+    transform: scale(0.4);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Meta cumplida: confeti y el Neko festejando */
+.celebrate {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(10, 30, 36, 0.28);
+  opacity: 0;
+  transition: opacity 300ms var(--ease);
+  cursor: pointer;
+}
+
+.celebrate.is-on {
+  opacity: 1;
+}
+
+.celebrate-card {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  max-width: 320px;
+  padding: 22px 26px 24px;
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  transform: scale(0.7);
+  transition: transform 520ms var(--ease-spring);
+}
+
+.celebrate.is-on .celebrate-card {
+  transform: none;
+}
+
+.celebrate-card img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.celebrate-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--goal-ink);
+}
+
+.celebrate-name {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti i {
+  position: absolute;
+  top: -20px;
+  left: var(--x);
+  background: var(--c);
+  border-radius: 2px;
+  animation: confetti-fall var(--fall) var(--delay) cubic-bezier(0.25, 0.6, 0.4, 1) forwards;
+}
+
+@keyframes confetti-fall {
+  to {
+    transform: translate(var(--drift), 110vh) rotate(var(--spin));
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-card {
+    transform: none;
+  }
+}

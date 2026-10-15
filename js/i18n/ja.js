@@ -1497,4 +1497,5 @@ export default {
   "Se borra todo lo que cargaste en este dispositivo, porque tus datos viven solo aquí. Para no perderlos, haz antes un backup (Configuración → Tus datos → Exportar backup) o pásalos a otro dispositivo.": "データはこの端末の中だけにあるので、ここで入れたものはすべて消えます。失わないよう、先にバックアップ（設定 → あなたのデータ → バックアップを書き出す）を取るか、別の端末に移してください。",
   "¿Cómo creo una meta y le pongo o le saco dinero?": "目標を作って、お金を入れたり出したりするには？",
   "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.": "目標 タブで「新しい目標」をタップし、名前、貯めたい額、通貨、必要なら目標日を入れます。そのあと目標の詳細で「入金」で取り分け、「引き出す」で引き出します。取り分けは支出ではなく、お金は合計に残ったまま、使えるお金に数えなくなるだけです。",
+  "¡Cumpliste tu meta!": "目標を達成しました！",
 };

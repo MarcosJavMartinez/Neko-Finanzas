@@ -317,9 +317,11 @@ function render({ animate = false } = {}) {
     viewEl.classList.remove("view-enter");
     void viewEl.offsetWidth; // reinicia la animación
     viewEl.classList.add("view-enter");
+    revealOnScroll();
   } else {
     viewEl.classList.remove("view-enter");
   }
+  animateCounts(animate);
 }
 
 let previousHero = null;
@@ -355,6 +357,69 @@ function animateHero() {
     cancelAnimationFrame(heroFrame);
     el.textContent = formatMoney(target, currency);
   }, duration + 100);
+}
+
+/**
+ * Tarjetas que quedan más abajo de la pantalla al entrar: en vez de animarse
+ * todas juntas (sin que nadie las vea), aparecen cuando se llega a ellas.
+ */
+let revealObserver = null;
+function revealOnScroll() {
+  revealObserver?.disconnect();
+  if (!("IntersectionObserver" in window)) return;
+  const below = [...viewEl.querySelectorAll(".reveal")].filter((el) => el.getBoundingClientRect().top > window.innerHeight);
+  if (!below.length) return;
+  revealObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const el = entry.target;
+        revealObserver.unobserve(el);
+        el.classList.add("is-in");
+        // Al terminar vuelve a ser una tarjeta común (sombra y hover normales).
+        setTimeout(() => {
+          el.classList.add("revealed");
+          el.classList.remove("reveal-later", "is-in");
+        }, 700);
+      }
+    },
+    { rootMargin: "0px 0px -40px 0px" }
+  );
+  for (const el of below) {
+    el.classList.add("reveal-later");
+    revealObserver.observe(el);
+  }
+}
+
+/**
+ * Montos que "cuentan" hasta su valor (data-count-up="1234.5"): desde cero al
+ * entrar a la pantalla, o desde el valor anterior si cambió.
+ */
+const lastCounts = new Map();
+function animateCounts(entered) {
+  const currency = store.getState().settings.mainCurrency;
+  for (const el of viewEl.querySelectorAll("[data-count-up]")) {
+    const target = Number(el.dataset.countUp);
+    const key = `${currentScreen.id}:${el.dataset.pulse || el.dataset.countKey || ""}`;
+    const before = lastCounts.get(key);
+    lastCounts.set(key, target);
+    const from = entered || before === undefined ? 0 : before;
+    if (from === target || !Number.isFinite(target) || isMasked() || prefersReducedMotion()) continue;
+    const money = (v) => formatMoney(v, el.dataset.currency || currency);
+    const duration = 700;
+    let start = null;
+    const step = (now) => {
+      if (!el.isConnected) return;
+      start ??= now;
+      const t = Math.min(1, Math.max(0, (now - start) / duration));
+      el.textContent = money(from + (target - from) * (1 - Math.pow(1 - t, 3)));
+      if (t < 1) requestAnimationFrame(step);
+      else el.textContent = money(target);
+    };
+    requestAnimationFrame(step);
+    // Respaldo: si rAF se frena (pestaña en segundo plano), queda el valor final.
+    setTimeout(() => el.isConnected && (el.textContent = money(target)), duration + 120);
+  }
 }
 
 // Montos que cambiaron desde la última vez que se vio esta pantalla dan un

@@ -7,6 +7,7 @@ import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet, confirmDialog } from "../sheet.js";
 import { toast } from "../toast.js";
+import { celebrateGoal } from "../celebrate.js";
 import { approx, progressBar } from "../components.js";
 import {
   amountField,
@@ -152,6 +153,7 @@ export function openGoalMove(goalId, direction = "deposit") {
         if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
         if (!isDeposit && amount > saved + 0.001) return fieldError(form, "amount", msg`No puedes retirar más de lo que tiene la meta (${formatMoney(saved, goal.currency)}).`);
         const backup = store.snapshot();
+        const wasDone = goalProgress(goal).done;
         store.moveGoalMoney(goal.id, isDeposit ? amount : -amount, form.elements.note.value.trim());
         close();
         const after = goalProgress(store.getState().goals.find((g) => g.id === goal.id));
@@ -161,6 +163,8 @@ export function openGoalMove(goalId, direction = "deposit") {
             : msg`${formatMoney(amount, goal.currency)} apartados para “${goal.name}”`
           : msg`${formatMoney(amount, goal.currency)} volvieron a tu disponible`;
         toast(message, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        // Recién cumplida: confeti y el Neko festejando.
+        if (isDeposit && after.done && !wasDone) celebrateGoal(goal);
       });
     },
   });

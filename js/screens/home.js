@@ -87,21 +87,21 @@ export default {
       <a class="mini mini-income" href="#/transacciones">
         <span class="mini-icon">${icon("arrowDown", 18)}</span>
         <span class="mini-label">Ingresos</span>
-        <span class="mini-value" data-pulse="income">${m(month.income)}</span>
+        <span class="mini-value" data-pulse="income" data-count-up="${month.income}">${m(month.income)}</span>
         <span class="mini-sub">este mes</span>
         ${versus(soFar.income, before.income)}
       </a>
       <a class="mini mini-expense" href="#/transacciones">
         <span class="mini-icon">${icon("arrowUp", 18)}</span>
         <span class="mini-label">Gastos</span>
-        <span class="mini-value" data-pulse="expense">${m(month.expense)}</span>
+        <span class="mini-value" data-pulse="expense" data-count-up="${month.expense}">${m(month.expense)}</span>
         <span class="mini-sub">este mes</span>
         ${versus(soFar.expense, before.expense)}
       </a>
       <a class="mini mini-goal" href="#/metas">
         <span class="mini-icon">${icon("flag", 18)}</span>
         <span class="mini-label">Metas</span>
-        <span class="mini-value" data-pulse="goals">${m(summary.inGoals)}</span>
+        <span class="mini-value" data-pulse="goals" data-count-up="${summary.inGoals}">${m(summary.inGoals)}</span>
         <span class="mini-sub">${state.goals.length} meta${state.goals.length === 1 ? "" : "s"}</span>
       </a>
     </div>`;

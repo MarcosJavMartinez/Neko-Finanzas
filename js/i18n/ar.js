@@ -1496,4 +1496,5 @@ export default {
   "Se borra todo lo que cargaste en este dispositivo, porque tus datos viven solo aquí. Para no perderlos, haz antes un backup (Configuración → Tus datos → Exportar backup) o pásalos a otro dispositivo.": "يُحذف كل ما سجّلته على هذا الجهاز، لأن بياناتك موجودة هنا فقط. حتى لا تفقدها، اعمل نسخة احتياطية أولًا (الإعدادات ← بياناتك ← تصدير نسخة احتياطية) أو انقلها إلى جهاز آخر.",
   "¿Cómo creo una meta y le pongo o le saco dinero?": "كيف أنشئ هدفًا وأضع فيه مالًا أو أسحب منه؟",
   "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.": "في تبويب الأهداف اضغط «هدف جديد»: أدخل الاسم وكم تريد أن تجمع والعملة، والتاريخ المستهدف إن أردت. ثم في تفاصيل الهدف استخدم «إيداع» لتخصيص المال و«سحب» لسحبه. التخصيص ليس مصروفًا: يبقى المال ضمن إجماليك لكنه لا يُحسب متاحًا.",
+  "¡Cumpliste tu meta!": "حقّقت هدفك!",
 };

@@ -1495,4 +1495,5 @@ export default {
   "Se borra todo lo que cargaste en este dispositivo, porque tus datos viven solo aquí. Para no perderlos, haz antes un backup (Configuración → Tus datos → Exportar backup) o pásalos a otro dispositivo.": "Bu cihazda girdiğin her şey silinir, çünkü verilerin yalnızca burada durur. Kaybetmemek için önce yedek al (Ayarlar → Verilerin → Yedeği dışa aktar) ya da başka bir cihaza aktar.",
   "¿Cómo creo una meta y le pongo o le saco dinero?": "Nasıl hedef oluşturur, ona para koyar ya da çekerim?",
   "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.": "Hedefler sekmesinde “Yeni hedef” düğmesine dokun: adını, ne kadar biriktirmek istediğini, para birimini ve istersen bir Hedef tarih gir. Sonra hedefin ayrıntısında para ayırmak için “Yatır”, çekmek için “Çek” kullan. Ayırmak gider değildir: para toplamında kalır ama kullanılabilir sayılmaz.",
+  "¡Cumpliste tu meta!": "Hedefine ulaştın!",
 };

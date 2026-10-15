@@ -32,7 +32,7 @@ export default {
         ${art("ilus-alcancia", 84, "summary-art")}
         <div class="summary-text">
           <p class="summary-label">Apartado en metas</p>
-          <p class="summary-amount">${formatMoney(saved, main)}</p>
+          <p class="summary-amount" data-count-up="${saved}" data-count-key="saved">${formatMoney(saved, main)}</p>
           <p class="summary-sub">de ${formatMoney(target, main)} entre ${state.goals.length} meta${state.goals.length === 1 ? "" : "s"}</p>
         </div>
         <button type="button" class="btn btn-primary btn-sm" data-action="add-goal">${icon("plus", 18)}Nueva meta</button>
