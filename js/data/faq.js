@@ -41,6 +41,16 @@ export const FAQ = [
         href: "#/tu-dinero",
       },
       {
+        q: "¿Qué es «Hoy puedes gastar» y cómo se calcula?",
+        a: "Es tu disponible repartido en los días que faltan hasta tu próximo cobro (el próximo ingreso que se repite) o, si no tienes uno, hasta fin de mes, contando hoy. La comida y el transporte también salen de ahí. Si creas un presupuesto «Por día» (por ejemplo, para gustos), en su lugar ves cuánto tienes acumulado para eso.",
+        href: "#/inicio",
+      },
+      {
+        q: "¿Por qué ya se reserva una factura que vence el mes que viene?",
+        a: "Porque la app reserva lo que vence en los próximos 30 días. Si prefieres que reserve solo lo que vence hasta fin de mes, cámbialo en Configuración → Cálculo del disponible → Reservar facturas que vencen…",
+        href: "#/ajustes-calculo",
+      },
+      {
         q: "¿Cómo veo a dónde va mi dinero?",
         a: "Toca «¿A dónde va tu dinero?» en el Inicio (o Más → ¿A dónde va tu dinero?). Muestra cómo se calcula tu disponible, todo lo reservado cosa por cosa y lo que pasó este mes en frases simples.",
         href: "#/tu-dinero",
@@ -75,6 +85,16 @@ export const FAQ = [
         action: "add-income",
       },
       {
+        q: "¿Cómo corrijo o borro un movimiento que cargué mal?",
+        a: "Tócalo en Transacciones (o en el Inicio): se abre para editarlo. Cambia lo que haga falta y guarda, o toca «Eliminar» abajo de todo.",
+        href: "#/transacciones",
+      },
+      {
+        q: "¿Cómo cargo un gasto que se repite? (gimnasio, transporte, una suscripción)",
+        a: "Agrega el gasto y en «Repetir» elige cada cuánto (semanal, quincenal o mensual). Cuando llega la fecha, el Inicio te pregunta si ya lo pagaste: tocas «Registrar» (y puedes cambiar el monto) u «Omitir». Mientras tanto, ese monto ya queda reservado.",
+        action: "add-expense",
+      },
+      {
         q: "Las propinas, ¿las cargo como ingreso o en Extras del mes? ¿Cuál es la diferencia?",
         a: "Se guardan igual: un ingreso en la categoría Propinas. Ingreso sirve para anotar una propina suelta en el momento; Extras del mes es un atajo para cargar de una vez todo lo que vino aparte del sueldo (aguinaldo, horas extra, comisión, bono, propinas).",
         action: "add-extras",
@@ -89,9 +109,44 @@ export const FAQ = [
         action: "add-expense",
       },
       {
+        q: "¿Cómo pago la tarjeta de crédito?",
+        a: "En Más → Cuentas, toca la tarjeta y luego «Pagar tarjeta». Es mover dinero de tu cuenta a la tarjeta, no un gasto nuevo: las compras ya se contaron como gastos cuando las cargaste.",
+        href: "#/cuentas",
+      },
+      {
         q: "¿Cómo agrego algo que pago todos los meses? (alquiler, luz, internet, suscripciones)",
         a: "En Más → Facturas y servicios → Agregar factura, con su monto y el día en que vence. La app reserva ese dinero cuando se acerca la fecha y te recuerda pagarla.",
         href: "#/facturas",
+      },
+      {
+        q: "Pagué una factura por más o por menos de lo esperado. ¿Qué pasa?",
+        a: "Al tocar «Marcar como pagada» escribe en «Monto pagado» lo que pagaste de verdad: eso es lo que cuenta. Si activas «Guardar lo que sobra de las facturas» (en Configuración → Cálculo del disponible), lo que sobre cuando venga por menos queda guardado para cubrir las que vengan por más.",
+        href: "#/facturas",
+      },
+      {
+        q: "¿Cómo activo los avisos de vencimientos?",
+        a: "En Configuración → En este dispositivo → Avisos de vencimientos. Te llega una notificación unos días antes de que venza una factura, la tarjeta o un préstamo, y eliges cuántos días antes.",
+        href: "#/ajustes-dispositivo",
+      },
+      {
+        q: "¿Qué son los presupuestos y qué significa «Reservar este dinero»?",
+        a: "Un presupuesto es un límite para un tipo de gasto: por mes, por porcentaje de tus ingresos o por día. Si activas «Reservar este dinero», lo que te falta gastar de ese presupuesto se descuenta de tu disponible, como si estuviera en un sobre (útil para el supermercado). Si a fin de mes sobra, la app te ofrece pasarlo a una meta.",
+        href: "#/presupuestos",
+      },
+      {
+        q: "¿Puedo crear o cambiar categorías?",
+        a: "Sí. En Más → Categorías puedes crear categorías de gasto o de ingreso, cambiarles el nombre, el ícono y el color, y agregarles subcategorías (por ejemplo, Veterinaria dentro de Mascotas).",
+        href: "#/categorias",
+      },
+    ],
+  },
+  {
+    group: "Metas",
+    items: [
+      {
+        q: "¿Cómo creo una meta y le pongo o le saco dinero?",
+        a: "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.",
+        href: "#/metas",
       },
     ],
   },
@@ -106,6 +161,11 @@ export const FAQ = [
       {
         q: "Me prestaron dinero pero ya lo gasté. ¿Cómo lo anoto?",
         a: "En Préstamos → Me prestaron, activa «Ya lo gasté». La deuda queda anotada sin sumar dinero a ninguna cuenta: solo te queda pagarla.",
+        href: "#/prestamos",
+      },
+      {
+        q: "Le presté dinero a alguien. ¿Cómo lo anoto y cómo registro cuando me lo devuelve?",
+        a: "En Más → Préstamos → Le presté: pones a quién, cuánto y de qué cuenta salió. No es un gasto: el dinero vuelve. Cuando te devuelva (todo o una parte), abre el préstamo y toca «Me devolvió».",
         href: "#/prestamos",
       },
       {
@@ -166,6 +226,16 @@ export const FAQ = [
       {
         q: "¿Cómo hago un backup?",
         a: "En Configuración → Tus datos → Exportar backup. Se guarda un archivo que después puedes importar en este u otro dispositivo. Además, la app guarda copias automáticas para volver a como estaban tus datos un día anterior.",
+        href: "#/ajustes-datos",
+      },
+      {
+        q: "¿Cómo paso mis movimientos a Excel o Google Sheets?",
+        a: "En Configuración → Tus datos → Exportar a planilla. Se descarga un archivo .csv con tus movimientos que se abre en Excel o en Google Sheets.",
+        href: "#/ajustes-datos",
+      },
+      {
+        q: "¿Qué pasa si borro los datos del navegador o desinstalo la app?",
+        a: "Se borra todo lo que cargaste en este dispositivo, porque tus datos viven solo aquí. Para no perderlos, haz antes un backup (Configuración → Tus datos → Exportar backup) o pásalos a otro dispositivo.",
         href: "#/ajustes-datos",
       },
       {
