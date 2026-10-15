@@ -2,7 +2,7 @@
 // monto y categoría arriba; fecha y descripción con valores por defecto.
 
 import { msg, tr } from "../../core/i18n.js";
-import { html, setHTML } from "../dom.js";
+import { html } from "../dom.js";
 import { icon } from "../icons.js";
 import { openSheet } from "../sheet.js";
 import { toast } from "../toast.js";
@@ -22,12 +22,12 @@ import {
   replaceSubcategoryPicker,
 } from "./fields.js";
 import { bindCategoryPickers } from "./categoryForm.js";
-import { accountSelect, openAccountForm } from "./accountForms.js";
+import { accountSelect } from "./accountForms.js";
 import { getLastAccount, setLastAccount } from "../../core/prefs.js";
 import * as store from "../../core/store.js";
 import { todayISO, FREQUENCIES } from "../../core/dates.js";
 import { formatMoney, amountToInput, parseAmount } from "../../core/money.js";
-import { FALLBACK_CATEGORY, INSTALLMENT_OPTIONS } from "../../data/defaults.js";
+import { ACCOUNT_KINDS, FALLBACK_CATEGORY, INSTALLMENT_OPTIONS } from "../../data/defaults.js";
 import { confirmDialog, whenHistorySettled } from "../sheet.js";
 import { openIncomeExtras } from "./incomeExtras.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
@@ -157,15 +157,34 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
       const note = form.querySelector("[data-cur-note]");
       const noteText = form.querySelector("[data-cur-text]");
       const createBtn = form.querySelector("[data-cur-create]");
+      // Moneda sin cuenta propia: al guardar se crea una (del mismo tipo que la
+      // elegida, p. ej. "Efectivo USD"). Si la persona prefiere, se suma convertido.
+      let convertInstead = false;
+      const newAccountFor = (account, code) => {
+        const kind = account && account.kind !== "credit" ? account.kind : "cash";
+        return { kind, currency: code, name: `${tr(ACCOUNT_KINDS[kind].label)} ${code}`, icon: ACCOUNT_KINDS[kind].icon };
+      };
+      const needsAccount = () => {
+        const account = accountOf();
+        const code = pickedCurrency();
+        if (!account || account.kind === "credit" || account.currency === code) return null;
+        return store.getState().accounts.some((a) => !a.archived && a.kind !== "credit" && a.currency === code) ? null : newAccountFor(account, code);
+      };
       function syncCurrencyNote() {
         const account = accountOf();
         const code = pickedCurrency();
         const differs = account && account.kind !== "credit" && account.currency !== code;
         note.hidden = !differs;
         if (!differs) return;
-        noteText.textContent = msg`“${tr(account.name)}” está en ${account.currency}: lo que cargues en ${code} se suma convertido con tu tipo de cambio.`;
-        createBtn.hidden = false;
-        createBtn.textContent = msg`Crear una cuenta en ${code}`;
+        const create = needsAccount();
+        createBtn.hidden = !create;
+        if (create && !convertInstead) {
+          noteText.textContent = msg`No tienes una cuenta en ${code}: al guardar se crea “${create.name}” para este dinero.`;
+          createBtn.textContent = msg`Prefiero sumarlo convertido a “${tr(account.name)}”`;
+        } else {
+          noteText.textContent = msg`“${tr(account.name)}” está en ${account.currency}: lo que cargues en ${code} se suma convertido con tu tipo de cambio.`;
+          if (create) createBtn.textContent = msg`Mejor crear “${create.name}”`;
+        }
       }
       form.addEventListener("change", (event) => {
         if (event.target.name === "currency") {
@@ -189,17 +208,8 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         if (["currency", "accountId"].includes(event.target.name)) syncCurrencyNote();
       });
       createBtn.addEventListener("click", () => {
-        const account = accountOf();
-        openAccountForm({
-          kind: account?.kind === "credit" ? "cash" : account?.kind || "cash",
-          currency: pickedCurrency(),
-          onSaved: (saved) => {
-            const box = form.querySelector("[data-account-box]");
-            setHTML(box, accountSelect(store.getState(), { value: saved.id, label: selectedType === "income" ? "Cuenta" : "Cuenta o medio de pago" }));
-            syncInstallments();
-            syncCurrencyNote();
-          },
-        });
+        convertInstead = !convertInstead;
+        syncCurrencyNote();
       });
       syncCurrencyNote();
       form.addEventListener("input", (event) => {
@@ -213,6 +223,14 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
 
       bindCategoryPickers(form, () => selectedType);
 
+      /** Si hace falta, crea la cuenta en la moneda del movimiento y devuelve a cuál va. */
+      let createdAccount = null;
+      function autoAccountId(id) {
+        const create = !convertInstead && needsAccount();
+        if (!create) return id;
+        createdAccount = store.saveAccount({ ...create, color: "#08a7c8", opening: 0 });
+        return createdAccount.id;
+      }
       form.addEventListener("submit", (event) => {
         event.preventDefault();
         clearErrors(form);
@@ -229,7 +247,7 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
           categoryId: data.categoryId || FALLBACK_CATEGORY[selectedType],
           subcategoryId: "",
           description: data.description.trim(),
-          accountId: data.accountId || accountId,
+          accountId: autoAccountId(data.accountId || accountId),
         };
         setLastAccount(values.accountId);
         // Solo se guarda la subcategoría si pertenece a la categoría elegida.
@@ -261,7 +279,7 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
             toast(msg`Compra en ${installments} cuotas de ≈ ${formatMoney(amount / installments, values.currency)} guardada`);
           } else {
             store.addTransaction(values);
-            toast(msg`${selectedType === "income" ? "Ingreso" : "Gasto"} de ${formatMoney(amount, values.currency)} guardado`);
+            toast(createdAccount ? msg`Guardado en la cuenta nueva “${createdAccount.name}”` : msg`${selectedType === "income" ? "Ingreso" : "Gasto"} de ${formatMoney(amount, values.currency)} guardado`);
           }
         }
         close();

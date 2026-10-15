@@ -25,6 +25,7 @@ function options(state) {
       title: "Dinero que se mueve",
       items: [
         ...(accounts.length > 1 ? [{ action: "add-transfer", icon: "swap", title: "Pasar dinero entre cuentas", sub: "Del banco al efectivo, a la billetera…" }] : []),
+        ...(state.settings.currencies.length > 1 ? [{ action: "exchange-currency", icon: "coins", title: "Cambiar divisas", sub: "Por ejemplo, dólares a pesos, con el valor al que cambiaste" }] : []),
         { href: "#/metas", icon: "target", tone: "goal", title: "Guardar en una meta", sub: state.goals.length ? "Elige la meta y cuánto" : "Crea tu primera meta" },
         { action: "add-extras", icon: "sparkle", title: "Extras del mes", sub: "Paga extra o aguinaldo, horas extra, comisión, propinas" },
       ],

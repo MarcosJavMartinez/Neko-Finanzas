@@ -204,6 +204,11 @@ export const FAQ = [
         href: "#/monedas",
       },
       {
+        q: "¿Cómo cambio dólares a pesos (o al revés)?",
+        a: "En Agregar → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.",
+        action: "exchange-currency",
+      },
+      {
         q: "¿Cómo cambio el idioma o el país?",
         a: "En Más → Idioma y monedas. La app viene en español, inglés, portugués, turco, ruso, japonés y árabe.",
         href: "#/monedas",

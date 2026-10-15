@@ -172,9 +172,23 @@ export function openAccountForm({ account, kind: presetKind, currency: presetCur
 // Transferir entre cuentas
 // ---------------------------------------------------------------------------
 
-export function openTransferForm({ tx, fromId, toId, amount: presetAmount, description: presetDescription } = {}) {
+export function openTransferForm({ tx, fromId, toId, amount: presetAmount, description: presetDescription, exchange = false } = {}) {
   const state = store.getState();
   const active = state.accounts.filter((a) => !a.archived);
+  if (exchange && !tx) {
+    // Cambiar divisas: de una cuenta a otra en distinta moneda (sin tarjetas).
+    const plain = active.filter((a) => a.kind !== "credit");
+    const main = state.settings.mainCurrency;
+    const other = plain.find((a) => a.currency !== main);
+    if (!other) {
+      const code = state.settings.currencies.find((c) => c !== main);
+      toast(code ? msg`Para cambiar divisas necesitas una cuenta en ${code}` : "Primero agrega otra moneda en Idioma y monedas", { type: "info" });
+      return code ? openAccountForm({ kind: "cash", currency: code }) : (location.hash = "#/monedas");
+    }
+    fromId ||= other.id;
+    toId ||= plain.find((a) => a.currency !== findAccount(state, fromId).currency)?.id;
+    presetDescription ||= tr("Cambio de divisas");
+  }
   if (!tx && active.length < 2) {
     toast("Necesitas al menos dos cuentas para mover dinero entre ellas", { type: "info" });
     return openAccountForm();
@@ -184,7 +198,7 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
   const to = tx?.toAccountId || toId || active.find((a) => a.id !== from)?.id;
 
   openSheet({
-    title: isEdit ? "Editar transferencia" : "Mover dinero",
+    title: isEdit ? "Editar transferencia" : exchange ? "Cambiar divisas" : "Mover dinero",
     body: html`<form class="form" novalidate>
       <p class="sheet-text">Pasar dinero de una cuenta a otra no es un gasto: tu total no cambia.</p>
       <div class="field-row field-row-transfer">
@@ -252,7 +266,28 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
         }
         close();
         const s = store.getState();
-        toast(isEdit ? "Transferencia actualizada" : msg`Moviste ${formatMoney(amount, findAccount(s, data.fromId).currency)} a ${findAccount(s, data.toId).name}`);
+        const a = findAccount(s, data.fromId);
+        const b = findAccount(s, data.toId);
+        // Entre la moneda principal y otra: si el cambio fue distinto del que tienes
+        // cargado, se ofrece usarlo (la app no lo cambia sola).
+        const main = s.settings.mainCurrency;
+        const pair = a.currency !== b.currency && [a.currency, b.currency].includes(main);
+        const code = pair && (a.currency === main ? b.currency : a.currency);
+        const paid = pair && (a.currency === main ? amount / toAmount : toAmount / amount);
+        const now = pair && convert(1, code, main, s.rates);
+        if (!isEdit && pair && Math.abs(paid - now) / now > 0.005) {
+          toast(msg`Cambiaste a ${formatMoney(paid, main, { reveal: true })} por ${code}. Tu tipo de cambio es ${formatMoney(now, main, { reveal: true })}.`, {
+            type: "info",
+            actionLabel: "Usar este valor",
+            duration: 6000,
+            onAction: () => {
+              store.setRateInMain(code, Math.round(paid * 1e6) / 1e6);
+              toast(msg`Tipo de cambio actualizado: ${formatMoney(paid, main, { reveal: true })} por ${code}`);
+            },
+          });
+        } else {
+          toast(isEdit ? "Transferencia actualizada" : msg`Moviste ${formatMoney(amount, a.currency)} a ${b.name}`);
+        }
       });
       form.querySelector("[data-form-delete]")?.addEventListener("click", () => {
         const backup = store.snapshot();

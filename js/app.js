@@ -139,6 +139,7 @@ const GLOBAL_ACTIONS = {
   "edit-tx": (el) => openTransactionForm({ tx: byId(store.getState().transactions, el.dataset.id) }),
   "edit-transfer": (el) => openTransferForm({ tx: byId(store.getState().transactions, el.dataset.id) }),
   "add-transfer": (el) => openTransferForm({ fromId: el.dataset.from }),
+  "exchange-currency": () => openTransferForm({ exchange: true }),
   "add-account": () => openAccountForm(),
   "account-detail": (el) => openAccountDetail(el.dataset.id),
   "add-loan": (el) => openLoanForm({ direction: el.dataset.direction || "lent" }),
