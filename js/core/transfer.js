@@ -33,7 +33,7 @@ function randomCode(length) {
 
 const toBase64 = (bytes) => {
   let text = "";
-  for (let i = 0; i < bytes.length; i += 0x8000) text += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  for (let i = 0; i < bytes.length; i += 0x2000) text += String.fromCharCode(...bytes.subarray(i, i + 0x2000));
   return btoa(text);
 };
 const fromBase64 = (text) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
@@ -83,8 +83,10 @@ async function call(url, options) {
   let response;
   try {
     response = await fetch(url, { cache: "no-store", ...options });
-  } catch {
-    throw new TransferError("offline");
+  } catch (error) {
+    // Sin internet de verdad, o el navegador no dejó conectar (bloqueo, cache vieja).
+    console.warn("transfer", error);
+    throw new TransferError(navigator.onLine === false ? "offline" : "unreachable");
   }
   let result = null;
   try {
@@ -159,6 +161,8 @@ export function transferErrorText(error) {
       return "Ese código no existe, ya se usó o venció. Genera uno nuevo en el otro dispositivo.";
     case "wrong_key":
       return "El código no coincide. Revisa que esté completo y bien escrito.";
+    case "unreachable":
+      return "No se pudo conectar con el servidor de Neko Tools. Cierra la app del todo, vuelve a abrirla y prueba de nuevo.";
     case "too_many_requests":
       return "Demasiados intentos seguidos. Espera unos minutos y prueba de nuevo.";
     case "payload_too_large":

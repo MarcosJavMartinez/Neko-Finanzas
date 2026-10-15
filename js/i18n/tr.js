@@ -1398,4 +1398,5 @@ export default {
   "No se pudo usar la cámara. Revisa el permiso o escribe el código.": "Kamera kullanılamadı. İzni kontrol et ya da kodu yaz.",
   "El código venció. Genera otro.": "Kodun süresi doldu. Yenisini oluştur.",
   "¡Listo! El otro dispositivo ya recibió tus datos.": "Tamam! Diğer cihaz verilerini aldı.",
+  "No se pudo conectar con el servidor de Neko Tools. Cierra la app del todo, vuelve a abrirla y prueba de nuevo.": "Neko Tools sunucusuna bağlanılamadı. Uygulamayı tamamen kapat, yeniden aç ve tekrar dene.",
 };

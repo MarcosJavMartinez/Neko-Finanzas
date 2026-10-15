@@ -1399,4 +1399,5 @@ export default {
   "No se pudo usar la cámara. Revisa el permiso o escribe el código.": "تعذّر استخدام الكاميرا. تحقق من الإذن أو اكتب الرمز.",
   "El código venció. Genera otro.": "انتهت مدة الرمز. أنشئ رمزًا آخر.",
   "¡Listo! El otro dispositivo ya recibió tus datos.": "تم! استلم الجهاز الآخر بياناتك.",
+  "No se pudo conectar con el servidor de Neko Tools. Cierra la app del todo, vuelve a abrirla y prueba de nuevo.": "تعذّر الاتصال بخادم Neko Tools. أغلق التطبيق تمامًا ثم افتحه من جديد وحاول مرة أخرى.",
 };

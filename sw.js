@@ -4,7 +4,7 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v87";
+const CACHE_VERSION = "neko-finanzas-v88";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -161,9 +161,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // App: red primero, cache como respaldo.
+  // App: red primero, cache como respaldo. La página se pide siempre entera
+  // (sin la cache del navegador): si no cambió, Vercel contesta "304" sin las
+  // cabeceras de seguridad y el navegador seguía usando las viejas (así quedó
+  // bloqueado "Pasar a otro dispositivo" en teléfonos que ya tenían la app).
   event.respondWith(
-    fetch(request)
+    (request.mode === "navigate" ? fetch(request.url, { cache: "no-store", credentials: "same-origin" }) : fetch(request))
       .then((response) => {
         if (response && response.status === 200 && response.type === "basic") {
           const copy = response.clone();
