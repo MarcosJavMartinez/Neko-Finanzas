@@ -1556,6 +1556,7 @@ export default {
   "Te queda 1 pasaje": "Остался 1 проезд",
   "Te queda 1 pasaje: conviene cargar": "Остался 1 проезд: пора пополнить",
   "Anotado.": "Записано.",
-  "¿Cómo llevo la tarjeta del transporte? (SUBE, Suica, Oyster…)": "Как вести транспортную карту? («Тройка»…)",
+  "¿Cómo llevo la tarjeta del transporte público?": "Как вести карту общественного транспорта?",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "Создайте счёт типа «Транспортная карта» с балансом и ценой проезда. На главной видно, сколько поездок осталось, и есть кнопки «Проехал» (записывается как расход на транспорт) и «Пополнить» (перевод с другого счёта — это не расход). Если записали не все поездки, используйте «Исправить баланс» с реальным балансом карты.",
+  "Ej.: el nombre de tu tarjeta": "Напр.: название вашей карты",
 };

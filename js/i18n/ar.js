@@ -1557,6 +1557,7 @@ export default {
   "Te queda 1 pasaje": "بقي مشوار واحد",
   "Te queda 1 pasaje: conviene cargar": "بقي مشوار واحد: حان وقت الشحن",
   "Anotado.": "تم التسجيل.",
-  "¿Cómo llevo la tarjeta del transporte? (SUBE, Suica, Oyster…)": "كيف أتابع بطاقة المواصلات؟",
+  "¿Cómo llevo la tarjeta del transporte público?": "كيف أتابع بطاقة النقل العام؟",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "أنشئ حسابًا من نوع «بطاقة مواصلات» برصيدها وسعر المشوار. في الرئيسية ترى كم مشوارًا بقي، مع زر «ركبت» (يُسجَّل مصروفًا في المواصلات) و«شحن» (ينقل المال من حساب آخر: ليس مصروفًا). إذا لم تسجّل كل المشاوير، استخدم «تصحيح الرصيد» بالرصيد الفعلي للبطاقة.",
+  "Ej.: el nombre de tu tarjeta": "مثال: اسم بطاقتك",
 };

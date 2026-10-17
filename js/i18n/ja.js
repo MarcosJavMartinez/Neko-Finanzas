@@ -1558,6 +1558,7 @@ export default {
   "Te queda 1 pasaje": "残り 1 回分",
   "Te queda 1 pasaje: conviene cargar": "残り 1 回分です。チャージしておきましょう",
   "Anotado.": "記録しました。",
-  "¿Cómo llevo la tarjeta del transporte? (SUBE, Suica, Oyster…)": "交通系ICカード（Suica など）はどう管理しますか？",
+  "¿Cómo llevo la tarjeta del transporte público?": "公共交通のICカードはどう管理しますか？",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "種類「交通系ICカード」の口座を、残高と運賃を入れて作ります。ホームで残りの回数が見られ、「乗った」（交通費の支出として記録）と「チャージ」（別の口座からお金を移す。支出ではありません）のボタンがあります。乗車をすべて記録していない場合は、カードの実際の残高で「残高を直す」を使ってください。",
+  "Ej.: el nombre de tu tarjeta": "例：カードの名前",
 };

@@ -13,7 +13,7 @@ import { todayISO, formatDate } from "../../core/dates.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
 import { formatMoney, amountToInput, parseAmount, convert, currencyChoices, zeroAmount, symbolOf } from "../../core/money.js";
 import { accountBalance, cardStatus, findAccount, findCategory, transitStatus } from "../../core/finance.js";
-import { ACCOUNT_KINDS, TRANSIT_NAMES, DEFAULT_CATEGORIES } from "../../data/defaults.js";
+import { ACCOUNT_KINDS, DEFAULT_CATEGORIES } from "../../data/defaults.js";
 
 const ACCOUNT_ICONS = ["👛", "💵", "🏦", "📱", "💳", "🐷", "💰", "🪙", "🏧", "💶", "💴", "🧾", "🚌", "🚇"];
 
@@ -122,10 +122,8 @@ export function openAccountForm({ account, kind: presetKind, currency: presetCur
           form.querySelector("[data-opening-normal]").hidden = card;
           form.querySelector("[data-opening-card]").hidden = !card;
           form.querySelector("[data-transit-fields]").hidden = event.target.value !== "transit";
-          // Tarjeta de transporte: el nombre de la del país (SUBE, Suica, Oyster…), si no escribiste otro.
-          if (!isEdit && event.target.value === "transit" && !form.elements.name.value.trim()) {
-            form.elements.name.value = TRANSIT_NAMES[store.getState().settings.region] || tr("Tarjeta de transporte");
-          }
+          // Tarjeta de transporte: cada ciudad tiene la suya, así que el nombre lo escribe la persona.
+          form.elements.name.placeholder = tr(event.target.value === "transit" ? "Ej.: el nombre de tu tarjeta" : "Ej.: Cuenta sueldo, Efectivo, Billetera");
           if (!isEdit) {
             const iconInput = form.querySelector(`input[name=icon][value="${ACCOUNT_KINDS[event.target.value].icon}"]`);
             if (iconInput) iconInput.checked = true;

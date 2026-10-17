@@ -1556,6 +1556,7 @@ export default {
   "Te queda 1 pasaje": "1 binişlik kaldı",
   "Te queda 1 pasaje: conviene cargar": "1 binişlik kaldı: yükleme yapmak iyi olur",
   "Anotado.": "Kaydedildi.",
-  "¿Cómo llevo la tarjeta del transporte? (SUBE, Suica, Oyster…)": "Ulaşım kartımı nasıl takip ederim? (İstanbulkart…)",
+  "¿Cómo llevo la tarjeta del transporte público?": "Toplu taşıma kartımı nasıl takip ederim?",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "“Ulaşım kartı” türünde, bakiyesi ve biniş ücretiyle bir hesap oluştur. Ana sayfada kaç binişin kaldığını, “Yolculuk yaptım” (Ulaşım gideri olarak kaydeder) ve “Yükle” (başka bir hesaptan para aktarır: gider değildir) düğmeleriyle görürsün. Tüm yolculukları kaydetmediysen kartın gerçek bakiyesiyle “Bakiyeyi düzelt” seçeneğini kullan.",
+  "Ej.: el nombre de tu tarjeta": "Örn.: kartının adı",
 };

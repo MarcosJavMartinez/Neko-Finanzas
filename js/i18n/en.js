@@ -1556,6 +1556,7 @@ export default {
   "Te queda 1 pasaje": "1 trip left",
   "Te queda 1 pasaje: conviene cargar": "1 trip left: time to top up",
   "Anotado.": "Noted.",
-  "¿Cómo llevo la tarjeta del transporte? (SUBE, Suica, Oyster…)": "How do I keep track of my transit card? (Oyster, Suica…)",
+  "¿Cómo llevo la tarjeta del transporte público?": "How do I keep track of my public transport card?",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "Create an account of type “Transit card” with its balance and the fare. On Home you see how many trips you have left, with the “I rode” button (recorded as a Transport expense) and “Top up” (moves money from another account: it isn't an expense). If you didn't record every trip, use “Fix balance” with the card's real balance.",
+  "Ej.: el nombre de tu tarjeta": "E.g.: your card's name",
 };

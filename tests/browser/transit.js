@@ -16,10 +16,10 @@ return (async () => {
     let form = sheet().querySelector("form");
     form.querySelector("input[name=kind][value=transit]").click(); await wait(100);
     const suggested = form.elements.name.value;
-    form.elements.fare.value = "700"; form.elements.opening.value = "3.200";
+    form.elements.name.value = "Mi tarjeta"; form.elements.fare.value = "700"; form.elements.opening.value = "3.200";
     form.requestSubmit(); await wait(600);
     const card = store.getState().accounts.find((a) => a.kind === "transit");
-    log(`nombre sugerido: ${suggested} · guardada con pasaje ${card?.fare}${card?.fare === 700 ? "" : " ✗"}`);
+    log(`nombre: vacío para escribir (${suggested === "" ? "sí" : suggested + " ✗"}) · ejemplo: ${form.elements.name.placeholder} · guardada con pasaje ${card?.fare}${card?.fare === 700 ? "" : " ✗"}`);
     w.location.hash = "#/inicio"; await wait(500);
     const home = () => d.querySelector(".transit-card")?.innerText.replace(/\s+/g, " ").trim() || "no aparece ✗";
     log("inicio: " + home());
