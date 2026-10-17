@@ -1559,4 +1559,9 @@ export default {
   "¿Cómo llevo la tarjeta del transporte público?": "How do I keep track of my public transport card?",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "Create an account of type “Transit card” with its balance and the fare. On Home you see how many trips you have left, with the “I rode” button (recorded as a Transport expense) and “Top up” (moves money from another account: it isn't an expense). If you didn't record every trip, use “Fix balance” with the card's real balance.",
   "Ej.: el nombre de tu tarjeta": "E.g.: your card's name",
+  "Debes {0} en la tarjeta": "You owe {0} on the card",
+  "Viajaste más de lo que tenía cargado. Al cargar, primero se cubre esa deuda.": "You rode more than it had loaded. When you top up, that debt is covered first.",
+  "Anotado. Quedaste en negativo: debes {0} en la tarjeta": "Noted. You're in the negative: you owe {0} on the card",
+  "La tarjeta debe {0}: de lo que cargues, primero se cubre esa deuda.": "The card owes {0}: from what you top up, that debt is covered first.",
+  "Debes {0}: al cargar se cubre primero": "You owe {0}: topping up covers it first",
 };

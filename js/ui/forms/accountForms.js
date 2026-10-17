@@ -93,7 +93,7 @@ export function openAccountForm({ account, kind: presetKind, currency: presetCur
       </div>
       <div data-opening-normal ${isCard ? "hidden" : ""}>
         ${fixedAmountField({ name: "opening", label: "Saldo al empezar", currency: current.currency, value: isCard ? 0 : Math.abs(current.opening || 0), hint: "Lo que tenía esta cuenta antes de registrar movimientos." })}
-        <label class="toggle-field">
+        <label class="toggle-field" data-negative-toggle ${current.kind === "transit" ? "hidden" : ""}>
           <span><span class="toggle-label">Está en rojo</span><span class="field-hint">El saldo es negativo: es dinero que debes (descubierto).</span></span>
           <input type="checkbox" name="openingNegative" class="switch" ${!isCard && current.opening < 0 ? "checked" : ""} />
         </label>
@@ -122,6 +122,9 @@ export function openAccountForm({ account, kind: presetKind, currency: presetCur
           form.querySelector("[data-opening-normal]").hidden = card;
           form.querySelector("[data-opening-card]").hidden = !card;
           form.querySelector("[data-transit-fields]").hidden = event.target.value !== "transit";
+          // La tarjeta de transporte queda en negativo sola, al viajar de más; no se marca a mano.
+          form.querySelector("[data-negative-toggle]").hidden = event.target.value === "transit";
+          if (event.target.value === "transit") form.elements.openingNegative.checked = false;
           // Tarjeta de transporte: cada ciudad tiene la suya, así que el nombre lo escribe la persona.
           form.elements.name.placeholder = tr(event.target.value === "transit" ? "Ej.: el nombre de tu tarjeta" : "Ej.: Cuenta sueldo, Efectivo, Billetera");
           if (!isEdit) {
@@ -179,7 +182,7 @@ export function openAccountForm({ account, kind: presetKind, currency: presetCur
 // Transferir entre cuentas
 // ---------------------------------------------------------------------------
 
-export function openTransferForm({ tx, fromId, toId, amount: presetAmount, description: presetDescription, exchange = false } = {}) {
+export function openTransferForm({ tx, fromId, toId, amount: presetAmount, description: presetDescription, exchange = false, note = "" } = {}) {
   const state = store.getState();
   const active = state.accounts.filter((a) => !a.archived);
   if (exchange && !tx) {
@@ -208,6 +211,7 @@ export function openTransferForm({ tx, fromId, toId, amount: presetAmount, descr
     title: isEdit ? "Editar transferencia" : exchange ? "Cambiar divisas" : "Mover dinero",
     body: html`<form class="form" novalidate>
       <p class="sheet-text">Pasar dinero de una cuenta a otra no es un gasto: tu total no cambia.</p>
+      ${note ? html`<p class="notice notice-warn">${icon("alert", 16)}<span>${note}</span></p>` : ""}
       <div class="field-row field-row-transfer">
         ${accountSelect(state, { name: "fromId", label: "Desde", value: from })}
         <span class="transfer-arrow" aria-hidden="true">${icon("chevronRight", 20)}</span>
@@ -394,6 +398,13 @@ export function tripsLeftText(trips, low = false) {
 /** Pasajes que quedan, y cuánto se cargó y gastó este mes. */
 export function transitBox(account, status) {
   const m = (n) => formatMoney(n, account.currency);
+  if (status.debt) {
+    return html`<div class="transit-box is-debt">
+      <p class="transit-trips">${msg`Debes ${m(status.debt)} en la tarjeta`}</p>
+      <p class="transit-sub">Viajaste más de lo que tenía cargado. Al cargar, primero se cubre esa deuda.</p>
+      <p class="transit-month">${msg`Este mes cargaste ${m(status.loaded)} y gastaste ${m(status.spent)}`}</p>
+    </div>`;
+  }
   return html`<div class="transit-box ${status.low ? "is-low" : ""}">
     ${status.trips !== null
       ? html`<p class="transit-trips">${tripsLeftText(status.trips)}</p>
@@ -469,7 +480,8 @@ export function openTripForm(accountId) {
         });
         close();
         const left = transitStatus(store.getState(), findAccount(store.getState(), accountId));
-        toast(left.trips !== null ? `${tr("Anotado.")} ${tripsLeftText(left.trips, left.low)}` : "Viaje anotado");
+        if (left.debt) toast(msg`Anotado. Quedaste en negativo: debes ${formatMoney(left.debt, account.currency)} en la tarjeta`, { type: "info" });
+        else toast(left.trips !== null ? `${tr("Anotado.")} ${tripsLeftText(left.trips, left.low)}` : "Viaje anotado");
       });
     },
   });
@@ -478,8 +490,15 @@ export function openTripForm(accountId) {
 /** "Cargar": mover dinero de otra cuenta a la tarjeta. */
 export function openTransitLoad(accountId) {
   const state = store.getState();
-  const from = state.accounts.find((a) => !a.archived && a.id !== accountId && a.kind !== "credit" && a.kind !== "transit" && a.currency === findAccount(state, accountId)?.currency);
-  openTransferForm({ fromId: from?.id, toId: accountId, description: tr("Carga") });
+  const account = findAccount(state, accountId);
+  const from = state.accounts.find((a) => !a.archived && a.id !== accountId && a.kind !== "credit" && a.kind !== "transit" && a.currency === account?.currency);
+  const { debt } = transitStatus(state, account);
+  openTransferForm({
+    fromId: from?.id,
+    toId: accountId,
+    description: tr("Carga"),
+    note: debt ? msg`La tarjeta debe ${formatMoney(debt, account.currency)}: de lo que cargues, primero se cubre esa deuda.` : "",
+  });
 }
 
 /** "Corregir saldo": el saldo real de la tarjeta; lo que falta son viajes sin anotar. */

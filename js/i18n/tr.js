@@ -1559,4 +1559,9 @@ export default {
   "¿Cómo llevo la tarjeta del transporte público?": "Toplu taşıma kartımı nasıl takip ederim?",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "“Ulaşım kartı” türünde, bakiyesi ve biniş ücretiyle bir hesap oluştur. Ana sayfada kaç binişin kaldığını, “Yolculuk yaptım” (Ulaşım gideri olarak kaydeder) ve “Yükle” (başka bir hesaptan para aktarır: gider değildir) düğmeleriyle görürsün. Tüm yolculukları kaydetmediysen kartın gerçek bakiyesiyle “Bakiyeyi düzelt” seçeneğini kullan.",
   "Ej.: el nombre de tu tarjeta": "Örn.: kartının adı",
+  "Debes {0} en la tarjeta": "Kartta {0} borcun var",
+  "Viajaste más de lo que tenía cargado. Al cargar, primero se cubre esa deuda.": "Yüklü olandan fazla yolculuk yaptın. Yükleme yaptığında önce bu borç kapanır.",
+  "Anotado. Quedaste en negativo: debes {0} en la tarjeta": "Kaydedildi. Eksiye düştün: kartta {0} borcun var",
+  "La tarjeta debe {0}: de lo que cargues, primero se cubre esa deuda.": "Kartın {0} borcu var: yüklediğin tutardan önce bu borç kapanır.",
+  "Debes {0}: al cargar se cubre primero": "{0} borcun var: yükleme önce bunu kapatır",
 };

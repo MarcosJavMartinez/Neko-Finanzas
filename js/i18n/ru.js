@@ -1559,4 +1559,9 @@ export default {
   "¿Cómo llevo la tarjeta del transporte público?": "Как вести карту общественного транспорта?",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "Создайте счёт типа «Транспортная карта» с балансом и ценой проезда. На главной видно, сколько поездок осталось, и есть кнопки «Проехал» (записывается как расход на транспорт) и «Пополнить» (перевод с другого счёта — это не расход). Если записали не все поездки, используйте «Исправить баланс» с реальным балансом карты.",
   "Ej.: el nombre de tu tarjeta": "Напр.: название вашей карты",
+  "Debes {0} en la tarjeta": "Долг по карте: {0}",
+  "Viajaste más de lo que tenía cargado. Al cargar, primero se cubre esa deuda.": "Вы проехали больше, чем было на карте. При пополнении сначала погасится этот долг.",
+  "Anotado. Quedaste en negativo: debes {0} en la tarjeta": "Записано. Баланс отрицательный: долг по карте {0}",
+  "La tarjeta debe {0}: de lo que cargues, primero se cubre esa deuda.": "На карте долг {0}: из пополнения сначала погасится он.",
+  "Debes {0}: al cargar se cubre primero": "Долг {0}: пополнение сначала покроет его",
 };

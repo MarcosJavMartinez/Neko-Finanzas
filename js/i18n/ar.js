@@ -1560,4 +1560,9 @@ export default {
   "¿Cómo llevo la tarjeta del transporte público?": "كيف أتابع بطاقة النقل العام؟",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "أنشئ حسابًا من نوع «بطاقة مواصلات» برصيدها وسعر المشوار. في الرئيسية ترى كم مشوارًا بقي، مع زر «ركبت» (يُسجَّل مصروفًا في المواصلات) و«شحن» (ينقل المال من حساب آخر: ليس مصروفًا). إذا لم تسجّل كل المشاوير، استخدم «تصحيح الرصيد» بالرصيد الفعلي للبطاقة.",
   "Ej.: el nombre de tu tarjeta": "مثال: اسم بطاقتك",
+  "Debes {0} en la tarjeta": "عليك {0} للبطاقة",
+  "Viajaste más de lo que tenía cargado. Al cargar, primero se cubre esa deuda.": "ركبت أكثر مما كان مشحونًا. عند الشحن تُغطّى هذه الديون أولًا.",
+  "Anotado. Quedaste en negativo: debes {0} en la tarjeta": "تم التسجيل. أصبحت بالسالب: عليك {0} للبطاقة",
+  "La tarjeta debe {0}: de lo que cargues, primero se cubre esa deuda.": "على البطاقة {0}: مما تشحنه تُغطّى هذه الديون أولًا.",
+  "Debes {0}: al cargar se cubre primero": "عليك {0}: الشحن يغطيها أولًا",
 };

@@ -3091,3 +3091,15 @@ button.inline-link {
   font-size: 1.2rem;
   font-weight: 700;
 }
+
+/* Tarjeta de transporte en negativo: viajó más de lo cargado */
+.transit-box.is-debt,
+.transit-card.is-debt {
+  background: var(--expense-soft);
+}
+
+.transit-card.is-debt .transit-left,
+.transit-card .is-negative {
+  color: var(--expense-ink);
+  font-weight: 700;
+}

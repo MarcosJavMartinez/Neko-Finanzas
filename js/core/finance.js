@@ -742,5 +742,7 @@ export function transitStatus(state, account, today = todayISO()) {
     .reduce((s, t) => s + convert(t.amount, t.currency, account.currency, state.rates), 0);
   const fare = account.fare > 0 ? account.fare : 0;
   const trips = fare ? Math.max(0, Math.floor((balance + 0.000001) / fare)) : null;
-  return { balance, loaded: Math.round(loaded * 100) / 100, spent: Math.round(spent * 100) / 100, fare, trips, low: trips !== null && trips <= 2 };
+  // Saldo negativo: viajaste más de lo que tenía; es lo que le debes a la tarjeta.
+  const debt = balance < -0.004 ? Math.round(-balance * 100) / 100 : 0;
+  return { balance, loaded: Math.round(loaded * 100) / 100, spent: Math.round(spent * 100) / 100, fare, trips, debt, low: !debt && trips !== null && trips <= 2 };
 }

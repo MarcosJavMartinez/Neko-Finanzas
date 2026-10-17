@@ -182,12 +182,12 @@ export default {
       .slice(0, 2)
       .map((a) => {
         const st = transitStatus(state, a, today);
-        return html`<section class="transit-card reveal ${st.low ? "is-low" : ""}" aria-label="${a.name}">
+        return html`<section class="transit-card reveal ${st.low ? "is-low" : ""} ${st.debt ? "is-debt" : ""}" aria-label="${a.name}">
           <button type="button" class="transit-head" data-action="account-detail" data-id="${a.id}">
             <span class="transit-icon" aria-hidden="true">${a.icon}</span>
             <span class="transit-text">
-              <span class="transit-name">${a.name} · <strong>${formatMoney(st.balance, a.currency)}</strong></span>
-              <span class="transit-left">${st.trips === null ? "Toca para poner el precio del pasaje" : tripsLeftText(st.trips, st.low)}</span>
+              <span class="transit-name">${a.name} · <strong class="${st.debt ? "is-negative" : ""}">${formatMoney(st.balance, a.currency)}</strong></span>
+              <span class="transit-left">${st.debt ? msg`Debes ${formatMoney(st.debt, a.currency)}: al cargar se cubre primero` : st.trips === null ? "Toca para poner el precio del pasaje" : tripsLeftText(st.trips, st.low)}</span>
             </span>
           </button>
           <div class="transit-actions">

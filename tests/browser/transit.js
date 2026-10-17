@@ -15,6 +15,7 @@ return (async () => {
     A.openAccountForm(); await wait(500);
     let form = sheet().querySelector("form");
     form.querySelector("input[name=kind][value=transit]").click(); await wait(100);
+    log("al crearla, interruptor «Está en rojo»: " + (form.querySelector("[data-negative-toggle]").hidden ? "oculto" : "visible ✗"));
     const suggested = form.elements.name.value;
     form.elements.name.value = "Mi tarjeta"; form.elements.fare.value = "700"; form.elements.opening.value = "3.200";
     form.requestSubmit(); await wait(600);
@@ -43,6 +44,22 @@ return (async () => {
     form.elements.amount.value = "5.000"; form.requestSubmit(); await wait(600);
     st = F.transitStatus(store.getState(), card);
     log(`cargar 5.000: saldo ${st.balance} · cargado este mes ${st.loaded} · total igual: ${Math.round(F.balanceSummary(store.getState()).total) === Math.round(total0)}${st.balance === 6000 && st.loaded === 5000 ? "" : " ✗"}`);
+    // Viajar de más: el saldo queda en negativo (deuda) y la carga primero la cubre
+    A.openTripForm(card.id); await wait(500);
+    form = sheet().querySelector("form");
+    form.elements.trips.value = "9"; form.elements.trips.dispatchEvent(new w.Event("input", { bubbles: true }));
+    form.requestSubmit(); await wait(600);
+    st = F.transitStatus(store.getState(), card);
+    const toastText = [...d.querySelectorAll(".toast")].pop()?.innerText.replace(/\s+/g, " ").trim();
+    log(`9 viajes con 6.000: saldo ${st.balance} · debe ${st.debt} · ${toastText}${st.balance === -300 && st.debt === 300 ? "" : " ✗"}`);
+    w.location.hash = "#/cuentas"; await wait(200); w.location.hash = "#/inicio"; await wait(500);
+    log("inicio en negativo: " + home() + (home().includes("Debes") ? "" : " ✗"));
+    A.openTransitLoad(card.id); await wait(500);
+    form = sheet().querySelector("form");
+    log("cargar con deuda: " + (sheet().querySelector(".notice-warn")?.innerText.replace(/\s+/g, " ").trim() || "sin aviso ✗"));
+    form.elements.amount.value = "1.000"; form.requestSubmit(); await wait(600);
+    st = F.transitStatus(store.getState(), card);
+    log(`cargar 1.000: saldo ${st.balance} · debe ${st.debt} · quedan ${st.trips}${st.balance === 700 && st.debt === 0 && st.trips === 1 ? "" : " ✗"}`);
     log("errores: " + (errs.join(" | ") || "ninguno"));
   } catch (e) {
     log("ERROR " + e.stack);

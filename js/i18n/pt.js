@@ -1559,4 +1559,9 @@ export default {
   "¿Cómo llevo la tarjeta del transporte público?": "Como acompanho o cartão do transporte público?",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "Crie uma conta do tipo “Cartão de transporte” com o saldo e o preço da passagem. No Início você vê quantas passagens restam, com os botões “Viajei” (anota como despesa em Transporte) e “Recarregar” (passa dinheiro de outra conta: não é despesa). Se não anotou todas as viagens, use “Corrigir saldo” com o saldo real do cartão.",
   "Ej.: el nombre de tu tarjeta": "Ex.: o nome do seu cartão",
+  "Debes {0} en la tarjeta": "Você deve {0} no cartão",
+  "Viajaste más de lo que tenía cargado. Al cargar, primero se cubre esa deuda.": "Você viajou mais do que tinha carregado. Ao recarregar, primeiro se cobre essa dívida.",
+  "Anotado. Quedaste en negativo: debes {0} en la tarjeta": "Anotado. Você ficou no negativo: deve {0} no cartão",
+  "La tarjeta debe {0}: de lo que cargues, primero se cubre esa deuda.": "O cartão deve {0}: do que você recarregar, primeiro se cobre essa dívida.",
+  "Debes {0}: al cargar se cubre primero": "Você deve {0}: ao recarregar, isso é coberto primeiro",
 };

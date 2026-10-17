@@ -1561,4 +1561,9 @@ export default {
   "¿Cómo llevo la tarjeta del transporte público?": "公共交通のICカードはどう管理しますか？",
   "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.": "種類「交通系ICカード」の口座を、残高と運賃を入れて作ります。ホームで残りの回数が見られ、「乗った」（交通費の支出として記録）と「チャージ」（別の口座からお金を移す。支出ではありません）のボタンがあります。乗車をすべて記録していない場合は、カードの実際の残高で「残高を直す」を使ってください。",
   "Ej.: el nombre de tu tarjeta": "例：カードの名前",
+  "Debes {0} en la tarjeta": "カードに {0} の借りがあります",
+  "Viajaste más de lo que tenía cargado. Al cargar, primero se cubre esa deuda.": "チャージ額より多く乗りました。チャージすると、まずこの分が差し引かれます。",
+  "Anotado. Quedaste en negativo: debes {0} en la tarjeta": "記録しました。マイナス残高です：カードに {0} の借り",
+  "La tarjeta debe {0}: de lo que cargues, primero se cubre esa deuda.": "カードに {0} の借りがあります。チャージ額からまずこの分が引かれます。",
+  "Debes {0}: al cargar se cubre primero": "{0} の借り：チャージでまず差し引かれます",
 };
