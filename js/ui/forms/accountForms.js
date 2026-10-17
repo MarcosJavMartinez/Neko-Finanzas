@@ -12,10 +12,10 @@ import * as store from "../../core/store.js";
 import { todayISO, formatDate } from "../../core/dates.js";
 import { isISODate, MAX_AMOUNT } from "../../core/sanitize.js";
 import { formatMoney, amountToInput, parseAmount, convert, currencyChoices, zeroAmount, symbolOf } from "../../core/money.js";
-import { accountBalance, cardStatus, findAccount, findCategory } from "../../core/finance.js";
-import { ACCOUNT_KINDS } from "../../data/defaults.js";
+import { accountBalance, cardStatus, findAccount, findCategory, transitStatus } from "../../core/finance.js";
+import { ACCOUNT_KINDS, TRANSIT_NAMES, DEFAULT_CATEGORIES } from "../../data/defaults.js";
 
-const ACCOUNT_ICONS = ["👛", "💵", "🏦", "📱", "💳", "🐷", "💰", "🪙", "🏧", "💶", "💴", "🧾"];
+const ACCOUNT_ICONS = ["👛", "💵", "🏦", "📱", "💳", "🐷", "💰", "🪙", "🏧", "💶", "💴", "🧾", "🚌", "🚇"];
 
 /** Nombre con ícono de una cuenta ("🏦 Cuenta sueldo"). */
 export const accountLabel = (account) => (account ? `${account.icon} ${tr(account.name)}` : "Cuenta borrada");
@@ -82,6 +82,9 @@ export function openAccountForm({ account, kind: presetKind, currency: presetCur
         ${daySelect("closingDay", "Cierra el día", current.closingDay || 25)}
         ${daySelect("dueDay", "Vence el día", current.dueDay || 5)}
       </div>
+      <div data-transit-fields ${current.kind === "transit" ? "" : "hidden"}>
+        ${fixedAmountField({ name: "fare", label: "Precio del pasaje", currency: current.currency, value: current.fare || "", hint: "Para calcular cuántos pasajes te quedan. Si cambia, lo editas aquí." })}
+      </div>
       <div class="field">
         <span class="field-label">Moneda</span>
         ${used
@@ -112,12 +115,17 @@ export function openAccountForm({ account, kind: presetKind, currency: presetCur
       const form = panel.querySelector("form");
       // La moneda del saldo inicial sigue a la elegida.
       form.addEventListener("change", (event) => {
-        if (event.target.name === "currency") form.querySelectorAll('[data-currency-for^="opening"]').forEach((el) => (el.textContent = symbolOf(event.target.value)));
+        if (event.target.name === "currency") form.querySelectorAll('[data-currency-for^="opening"], [data-currency-for="fare"]').forEach((el) => (el.textContent = symbolOf(event.target.value)));
         if (event.target.name === "kind") {
           const card = event.target.value === "credit";
           form.querySelector("[data-card-fields]").hidden = !card;
           form.querySelector("[data-opening-normal]").hidden = card;
           form.querySelector("[data-opening-card]").hidden = !card;
+          form.querySelector("[data-transit-fields]").hidden = event.target.value !== "transit";
+          // Tarjeta de transporte: el nombre de la del país (SUBE, Suica, Oyster…), si no escribiste otro.
+          if (!isEdit && event.target.value === "transit" && !form.elements.name.value.trim()) {
+            form.elements.name.value = TRANSIT_NAMES[store.getState().settings.region] || tr("Tarjeta de transporte");
+          }
           if (!isEdit) {
             const iconInput = form.querySelector(`input[name=icon][value="${ACCOUNT_KINDS[event.target.value].icon}"]`);
             if (iconInput) iconInput.checked = true;
@@ -147,6 +155,7 @@ export function openAccountForm({ account, kind: presetKind, currency: presetCur
           archived: Boolean(data.archived),
           closingDay: Number(data.closingDay),
           dueDay: Number(data.dueDay),
+          fare: data.kind === "transit" && form.elements.fare.value.trim() ? parseAmount(form.elements.fare.value) : 0,
         });
         close();
         toast(isEdit ? "Cuenta actualizada" : msg`Cuenta “${saved.name}” creada`);
@@ -309,6 +318,7 @@ export function openAccountDetail(accountId) {
   if (!account) return;
   const entry = accountBalance(state, accountId);
   const card = account.kind === "credit" ? cardStatus(state, account) : null;
+  const transit = account.kind === "transit" ? transitStatus(state, account) : null;
   const recent = state.transactions
     .filter((t) => (t.accountId === accountId || t.toAccountId === accountId) && t.date <= todayISO())
     .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
@@ -323,8 +333,14 @@ export function openAccountDetail(accountId) {
             <p class="fine-print">${card.debt > 0 ? "Deuda de hoy · " : card.credit > 0 ? "Saldo a favor · " : ""}Cierra el ${formatDate(card.closing)} · vence el ${formatDate(card.due)}</p>`
         : html`<p class="account-detail-balance ${entry.balance < 0 ? "is-negative" : ""}">${formatMoney(entry.balance, account.currency)}</p>`}
       ${account.currency !== state.settings.mainCurrency ? html`<p class="fine-print">≈ ${formatMoney(entry.balanceMain, state.settings.mainCurrency)}</p>` : ""}
+      ${transit ? transitBox(account, transit) : ""}
       <div class="account-detail-actions">
-        ${card
+        ${transit
+          ? html`<button type="button" class="btn btn-primary btn-sm" data-do="trip">${icon("check", 16)} Viajé</button>
+              <button type="button" class="btn btn-soft btn-sm" data-do="load">${icon("plus", 16)} Cargar</button>
+              <button type="button" class="btn btn-ghost btn-sm" data-do="fix">${icon("refresh", 16)} Corregir saldo</button>`
+          : ""}
+        ${transit ? "" : card
           ? html`<button type="button" class="btn btn-primary btn-sm" data-do="pay-card">${icon("check", 16)} Pagar tarjeta</button>`
           : html`<button type="button" class="btn btn-soft btn-sm" data-do="transfer">${icon("swap", 16)} Mover dinero</button>`}
         <button type="button" class="btn btn-ghost btn-sm" data-do="edit">${icon("edit", 16)} Editar</button>
@@ -358,8 +374,149 @@ export function openAccountDetail(accountId) {
         // Pagar la tarjeta: mover dinero desde la cuenta principal a la tarjeta.
         if (what === "pay-card") openTransferForm({ fromId: store.defaultAccountId(), toId: accountId, amount: card.debt || undefined, description: msg`Pago de ${account.name}` });
         if (what === "edit") openAccountForm({ account: store.getState().accounts.find((a) => a.id === accountId) });
+        if (what === "trip") openTripForm(accountId);
+        if (what === "load") openTransitLoad(accountId);
+        if (what === "fix") openTransitFix(accountId);
       });
     },
   });
 }
 
+
+// ---------------------------------------------------------------------------
+// Tarjeta de transporte
+// ---------------------------------------------------------------------------
+
+/** "Te quedan 4 pasajes" (y "Te queda 1 pasaje"), con el aviso de cargar si son pocos. */
+export function tripsLeftText(trips, low = false) {
+  if (trips === 1) return tr(low ? "Te queda 1 pasaje: conviene cargar" : "Te queda 1 pasaje");
+  return low ? msg`Te quedan ${trips} pasajes: conviene cargar` : msg`Te quedan ${trips} pasajes`;
+}
+
+/** Pasajes que quedan, y cuánto se cargó y gastó este mes. */
+export function transitBox(account, status) {
+  const m = (n) => formatMoney(n, account.currency);
+  return html`<div class="transit-box ${status.low ? "is-low" : ""}">
+    ${status.trips !== null
+      ? html`<p class="transit-trips">${tripsLeftText(status.trips)}</p>
+          <p class="transit-sub">${status.low ? "Te quedan pocos: conviene cargar." : msg`Con el pasaje a ${m(status.fare)}`}</p>`
+      : html`<p class="transit-sub">Pon el precio del pasaje (en Editar) para ver cuántos te quedan.</p>`}
+    <p class="transit-month">${msg`Este mes cargaste ${m(status.loaded)} y gastaste ${m(status.spent)}`}</p>
+  </div>`;
+}
+
+/** Subcategoría "Transporte público" si sigue existiendo. */
+function transitCategory(state) {
+  const cat = state.categories.find((c) => c.id === "exp-transporte");
+  const sub = cat?.subcategories?.find((x) => x.id === "exp-transporte.sube");
+  return { categoryId: cat ? cat.id : "", subcategoryId: sub ? sub.id : "" };
+}
+
+/** "Viajé": uno o más pasajes, como gasto en Transporte desde la tarjeta. */
+export function openTripForm(accountId) {
+  const state = store.getState();
+  const account = findAccount(state, accountId);
+  if (!account) return;
+  openSheet({
+    title: msg`Viaje con ${account.name}`,
+    body: html`<form class="form" novalidate>
+      <div class="field">
+        <span class="field-label">¿Cuántos viajes?</span>
+        <div class="stepper">
+          <button type="button" class="btn btn-ghost btn-sm" data-step="-1" aria-label="Uno menos">${icon("minus", 18)}</button>
+          <input type="number" name="trips" min="1" max="50" value="1" inputmode="numeric" aria-label="Viajes" />
+          <button type="button" class="btn btn-ghost btn-sm" data-step="1" aria-label="Uno más">${icon("plus", 18)}</button>
+        </div>
+      </div>
+      ${fixedAmountField({ name: "fare", label: "Precio del pasaje", currency: account.currency, value: account.fare || "", hint: account.fare ? "" : "Se guarda como el precio de esta tarjeta." })}
+      <p class="field-hint" data-trip-total></p>
+      <div class="field">
+        <label class="field-label" for="f-date">Fecha</label>
+        <input id="f-date" name="date" type="date" value="${todayISO()}" required />
+      </div>
+      ${formActions({ submitLabel: "Anotar" })}
+    </form>`,
+    onMount(panel, close) {
+      const form = panel.querySelector("form");
+      const total = () => {
+        const n = Math.max(1, Math.min(50, Math.round(Number(form.elements.trips.value) || 1)));
+        const fare = readMoney(form, "fare");
+        form.querySelector("[data-trip-total]").textContent = fare > 0 ? msg`Total: ${formatMoney(n * fare, account.currency)}` : "";
+        return { n, fare };
+      };
+      form.addEventListener("click", (event) => {
+        const step = event.target.closest("[data-step]");
+        if (!step) return;
+        form.elements.trips.value = Math.max(1, Math.min(50, (Number(form.elements.trips.value) || 1) + Number(step.dataset.step)));
+        total();
+      });
+      form.addEventListener("input", total);
+      total();
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearErrors(form);
+        const { n, fare } = total();
+        if (!(fare > 0)) return fieldError(form, "fare", "Pon el precio del pasaje.");
+        if (!isISODate(form.elements.date.value)) return fieldError(form, "date", "Elige una fecha válida.");
+        const s = store.getState();
+        if (!account.fare) store.saveAccount({ ...account, fare });
+        store.addTransaction({
+          type: "expense",
+          amount: Math.round(n * fare * 100) / 100,
+          currency: account.currency,
+          accountId,
+          date: form.elements.date.value,
+          description: n === 1 ? tr("Viaje") : msg`${n} viajes`,
+          ...transitCategory(s),
+        });
+        close();
+        const left = transitStatus(store.getState(), findAccount(store.getState(), accountId));
+        toast(left.trips !== null ? `${tr("Anotado.")} ${tripsLeftText(left.trips, left.low)}` : "Viaje anotado");
+      });
+    },
+  });
+}
+
+/** "Cargar": mover dinero de otra cuenta a la tarjeta. */
+export function openTransitLoad(accountId) {
+  const state = store.getState();
+  const from = state.accounts.find((a) => !a.archived && a.id !== accountId && a.kind !== "credit" && a.kind !== "transit" && a.currency === findAccount(state, accountId)?.currency);
+  openTransferForm({ fromId: from?.id, toId: accountId, description: tr("Carga") });
+}
+
+/** "Corregir saldo": el saldo real de la tarjeta; lo que falta son viajes sin anotar. */
+export function openTransitFix(accountId) {
+  const state = store.getState();
+  const account = findAccount(state, accountId);
+  if (!account) return;
+  const now = transitStatus(state, account).balance;
+  openSheet({
+    title: msg`Corregir saldo de ${account.name}`,
+    body: html`<form class="form" novalidate>
+      <p class="sheet-text">Mira el saldo real en la terminal, en la boletería o en la app de la tarjeta. Lo que falte se anota como viajes que no anotaste.</p>
+      ${fixedAmountField({ name: "real", label: "Saldo real", currency: account.currency, value: "", hint: msg`La app tiene ${formatMoney(now, account.currency)}.` })}
+      ${formActions({ submitLabel: "Corregir" })}
+    </form>`,
+    onMount(panel, close) {
+      const form = panel.querySelector("form");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearErrors(form);
+        const text = form.elements.real.value.trim();
+        const real = text.startsWith("-") ? -parseAmount(text.slice(1)) : parseAmount(text);
+        if (!text || !Number.isFinite(real)) return fieldError(form, "real", "Escribe el saldo que muestra la tarjeta.");
+        const diff = Math.round((real - now) * 100) / 100;
+        close();
+        if (diff === 0) return toast("El saldo ya coincide");
+        if (diff > 0) {
+          // Tiene más de lo que dice la app: fue una carga que no se anotó.
+          toast("Tiene más de lo anotado: anota de dónde salió la carga", { type: "info" });
+          const from = store.getState().accounts.find((a) => !a.archived && a.id !== accountId && a.kind !== "credit" && a.kind !== "transit" && a.currency === account.currency);
+          return openTransferForm({ fromId: from?.id, toId: accountId, amount: diff, description: tr("Carga") });
+        }
+        store.addTransaction({ type: "expense", amount: -diff, currency: account.currency, accountId, date: todayISO(), description: tr("Viajes no anotados"), ...transitCategory(store.getState()) });
+        toast(msg`Saldo corregido: ${formatMoney(-diff, account.currency)} en viajes no anotados`);
+      });
+    },
+  });
+}

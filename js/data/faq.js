@@ -66,6 +66,11 @@ export const FAQ = [
         href: "#/cuentas",
       },
       {
+        q: "¿Cómo llevo la tarjeta del transporte? (SUBE, Suica, Oyster…)",
+        a: "Crea una cuenta de tipo «Tarjeta de transporte» con su saldo y el precio del pasaje. En el Inicio ves cuántos pasajes te quedan, con los botones «Viajé» (lo anota como gasto en Transporte) y «Cargar» (pasa dinero de otra cuenta: no es un gasto). Si no anotaste todos los viajes, usa «Corregir saldo» con el saldo real de la tarjeta.",
+        href: "#/cuentas",
+      },
+      {
         q: "¿La app mueve dinero sola?",
         a: "No. La app te avisa y te propone (pagar una factura, confirmar el sueldo, pasar un sobrante a una meta), pero nada se registra hasta que tú lo confirmas.",
       },

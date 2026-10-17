@@ -33,3 +33,8 @@ English (UK)
 AB12CD-EF34-GH56
 Content-Type
 transfer
+Suica
+Oyster
+Bilhete Único
+Bip!
+Tarjeta de Movilidad Integrada

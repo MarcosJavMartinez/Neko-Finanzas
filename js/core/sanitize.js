@@ -143,6 +143,7 @@ export function sanitizeState(input) {
         opening: Number.isFinite(opening) ? opening : 0,
         archived: bool(a.archived),
         ...(kind === "credit" ? { closingDay: dayOfMonth(a.closingDay, 25), dueDay: dayOfMonth(a.dueDay, 5) } : {}),
+        ...(kind === "transit" && positive(a.fare) ? { fare: positive(a.fare) } : {}),
       });
     }
   }

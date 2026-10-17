@@ -4,6 +4,7 @@
 // gráficos del mes y el resto en una grilla (ver styles/layout.css).
 
 import { msg, tr } from "../core/i18n.js";
+import { tripsLeftText } from "../ui/forms/accountForms.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, txRow, chartSize } from "../ui/components.js";
@@ -14,22 +15,7 @@ import { daysBetween, formatDate, formatMonth, currentMonthKey, shiftMonthKey, t
 import { accountRow } from "./accounts.js";
 import { ratePair } from "./currencies.js";
 import { loanRow } from "./loans.js";
-import {
-  accountBalances,
-  balanceSummary,
-  budgetLeftovers,
-  dailyAllowance,
-  treatAllowance,
-  loansSummary,
-  monthlyTotals,
-  pendingRecurringIncomes,
-  upcomingBills,
-  budgetsOverview,
-  percent,
-  monthlySeries,
-  monthToDate,
-  expensesByCategory,
-} from "../core/finance.js";
+import { accountBalances, balanceSummary, budgetLeftovers, dailyAllowance, treatAllowance, loansSummary, monthlyTotals, pendingRecurringIncomes, upcomingBills, budgetsOverview, percent, monthlySeries, monthToDate, expensesByCategory, transitStatus } from "../core/finance.js";
 import { backupReminderDue, daysSinceBackup, getLastBackup, iosNoticeSnoozed } from "../core/prefs.js";
 import { needsIosInstall } from "../ui/install.js";
 import { extrasOfMonth } from "../ui/forms/incomeExtras.js";
@@ -189,6 +175,27 @@ export default {
               </div>
             </section>`
           : "";
+
+    // Tarjetas de transporte: saldo, pasajes que quedan y botones a mano.
+    const transitCards = state.accounts
+      .filter((a) => a.kind === "transit" && !a.archived)
+      .slice(0, 2)
+      .map((a) => {
+        const st = transitStatus(state, a, today);
+        return html`<section class="transit-card reveal ${st.low ? "is-low" : ""}" aria-label="${a.name}">
+          <button type="button" class="transit-head" data-action="account-detail" data-id="${a.id}">
+            <span class="transit-icon" aria-hidden="true">${a.icon}</span>
+            <span class="transit-text">
+              <span class="transit-name">${a.name} · <strong>${formatMoney(st.balance, a.currency)}</strong></span>
+              <span class="transit-left">${st.trips === null ? "Toca para poner el precio del pasaje" : tripsLeftText(st.trips, st.low)}</span>
+            </span>
+          </button>
+          <div class="transit-actions">
+            <button type="button" class="btn btn-sm btn-primary" data-action="transit-trip" data-id="${a.id}">${icon("check", 16)} Viajé</button>
+            <button type="button" class="btn btn-sm btn-soft" data-action="transit-load" data-id="${a.id}">${icon("plus", 16)} Cargar</button>
+          </div>
+        </section>`;
+      });
 
     // Sobrantes del mes pasado en presupuestos reservados: se ofrece pasarlos a una meta.
     const leftovers = budgetLeftovers(state, today).map(
@@ -358,7 +365,7 @@ export default {
       <div class="home-grid">
         <div class="home-top">
           <div class="home-main">${hero}</div>
-          <div class="home-side">${dailyCard}${showExtras ? extrasLine : ""}</div>
+          <div class="home-side">${dailyCard}${transitCards}${showExtras ? extrasLine : ""}</div>
         </div>
         ${actions}${leftovers}${pending}
         <div class="home-board">${isEmpty ? "" : barsCard}${isEmpty ? "" : donutCard}${accountsCard}${recents}${billsCard}${loansCard}${budgetsCard}${goalsCard}${ratesCard}</div>

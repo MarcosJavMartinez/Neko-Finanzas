@@ -115,6 +115,8 @@ export const ACCOUNT_KINDS = {
   bank: { label: "Banco", icon: "🏦" },
   wallet: { label: "Billetera virtual", icon: "📱" },
   savings: { label: "Ahorro", icon: "🐷" },
+  // Tarjeta de transporte (prepaga): cargarla es mover dinero; cada viaje es un gasto.
+  transit: { label: "Tarjeta de transporte", icon: "🚌" },
   // Tarjeta de crédito: su saldo es lo que debes (negativo). Lo que gastas con
   // ella baja tu total en el momento; pagarla es mover dinero del banco a la
   // tarjeta (no es un gasto nuevo).
@@ -182,3 +184,17 @@ export function uid(prefix = "id") {
   uidCount = (uidCount + 1) % 1679616; // 36^4
   return `${prefix}-${Date.now().toString(36)}-${uidCount.toString(36).padStart(4, "0")}${Math.random().toString(36).slice(2, 6)}`;
 }
+
+/** Nombre sugerido para la tarjeta de transporte según el país (se puede cambiar). */
+export const TRANSIT_NAMES = {
+  "es-AR": "SUBE",
+  "ja-JP": "Suica",
+  "en-GB": "Oyster",
+  "pt-BR": "Bilhete Único",
+  "ru-RU": "Тройка",
+  "tr-TR": "İstanbulkart",
+  "es-CL": "Bip!",
+  "es-UY": "STM",
+  "es-MX": "Tarjeta de Movilidad Integrada",
+  "es-CO": "TuLlave",
+};

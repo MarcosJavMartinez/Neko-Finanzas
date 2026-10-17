@@ -2999,3 +2999,95 @@ button.inline-link {
 .faq-a p {
   margin: 0;
 }
+
+/* Tarjeta de transporte */
+.transit-box {
+  display: grid;
+  gap: 2px;
+  margin: 10px 0 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--brand-soft);
+}
+
+.transit-box.is-low,
+.transit-card.is-low {
+  background: var(--bill-soft);
+}
+
+.transit-trips {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+}
+
+
+.transit-sub,
+.transit-month {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 0.88rem;
+}
+
+.transit-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--brand-soft);
+  box-shadow: var(--shadow-xs);
+}
+
+.transit-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: start;
+}
+
+.transit-icon {
+  font-size: 1.6rem;
+}
+
+.transit-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.transit-name {
+  font-weight: 600;
+}
+
+.transit-left {
+  color: var(--text-2);
+  font-size: 0.86rem;
+}
+
+.transit-card.is-low .transit-left {
+  color: var(--bill-ink);
+  font-weight: 700;
+}
+
+.transit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.transit-actions .btn {
+  flex: 1;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepper input {
+  width: 80px;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+}

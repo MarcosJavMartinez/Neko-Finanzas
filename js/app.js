@@ -22,7 +22,7 @@ import { openGoalForm, openGoalDetail } from "./ui/forms/goalForms.js";
 import { openBudgetForm } from "./ui/forms/budgetForm.js";
 import { openLeftoverSheet } from "./ui/forms/leftoverForm.js";
 import { openCategoryForm } from "./ui/forms/categoryForm.js";
-import { openAccountForm, openTransferForm, openAccountDetail } from "./ui/forms/accountForms.js";
+import { openAccountForm, openTransferForm, openAccountDetail, openTripForm, openTransitLoad } from "./ui/forms/accountForms.js";
 import { openLoanForm, openLoanDetail, openCreditLoanForm } from "./ui/forms/loanForms.js";
 import { openIncomeConfirm } from "./ui/forms/incomeConfirm.js";
 import { openIncomeExtras } from "./ui/forms/incomeExtras.js";
@@ -139,6 +139,8 @@ const GLOBAL_ACTIONS = {
   "edit-tx": (el) => openTransactionForm({ tx: byId(store.getState().transactions, el.dataset.id) }),
   "edit-transfer": (el) => openTransferForm({ tx: byId(store.getState().transactions, el.dataset.id) }),
   "add-transfer": (el) => openTransferForm({ fromId: el.dataset.from }),
+  "transit-trip": (el) => openTripForm(el.dataset.id),
+  "transit-load": (el) => openTransitLoad(el.dataset.id),
   "exchange-currency": () => openTransferForm({ exchange: true }),
   "add-account": () => openAccountForm(),
   "account-detail": (el) => openAccountDetail(el.dataset.id),

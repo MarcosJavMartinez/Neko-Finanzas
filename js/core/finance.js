@@ -721,3 +721,26 @@ export function goalMonthlyNeeded(goal, today = todayISO()) {
   const months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
   return remaining / Math.max(1, months);
 }
+
+// ---------------------------------------------------------------------------
+// Tarjeta de transporte
+// ---------------------------------------------------------------------------
+
+/**
+ * Saldo, lo cargado y lo gastado en el mes, y cuántos pasajes alcanzan con el
+ * saldo (si se sabe el precio del pasaje).
+ */
+export function transitStatus(state, account, today = todayISO()) {
+  const { start } = monthRange(monthKey(today));
+  const balance = accountBalance(state, account.id, today).balance;
+  const inMonth = (t) => t.date >= start && t.date <= today;
+  const loaded = state.transactions
+    .filter((t) => t.type === "transfer" && t.toAccountId === account.id && inMonth(t))
+    .reduce((s, t) => s + (t.toAmount ?? t.amount), 0);
+  const spent = state.transactions
+    .filter((t) => t.type === "expense" && t.accountId === account.id && inMonth(t))
+    .reduce((s, t) => s + convert(t.amount, t.currency, account.currency, state.rates), 0);
+  const fare = account.fare > 0 ? account.fare : 0;
+  const trips = fare ? Math.max(0, Math.floor((balance + 0.000001) / fare)) : null;
+  return { balance, loaded: Math.round(loaded * 100) / 100, spent: Math.round(spent * 100) / 100, fare, trips, low: trips !== null && trips <= 2 };
+}

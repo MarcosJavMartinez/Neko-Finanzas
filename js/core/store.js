@@ -277,6 +277,7 @@ export function saveAccount(data) {
       opening: Number.isFinite(data.opening) ? Math.round(data.opening * 100) / 100 : 0,
       archived: Boolean(data.archived),
     };
+    if (kind === "transit" && data.fare > 0) values.fare = Math.round(data.fare * 100) / 100;
     if (kind === "credit") {
       const day = (v, fallback) => (Number.isInteger(Number(v)) && v >= 1 && v <= 31 ? Number(v) : fallback);
       values.closingDay = day(data.closingDay, 25);
@@ -288,6 +289,7 @@ export function saveAccount(data) {
         delete existing.closingDay;
         delete existing.dueDay;
       }
+      if (!values.fare) delete existing.fare;
       Object.assign(existing, values, used ? {} : { currency: data.currency || existing.currency });
       // Siempre tiene que quedar al menos una cuenta activa.
       if (!s.accounts.some((a) => !a.archived)) existing.archived = false;
