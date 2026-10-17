@@ -22,7 +22,6 @@ import {
   replaceSubcategoryPicker,
 } from "./fields.js";
 import { bindCategoryPickers } from "./categoryForm.js";
-import { accountSelect } from "./accountForms.js";
 import { getLastAccount, setLastAccount } from "../../core/prefs.js";
 import * as store from "../../core/store.js";
 import { todayISO, FREQUENCIES } from "../../core/dates.js";
@@ -56,7 +55,6 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
   const activeAccounts = state.accounts.filter((a) => !a.archived);
   const lastAccount = activeAccounts.find((a) => a.id === getLastAccount())?.id;
   const accountId = current.accountId || activeAccounts.find((a) => a.id === presetAccount)?.id || lastAccount || store.defaultAccountId();
-  const showAccount = activeAccounts.length > 1 || (current.accountId && !activeAccounts.some((a) => a.id === current.accountId));
   const isCardAccount = (id) => state.accounts.find((a) => a.id === id)?.kind === "credit";
   // Un movimiento nuevo arranca en la moneda de su cuenta (salvo tarjeta, que acepta compras en otras).
   const startAccount = state.accounts.find((a) => a.id === accountId);
@@ -71,8 +69,15 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
       ${bill ? html`<p class="notice notice-info">${icon("receipt", 16)}Es el pago de la factura “${bill.name}”. Si lo borras, la factura vuelve a quedar pendiente.</p>` : ""}
       ${plan ? html`<p class="notice notice-info">${icon("calendar", 16)}Es la cuota ${plan.n} de ${plan.of} ${planLoan ? msg`del préstamo de ${planLoan.person}` : "de una compra en cuotas"}. Los cambios se aplican solo a esta cuota.</p>` : ""}
       ${amountField({ value: current.amount, currency: current.currency, autofocus: isEdit ? false : "always", tone: `tone-${current.type}` })}
-      <div data-account-box>${showAccount ? accountSelect(state, { value: accountId, label: current.type === "income" ? "Cuenta" : "Cuenta o medio de pago" }) : ""}</div>
-      <div class="notice notice-info cur-note" data-cur-note hidden>${icon("info", 16)}<span><span data-cur-text></span> <button type="button" class="inline-link" data-cur-create hidden></button></span></div>
+      <div class="field" data-account-field>
+        <label class="field-label" for="f-accountId" data-account-label>${current.type === "income" ? "Cuenta" : "Cuenta o medio de pago"}</label>
+        <select id="f-accountId" name="accountId"></select>
+      </div>
+      <div class="field" data-new-name hidden>
+        <label class="field-label" for="f-newAccountName">Nombre de la cuenta nueva</label>
+        <input id="f-newAccountName" name="newAccountName" type="text" maxlength="40" autocomplete="off" />
+        <p class="field-hint">Se crea al guardar, con este dinero adentro.</p>
+      </div>
       ${isEdit
         ? ""
         : html`<div class="field installments-field" ${current.type === "expense" && isCardAccount(accountId) ? "" : "hidden"}>
@@ -144,74 +149,56 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         if (["accountId", "installments", "currency"].includes(event.target.name)) syncInstallments();
       });
 
-      // Moneda y cuenta van juntas: 700 US$ no deberían caer, sin aviso, en una cuenta en pesos.
-      const accountOf = () => store.getState().accounts.find((a) => a.id === (form.elements.accountId?.value || accountId));
+      // Primero la moneda, después la cuenta: la lista muestra solo las cuentas
+      // en esa moneda (y las tarjetas, para gastos). Si no hay ninguna, ofrece
+      // crearla ("Efectivo USD (nueva)") con un nombre que se puede cambiar.
       const pickedCurrency = () => form.querySelector("input[name=currency]:checked")?.value || current.currency;
-      const setCurrency = (code) => {
-        const radio = form.querySelector(`input[name=currency][value="${code}"]`);
-        if (radio && !radio.checked) {
-          radio.checked = true;
-          radio.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-      };
-      const note = form.querySelector("[data-cur-note]");
-      const noteText = form.querySelector("[data-cur-text]");
-      const createBtn = form.querySelector("[data-cur-create]");
-      // Moneda sin cuenta propia: al guardar se crea una (del mismo tipo que la
-      // elegida, p. ej. "Efectivo USD"). Si la persona prefiere, se suma convertido.
-      let convertInstead = false;
-      const newAccountFor = (account, code) => {
-        const kind = account && account.kind !== "credit" ? account.kind : "cash";
-        return { kind, currency: code, name: `${tr(ACCOUNT_KINDS[kind].label)} ${code}`, icon: ACCOUNT_KINDS[kind].icon };
-      };
-      const needsAccount = () => {
-        const account = accountOf();
-        const code = pickedCurrency();
-        if (!account || account.kind === "credit" || account.currency === code) return null;
-        return store.getState().accounts.some((a) => !a.archived && a.kind !== "credit" && a.currency === code) ? null : newAccountFor(account, code);
-      };
-      function syncCurrencyNote() {
-        const account = accountOf();
-        const code = pickedCurrency();
-        const differs = account && account.kind !== "credit" && account.currency !== code;
-        note.hidden = !differs;
-        if (!differs) return;
-        const create = needsAccount();
-        createBtn.hidden = !create;
-        if (create && !convertInstead) {
-          noteText.textContent = msg`No tienes una cuenta en ${code}: al guardar se crea “${create.name}” para este dinero.`;
-          createBtn.textContent = msg`Prefiero sumarlo convertido a “${tr(account.name)}”`;
-        } else {
-          noteText.textContent = msg`“${tr(account.name)}” está en ${account.currency}: lo que cargues en ${code} se suma convertido con tu tipo de cambio.`;
-          if (create) createBtn.textContent = msg`Mejor crear “${create.name}”`;
-        }
+      const select = form.elements.accountId;
+      const accountField = form.querySelector("[data-account-field]");
+      const nameBox = form.querySelector("[data-new-name]");
+      const nameInput = form.elements.newAccountName;
+      let nameEdited = false;
+      const NEW_KINDS = ["cash", "bank", "wallet"];
+      const defaultName = (kind) => `${tr(ACCOUNT_KINDS[kind].label)} ${pickedCurrency()}`;
+      function syncNewName() {
+        const kind = select.value.startsWith("new:") ? select.value.slice(4) : "";
+        nameBox.hidden = !kind;
+        if (kind && !nameEdited) nameInput.value = defaultName(kind);
       }
+      function fillAccounts(prefer) {
+        const s = store.getState();
+        const code = pickedCurrency();
+        const chosen = s.accounts.find((a) => a.id === select.value);
+        const list = s.accounts.filter(
+          (a) => (!a.archived || a.id === current.accountId) && (a.currency === code || (a.kind === "credit" && selectedType === "expense"))
+        );
+        const hasOwn = list.some((a) => a.currency === code && a.kind !== "credit");
+        const options = [
+          ...list.map((a) => ({ value: a.id, label: `${a.icon} ${tr(a.name)} · ${a.currency}`, kind: a.kind })),
+          ...(hasOwn ? [] : NEW_KINDS.map((k) => ({ value: `new:${k}`, label: msg`${ACCOUNT_KINDS[k].icon} ${tr(ACCOUNT_KINDS[k].label)} ${code} (nueva)`, kind: k }))),
+        ];
+        select.replaceChildren(...options.map((o) => new Option(o.label, o.value)));
+        // La misma cuenta si sigue en la lista; si no, una del mismo tipo (efectivo → efectivo).
+        const keep = options.find((o) => o.value === prefer) || options.find((o) => o.kind === (chosen?.kind || s.accounts.find((a) => a.id === prefer)?.kind)) || options[0];
+        if (keep) select.value = keep.value;
+        // Con una sola cuenta posible (y que ya existe) no hace falta elegir.
+        accountField.hidden = options.length === 1 && !options[0].value.startsWith("new:");
+        syncNewName();
+        syncInstallments();
+      }
+      nameInput.addEventListener("input", () => (nameEdited = true));
       form.addEventListener("change", (event) => {
         if (event.target.name === "currency") {
-          // Elegiste otra moneda: si tienes una cuenta en esa moneda, se pasa a ella.
-          const account = accountOf();
-          const code = event.target.value;
-          if (account && account.kind !== "credit" && account.currency !== code && form.elements.accountId) {
-            const all = store.getState().accounts.filter((a) => !a.archived && a.kind !== "credit" && a.currency === code);
-            const match = all.find((a) => a.kind === account.kind) || all[0];
-            if (match) {
-              form.elements.accountId.value = match.id;
-              toast(msg`Cuenta cambiada a “${tr(match.name)}”, que está en ${code}`, { type: "info" });
-            }
-          }
+          nameEdited = false;
+          fillAccounts(select.value);
         }
-        if (event.target.name === "accountId") {
-          // Elegiste otra cuenta: el monto pasa a su moneda (salvo tarjeta).
-          const account = accountOf();
-          if (account && account.kind !== "credit") setCurrency(account.currency);
+        if (event.target.name === "type") {
+          form.querySelector("[data-account-label]").textContent = tr(selectedType === "income" ? "Cuenta" : "Cuenta o medio de pago");
+          fillAccounts(select.value);
         }
-        if (["currency", "accountId"].includes(event.target.name)) syncCurrencyNote();
+        if (event.target.name === "accountId") syncNewName();
       });
-      createBtn.addEventListener("click", () => {
-        convertInstead = !convertInstead;
-        syncCurrencyNote();
-      });
-      syncCurrencyNote();
+      fillAccounts(accountId);
       form.addEventListener("input", (event) => {
         if (event.target.name === "amount") syncInstallments();
       });
@@ -223,12 +210,19 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
 
       bindCategoryPickers(form, () => selectedType);
 
-      /** Si hace falta, crea la cuenta en la moneda del movimiento y devuelve a cuál va. */
+      /** "Efectivo USD (nueva)": se crea al guardar, con el nombre elegido. */
       let createdAccount = null;
       function autoAccountId(id) {
-        const create = !convertInstead && needsAccount();
-        if (!create) return id;
-        createdAccount = store.saveAccount({ ...create, color: "#08a7c8", opening: 0 });
+        if (!String(id).startsWith("new:")) return id;
+        const kind = id.slice(4);
+        createdAccount = store.saveAccount({
+          name: nameInput.value.trim() || defaultName(kind),
+          kind,
+          currency: pickedCurrency(),
+          icon: ACCOUNT_KINDS[kind].icon,
+          color: "#08a7c8",
+          opening: 0,
+        });
         return createdAccount.id;
       }
       form.addEventListener("submit", (event) => {
@@ -247,7 +241,7 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
           categoryId: data.categoryId || FALLBACK_CATEGORY[selectedType],
           subcategoryId: "",
           description: data.description.trim(),
-          accountId: autoAccountId(data.accountId || accountId),
+          accountId: autoAccountId(select.value || accountId),
         };
         setLastAccount(values.accountId);
         // Solo se guarda la subcategoría si pertenece a la categoría elegida.

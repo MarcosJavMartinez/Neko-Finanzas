@@ -1513,4 +1513,7 @@ export default {
   "Tipo de cambio actualizado: {0} por {1}": "Kur güncellendi: {1} başına {0}",
   "¿Cómo cambio dólares a pesos (o al revés)?": "Doları liraya (ya da tersini) nasıl bozdururum?",
   "En Agregar → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.": "Ekle → Döviz bozdur. Paranın çıktığı hesabı (örneğin Nakit USD) ve girdiği hesabı (liradaki nakit ya da cüzdanın), ne kadar verdiğini ve gerçekte ne kadar aldığını seç. Gider değildir: bir hesap azalır, diğeri artar. Kayıtlı kurundan farklı bir kurdan bozdurduysan, uygulama onu kurun olarak kullanmayı önerir.",
+  "Nombre de la cuenta nueva": "Yeni hesabın adı",
+  "Se crea al guardar, con este dinero adentro.": "Kaydettiğinde bu parayla birlikte oluşturulur.",
+  "{0} {1} {2} (nueva)": "{0} {1} {2} (yeni)",
 };

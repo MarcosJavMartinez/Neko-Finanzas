@@ -1513,4 +1513,7 @@ export default {
   "Tipo de cambio actualizado: {0} por {1}": "Câmbio atualizado: {0} por {1}",
   "¿Cómo cambio dólares a pesos (o al revés)?": "Como troco dólares por reais (ou o contrário)?",
   "En Agregar → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.": "Em Adicionar → Trocar moedas. Escolha de qual conta sai (por exemplo, Dinheiro USD) e para qual entra (dinheiro ou sua carteira em reais), quanto você entregou e quanto recebeu de verdade. Não é uma despesa: uma conta baixa e a outra sobe. Se você trocou a um valor diferente do que tem salvo, o app oferece usá-lo como seu câmbio.",
+  "Nombre de la cuenta nueva": "Nome da nova conta",
+  "Se crea al guardar, con este dinero adentro.": "É criada ao salvar, com este dinheiro dentro.",
+  "{0} {1} {2} (nueva)": "{0} {1} {2} (nova)",
 };

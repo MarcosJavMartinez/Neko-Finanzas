@@ -1513,4 +1513,7 @@ export default {
   "Tipo de cambio actualizado: {0} por {1}": "Exchange rate updated: {0} per {1}",
   "¿Cómo cambio dólares a pesos (o al revés)?": "How do I exchange dollars for my local currency (or the other way round)?",
   "En Agregar → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.": "In Add → Exchange currency. Choose the account the money leaves (for example, Cash USD) and the one it goes into (cash or your wallet in your local currency), how much you handed over and how much you actually got. It isn't an expense: one account goes down and the other goes up. If you got a different rate from the one you have saved, the app offers to use it as your exchange rate.",
+  "Nombre de la cuenta nueva": "New account name",
+  "Se crea al guardar, con este dinero adentro.": "It's created when you save, with this money in it.",
+  "{0} {1} {2} (nueva)": "{0} {1} {2} (new)",
 };

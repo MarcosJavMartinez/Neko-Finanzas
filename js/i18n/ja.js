@@ -1515,4 +1515,7 @@ export default {
   "Tipo de cambio actualizado: {0} por {1}": "レートを更新しました：1 {1} = {0}",
   "¿Cómo cambio dólares a pesos (o al revés)?": "ドルを円に（またはその逆に）両替するには？",
   "En Agregar → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.": "「追加」→「両替する」から行います。出ていく口座（例：現金 USD）と入る口座（円の現金や電子マネー）、渡した額と実際に受け取った額を選びます。支出ではなく、片方の口座が減ってもう片方が増えます。登録中のレートと違うレートで両替した場合は、それを使うか提案します。",
+  "Nombre de la cuenta nueva": "新しい口座の名前",
+  "Se crea al guardar, con este dinero adentro.": "保存すると、このお金が入った状態で作られます。",
+  "{0} {1} {2} (nueva)": "{0} {1} {2}（新規）",
 };

@@ -1513,4 +1513,7 @@ export default {
   "Tipo de cambio actualizado: {0} por {1}": "Курс обновлён: {0} за {1}",
   "¿Cómo cambio dólares a pesos (o al revés)?": "Как обменять доллары на рубли (или наоборот)?",
   "En Agregar → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.": "В «Добавить» → «Обменять валюту». Выберите счёт, с которого уходят деньги (например, «Наличные USD»), и счёт, куда они приходят (наличные или кошелёк в рублях), сколько вы отдали и сколько реально получили. Это не расход: один счёт уменьшается, другой растёт. Если курс обмена отличается от сохранённого, приложение предложит использовать его.",
+  "Nombre de la cuenta nueva": "Название нового счёта",
+  "Se crea al guardar, con este dinero adentro.": "Счёт создаётся при сохранении, сразу с этими деньгами.",
+  "{0} {1} {2} (nueva)": "{0} {1} {2} (новый)",
 };

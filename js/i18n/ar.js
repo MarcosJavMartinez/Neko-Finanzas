@@ -1514,4 +1514,7 @@ export default {
   "Tipo de cambio actualizado: {0} por {1}": "تم تحديث سعر الصرف: {0} لكل {1}",
   "¿Cómo cambio dólares a pesos (o al revés)?": "كيف أبدّل الدولار بعملتي المحلية (أو العكس)؟",
   "En Agregar → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.": "من إضافة ← تبديل العملات. اختر الحساب الذي يخرج منه المال (مثل نقد USD) والحساب الذي يدخل إليه (النقد أو محفظتك بالعملة المحلية)، وكم سلّمت وكم استلمت فعلًا. ليس مصروفًا: ينخفض حساب ويرتفع الآخر. إذا بدّلت بسعر مختلف عن المسجّل، يقترح التطبيق استخدامه كسعر صرفك.",
+  "Nombre de la cuenta nueva": "اسم الحساب الجديد",
+  "Se crea al guardar, con este dinero adentro.": "يُنشأ عند الحفظ، وفيه هذا المال.",
+  "{0} {1} {2} (nueva)": "{0} {1} {2} (جديد)",
 };
