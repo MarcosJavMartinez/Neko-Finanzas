@@ -64,7 +64,7 @@ export default {
             <span class="budget-top">
               <span class="cat-bubble cat-bubble-md" style="--c:${i.budget.color}">${i.budget.icon}</span>
               <span class="row-main">
-                <span class="row-title">${i.budget.name}${i.budget.reserve ? html` <span class="tag tag-bill">${icon("lock", 12)}Reservado</span>` : ""}</span>
+                <span class="row-title">${i.budget.name}${i.budget.pause?.month === currentMonthKey() ? html` <span class="tag">${i.budget.pause.keep ? "Guardado para el mes que viene" : "Sin usar este mes"}</span>` : i.budget.reserve ? html` <span class="tag tag-bill">${icon("lock", 12)}Reservado</span>` : ""}</span>
                 <span class="row-meta">${isGoal ? "Ahorrado" : "Gastado"} ${formatMoney(i.spent, main)} de ${formatMoney(i.limit, main)}</span>
               </span>
               <span class="budget-pct">${Math.round(i.pct)}%</span>

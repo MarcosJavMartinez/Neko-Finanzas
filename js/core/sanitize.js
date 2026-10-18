@@ -381,6 +381,8 @@ export function sanitizeState(input) {
     };
     if (date(b.since)) budget.since = b.since;
     if (typeof b.settledMonth === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(b.settledMonth)) budget.settledMonth = b.settledMonth;
+    // "Este mes no lo uso": guardado para el mes que viene (keep) o liberado.
+    if (isObj(b.pause) && typeof b.pause.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(b.pause.month)) budget.pause = { month: b.pause.month, keep: bool(b.pause.keep) };
     budgets.push(budget);
   }
 

@@ -877,6 +877,16 @@ export function saveBudget(data) {
  * pasarlo a una meta (goalId + amount en la moneda principal) o dejarlo
  * disponible. En los dos casos ese mes queda resuelto y no se vuelve a ofrecer.
  */
+/** "Este mes no lo uso": guardarlo para el mes que viene (keep) o liberarlo. Con month vacío, se deshace. */
+export function pauseBudget(id, month, keep) {
+  commit((s) => {
+    const budget = find(s.budgets, id);
+    if (!budget) return;
+    if (month) budget.pause = { month, keep: Boolean(keep) };
+    else delete budget.pause;
+  });
+}
+
 export function settleBudgetLeftover(budgetId, month, { goalId, amount, note = "" } = {}) {
   commit((s) => {
     const budget = find(s.budgets, budgetId);

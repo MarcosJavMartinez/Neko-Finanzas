@@ -3151,3 +3151,23 @@ button.inline-link {
   color: var(--action-ink, var(--action));
   cursor: pointer;
 }
+
+/* Presupuesto: "Este mes no lo uso" */
+.pause-box {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--track);
+}
+
+.pause-box .field-hint,
+.pause-box .notice {
+  margin: 0;
+}
+
+.pause-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

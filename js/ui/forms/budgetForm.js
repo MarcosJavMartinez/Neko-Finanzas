@@ -1,6 +1,7 @@
 // Presupuestos mensuales: por porcentaje de los ingresos o monto fijo, y
 // aplicados a categorías de gasto, a una meta (ahorro) o "al resto".
 
+import { currentMonthKey, shiftMonthKey, formatMonth, midSentence } from "../../core/dates.js";
 import { msg, tr } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
@@ -101,10 +102,26 @@ export function openBudgetForm({ budget, preset } = {}) {
           ${colorPicker(current.color)}
         </div>
       </details>
+      ${isEdit && budget.reserve && budget.target.kind !== "goal" ? pauseBox(budget) : ""}
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Crear presupuesto", deletable: isEdit })}
     </form>`,
     onMount(panel, close) {
       const form = panel.querySelector("form");
+      form.querySelector("[data-pause-box]")?.addEventListener("click", (event) => {
+        const what = event.target.closest("[data-pause]")?.dataset.pause;
+        if (!what) return;
+        const backup = store.snapshot();
+        const month = currentMonthKey();
+        const next = midSentence(formatMonth(shiftMonthKey(month, 1)).split(" ")[0]);
+        if (what === "keep") store.pauseBudget(budget.id, month, true);
+        if (what === "release") store.pauseBudget(budget.id, month, false);
+        if (what === "undo") store.pauseBudget(budget.id, "");
+        close();
+        toast(
+          what === "keep" ? msg`Guardado para ${next}: sigue apartado y ya cuenta para ese mes` : what === "release" ? "Liberado: este mes pasa a tu disponible" : "Listo, este mes vuelve a reservarse",
+          { type: "info", actionLabel: "Deshacer", onAction: () => store.restore(backup) }
+        );
+      });
       form.addEventListener("change", (event) => {
         if (event.target.name === "mode") {
           const fixed = event.target.value !== "percent";
@@ -172,4 +189,22 @@ export function openBudgetForm({ budget, preset } = {}) {
       });
     },
   });
+}
+
+/** "Este mes no lo uso": guardarlo para el mes que viene o liberarlo (vuelve solo el mes siguiente). */
+function pauseBox(budget) {
+  const month = currentMonthKey();
+  const next = midSentence(formatMonth(shiftMonthKey(month, 1)).split(" ")[0]);
+  const paused = budget.pause?.month === month;
+  return html`<div class="pause-box" data-pause-box>
+    <span class="field-label">Este mes</span>
+    ${paused
+      ? html`<p class="notice notice-info">${icon("info", 16)}<span>${budget.pause.keep ? msg`No lo usas este mes: queda guardado para ${next}.` : "No lo usas este mes: lo que tenía reservado pasó a tu disponible."}</span></p>
+          <button type="button" class="btn btn-ghost btn-sm" data-pause="undo">${icon("undo", 16)} Volver a usarlo este mes</button>`
+      : html`<p class="field-hint">¿Este mes no lo vas a usar? Vuelve solo el mes que viene.</p>
+          <div class="pause-actions">
+            <button type="button" class="btn btn-soft btn-sm" data-pause="keep">${icon("lock", 16)} ${msg`Guardarlo para ${next}`}</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-pause="release">${icon("check", 16)} Liberarlo</button>
+          </div>`}
+  </div>`;
 }

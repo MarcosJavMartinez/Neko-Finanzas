@@ -560,6 +560,24 @@ mem.delete("nekoFinanzas.hideAmounts");
   eq("quien eligió 30 días los conserva; quien no, pasa a fin de mes", [sanitizeState({ settings: { reserveHorizon: "30d", horizonChosen: true } }).settings.reserveHorizon, sanitizeState({ settings: { reserveHorizon: "30d" } }).settings.reserveHorizon], ["30d", "month"]);
 }
 
+// "Este mes no lo uso": guardarlo para el mes que viene lo sigue reservando y lo descuenta de lo que hace falta; liberarlo lo suelta
+{
+  const base = {
+    categories: buildDemoState().categories,
+    accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }],
+    budgets: [{ id: "sup", name: "Súper", icon: "🛒", mode: "fixed", value: 20000, reserve: true, since: "2026-03-01", target: { kind: "categories", categoryIds: ["exp-super"] } }],
+  };
+  const today = "2026-03-18";
+  const run = (pause) => {
+    const st = sanitizeState({ ...base, budgets: [{ ...base.budgets[0], ...(pause ? { pause } : {}) }] });
+    const p = F.nextMonthPlan(st, today);
+    return [Math.round(F.balanceSummary(st, today).available), p.items[0].amount, p.items[0].carried, F.budgetLeftovers(st, "2026-04-02").length];
+  };
+  eq("no lo uso: normal / guardarlo para el que viene / liberarlo", [run(null), run({ month: "2026-03", keep: true }), run({ month: "2026-03", keep: false })], [[80000, 20000, 0, 1], [80000, 0, 20000, 0], [100000, 20000, 0, 0]]);
+  const keep = sanitizeState({ ...base, budgets: [{ ...base.budgets[0], pause: { month: "2026-03", keep: true } }] });
+  eq("no lo uso: los datos son válidos", JSON.stringify(sanitizeState(JSON.parse(JSON.stringify(keep))).budgets[0].pause), JSON.stringify({ month: "2026-03", keep: true }));
+}
+
 // Una moneda con datos no se saca de las que se usan
 store.loadDemo();
 store.toggleCurrency("USD", false);

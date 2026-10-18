@@ -74,7 +74,7 @@ function reservedGroups(state, summary, today) {
   }
   rows = group("Presupuestos", summary.envelopes.amount, "#/presupuestos");
   for (const { budget, amount } of summary.envelopes.items) {
-    rows.push(flowRow({ emoji: budget.icon, color: "var(--action)", text: html`<strong>${m(amount)}</strong> reservados para ${budget.name}`, meta: "Lo que te falta gastar este mes", href: "#/presupuestos" }));
+    rows.push(flowRow({ emoji: budget.icon, color: "var(--action)", text: html`<strong>${m(amount)}</strong> reservados para ${budget.name}`, meta: budget.pause?.month === monthKey(today) && budget.pause.keep ? "Guardado para el mes que viene" : "Lo que te falta gastar este mes", href: "#/presupuestos" }));
   }
   rows = group("Fondo de facturas", summary.cushion.amount, "#/facturas");
   if (summary.cushion.amount > 0) {
@@ -119,7 +119,7 @@ function nextMonthCard(state, today) {
           emoji: i.icon || (i.kind === "debt" || i.kind === "setAside" ? "🤝" : "🗓️"),
           color: i.kind === "bill" ? "var(--bill)" : i.kind === "budget" ? "var(--action)" : i.kind === "scheduled" ? "var(--expense)" : "var(--goal)",
           text: html`<strong>${formatMoney(i.amount, i.currency)}</strong> · ${i.name || label[i.kind]}`,
-          meta: [tr(label[i.kind]), i.kind === "budget" || i.kind === "setAside" ? "" : formatDate(i.date)].filter(Boolean).join(" · "),
+          meta: [tr(label[i.kind]), i.kind === "budget" || i.kind === "setAside" ? "" : formatDate(i.date), i.carried > 0 ? msg`ya guardaste ${m(i.carried)}` : ""].filter(Boolean).join(" · "),
           extra: i.currency !== main ? approx(state, i.amount, i.currency) : "",
         }))}
       </div>

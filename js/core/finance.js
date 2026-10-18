@@ -630,7 +630,9 @@ export function budgetReserve(state, today = todayISO()) {
   const base = budgetBase(state, key).amount;
   const items = state.budgets
     .filter(isEnvelope)
-    .map((budget) => ({ budget, amount: Math.max(0, budgetStatus(state, budget, key, base).remaining) }))
+    // Liberado este mes ("no lo uso"): no se reserva. Guardado para el que viene: sí.
+    .filter((budget) => !(budget.pause?.month === key && !budget.pause.keep))
+    .map((budget) => ({ budget, amount: Math.max(0, budgetStatus(state, budget, key, base).remaining), keptForNext: budget.pause?.month === key }))
     .filter((item) => item.amount > 0);
   return { amount: items.reduce((s, i) => s + i.amount, 0), items };
 }
@@ -644,7 +646,7 @@ export function budgetLeftovers(state, today = todayISO()) {
   const month = shiftMonthKey(monthKey(today), -1);
   const base = budgetBase(state, month).amount;
   return state.budgets
-    .filter((b) => isEnvelope(b) && b.since && monthKey(b.since) <= month && b.settledMonth !== month)
+    .filter((b) => isEnvelope(b) && b.since && monthKey(b.since) <= month && b.settledMonth !== month && b.pause?.month !== month)
     .map((budget) => ({ budget, month, amount: Math.round(budgetStatus(state, budget, month, base).remaining * 100) / 100 }))
     .filter((item) => item.amount > 0);
 }
@@ -800,9 +802,13 @@ export function nextMonthPlan(state, today = todayISO()) {
     }
   }
   const base = budgetBase(state, key).amount;
+  const thisKey = monthKey(today);
   for (const budget of state.budgets.filter(isEnvelope)) {
     const limit = budgetStatus(state, budget, key, base).limit;
-    if (limit > 0) items.push({ kind: "budget", budget, icon: budget.icon, name: budget.name, date: start, amount: limit, currency: state.settings.mainCurrency, amountMain: limit, id: budget.id });
+    // Guardado este mes para el que viene: esa parte ya está cubierta.
+    const carried = budget.pause?.month === thisKey && budget.pause.keep ? Math.max(0, budgetStatus(state, budget, thisKey).remaining) : 0;
+    const amount = Math.round(Math.max(0, limit - carried) * 100) / 100;
+    if (limit > 0) items.push({ kind: "budget", budget, icon: budget.icon, name: budget.name, date: start, amount, currency: state.settings.mainCurrency, amountMain: amount, carried: Math.min(carried, limit), id: budget.id });
   }
   let income = 0;
   for (const tx of state.transactions) {
