@@ -112,7 +112,7 @@ eq("transferencias no son gastos", F.monthlyTotals(acc, "2026-02").expense, 0);
 const lo = sanitizeState({
   rates: { USD: 1000 },
   categories: [],
-  settings: { reserveHorizon: "30d" },
+  settings: { reserveHorizon: "30d", horizonChosen: true },
   accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }],
   loans: [
     { id: "L1", person: "Caro", direction: "lent", amount: 30000, currency: "ARS", date: "2026-09-01", txId: "m1", payments: [{ id: "p1", date: "2026-09-10", amount: 10000, txId: "m2" }, { id: "p2", date: "2026-09-11", amount: 5000, txId: "fantasma" }] },
@@ -197,6 +197,7 @@ eq("limpiar dos veces da lo mismo", JSON.stringify(sanitizeState(JSON.parse(JSON
 
 // Tarjeta: deuda, saldo a favor y vencimiento a fin de mes
 const cardState = sanitizeState({
+  settings: { reserveHorizon: "30d", horizonChosen: true },
   categories: [],
   accounts: [{ id: "bank", name: "Banco", currency: "ARS", kind: "bank", opening: 1000 }, { id: "card", name: "Visa", currency: "ARS", kind: "credit", opening: 0, closingDay: 31, dueDay: 31 }],
   transactions: [
@@ -269,7 +270,7 @@ eq("aumento: el monto nuevo pasa a ser el habitual", [raise.amount, raise.recurr
 eq("datos de antes reciben las subcategorías nuevas del sueldo", store.getState().categories.find((c) => c.id === "inc-sueldo").subcategories.map((x) => x.id).filter((id) => /comision|otros/.test(id)), ["inc-sueldo.comision", "inc-sueldo.otros"]);
 
 // Para gastar por día
-const dayState = (extra = []) => sanitizeState({ categories: [], accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }], bills: [{ id: "b", name: "Luz", amount: 10000, dueDate: "2026-03-20", recurring: true, frequency: "monthly" }], transactions: extra });
+const dayState = (extra = []) => sanitizeState({ settings: { reserveHorizon: "30d", horizonChosen: true }, categories: [], accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }], bills: [{ id: "b", name: "Luz", amount: 10000, dueDate: "2026-03-20", recurring: true, frequency: "monthly" }], transactions: extra });
 let day = F.dailyAllowance(dayState(), "2026-03-22");
 eq("por día hasta fin de mes (10 días; 100.000 menos dos vencimientos de 10.000)", [day.days, day.reason, Math.round(day.perDay), Math.round(day.leftToday)], [10, "month", 8000, 8000]);
 day = F.dailyAllowance(dayState([{ id: "s", type: "income", amount: 1, currency: "ARS", date: "2026-03-01", categoryId: "inc-sueldo", accountId: "a", recurrence: { freq: "monthly", nextDate: "2026-03-27" } }]), "2026-03-22");
@@ -540,6 +541,23 @@ mem.delete("nekoFinanzas.hideAmounts");
   store.updateLoan(made.id, { ...st.loans[0], accountId: "", saveMonthly: 60, saveCurrency: "USD" });
   eq("apartar en la moneda de la deuda: no guarda otra moneda", ["saveCurrency" in store.getState().loans[0], store.getState().loans[0].saveMonthly], [false, 60]);
   store.deleteLoan(made.id);
+}
+
+// "Hasta fin de mes" es lo normal; el mes que viene suma facturas, presupuestos reservados y descuenta lo esperado
+{
+  const nm = sanitizeState({
+    categories: buildDemoState().categories,
+    accounts: [{ id: "a", name: "A", currency: "ARS", kind: "bank", opening: 100000 }],
+    bills: [{ id: "luz", name: "Luz", amount: 10000, currency: "ARS", dueDate: "2026-04-10", recurring: true, frequency: "monthly" }],
+    budgets: [{ id: "sup", name: "Súper", icon: "🛒", mode: "fixed", value: 20000, reserve: true, target: { kind: "categories", categoryIds: ["exp-super"] } }],
+    transactions: [{ id: "s", type: "income", amount: 50000, currency: "ARS", date: "2026-03-05", categoryId: "inc-sueldo", accountId: "a", recurrence: { freq: "monthly", nextDate: "2026-04-05" } }],
+  });
+  const today = "2026-03-18";
+  const sum = F.balanceSummary(nm, today);
+  const plan = F.nextMonthPlan(nm, today);
+  eq("lo normal es hasta fin de mes (la factura de abril no se reserva en marzo)", [nm.settings.reserveHorizon, sum.reserve.amount], ["month", 0]);
+  eq("el mes que viene: necesitas, te sobra, cobras y te queda", [plan.key, plan.needs, plan.have, plan.income, plan.afterIncome, plan.items.map((i) => i.kind).join(",")], ["2026-04", 30000, Math.round(sum.available * 100) / 100, 50000, Math.round((sum.available + 50000 - 30000) * 100) / 100, "budget,bill"]);
+  eq("quien eligió 30 días los conserva; quien no, pasa a fin de mes", [sanitizeState({ settings: { reserveHorizon: "30d", horizonChosen: true } }).settings.reserveHorizon, sanitizeState({ settings: { reserveHorizon: "30d" } }).settings.reserveHorizon], ["30d", "month"]);
 }
 
 // Una moneda con datos no se saca de las que se usan

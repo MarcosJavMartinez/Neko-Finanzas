@@ -222,7 +222,7 @@ const handlers = {
       toast(el.checked ? "Listo: lo que sobre de tus facturas queda guardado para las próximas" : "Fondo de facturas desactivado", { type: "info" });
     },
     "set-horizon"(el) {
-      store.updateSettings({ reserveHorizon: el.value });
+      store.updateSettings({ reserveHorizon: el.value, horizonChosen: true });
       toast("Reserva de facturas actualizada");
     },
     "set-reference"(el) {
@@ -280,7 +280,7 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
 
         <div class="setting">
           <span class="setting-label">Reservar facturas que vencen…</span>
-          ${segmented("horizon", [{ value: "30d", label: "Próximos 30 días" }, { value: "month", label: "Hasta fin de mes" }], s.reserveHorizon, { action: "set-horizon" })}
+          ${segmented("horizon", [{ value: "month", label: "Hasta fin de mes" }, { value: "30d", label: "Próximos 30 días" }], s.reserveHorizon, { action: "set-horizon" })}
         </div>
 
         <div class="setting">

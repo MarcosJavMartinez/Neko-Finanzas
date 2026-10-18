@@ -746,3 +746,72 @@ export function transitStatus(state, account, today = todayISO()) {
   const debt = balance < -0.004 ? Math.round(-balance * 100) / 100 : 0;
   return { balance, loaded: Math.round(loaded * 100) / 100, spent: Math.round(spent * 100) / 100, fare, trips, debt, low: !debt && trips !== null && trips <= 2 };
 }
+
+// ---------------------------------------------------------------------------
+// El mes que viene
+// ---------------------------------------------------------------------------
+
+/**
+ * Lo que hay que pagar el mes que viene (facturas, cuotas y gastos que se
+ * repiten, deudas que vencen o que se vienen apartando, presupuestos
+ * reservados), lo que sobra hoy de este mes y lo que falta juntar. Los
+ * ingresos que se repiten (el sueldo) se cuentan aparte, como esperados.
+ */
+export function nextMonthPlan(state, today = todayISO()) {
+  const key = shiftMonthKey(monthKey(today), 1);
+  const { start, end } = monthRange(key);
+  const inRange = (d) => d >= start && d <= end;
+  const items = [];
+  // Fechas en que cae algo que se repite, dentro del mes que viene.
+  const occurrences = (from, freq) => {
+    const dates = [];
+    let d = from;
+    for (let i = 0; d <= end && i < 400; i++) {
+      if (d >= start) dates.push(d);
+      d = nextDate(d, freq, Number(from.slice(8)));
+    }
+    return dates;
+  };
+  for (const bill of state.bills) {
+    for (const date of billOccurrences(bill, end).filter((d) => d >= start)) {
+      items.push({ kind: "bill", icon: bill.icon, name: bill.name, date, amount: bill.amount, currency: bill.currency, amountMain: toMain(state, bill.amount, bill.currency), id: bill.id });
+    }
+  }
+  for (const tx of state.transactions) {
+    if (tx.type !== "expense") continue;
+    if (inRange(tx.date)) items.push({ kind: "scheduled", tx, name: tx.description, date: tx.date, amount: tx.amount, currency: tx.currency, amountMain: toMain(state, tx.amount, tx.currency), id: tx.id });
+    if (tx.recurrence) {
+      for (const date of occurrences(tx.recurrence.nextDate, tx.recurrence.freq)) {
+        const amount = tx.recurrence.amount || tx.amount;
+        items.push({ kind: "scheduled", tx, name: tx.description, date, amount, currency: tx.currency, amountMain: toMain(state, amount, tx.currency), id: tx.id });
+      }
+    }
+  }
+  for (const i of loansSummary(state, today).items) {
+    const loan = i.loan;
+    if (loan.direction !== "borrowed" || i.outstanding <= 0 || loan.plan) continue;
+    if (loan.dueDate && inRange(loan.dueDate)) {
+      items.push({ kind: "debt", loan, name: loan.person, date: loan.dueDate, amount: i.outstanding, currency: loan.currency, amountMain: i.outstandingMain, id: loan.id });
+    } else if (loan.saveMonthly > 0 && (!loan.dueDate || loan.dueDate > end)) {
+      const currency = loanSaveCurrency(loan);
+      const status = loanSetAsideStatus(state, loan, i.outstanding, today);
+      const amount = Math.min(loan.saveMonthly, Math.max(0, status.target - status.saved));
+      if (amount > 0) items.push({ kind: "setAside", loan, name: loan.person, date: start, amount, currency, amountMain: toMain(state, amount, currency), id: loan.id });
+    }
+  }
+  const base = budgetBase(state, key).amount;
+  for (const budget of state.budgets.filter(isEnvelope)) {
+    const limit = budgetStatus(state, budget, key, base).limit;
+    if (limit > 0) items.push({ kind: "budget", budget, icon: budget.icon, name: budget.name, date: start, amount: limit, currency: state.settings.mainCurrency, amountMain: limit, id: budget.id });
+  }
+  let income = 0;
+  for (const tx of state.transactions) {
+    if (tx.type !== "income" || !tx.recurrence) continue;
+    for (const date of occurrences(tx.recurrence.nextDate, tx.recurrence.freq)) income += toMain(state, tx.recurrence.amount || tx.amount, tx.currency);
+  }
+  items.sort((a, b) => a.date.localeCompare(b.date));
+  const round = (n) => Math.round(n * 100) / 100;
+  const needs = round(items.reduce((s, i) => s + i.amountMain, 0));
+  const have = round(Math.max(0, balanceSummary(state, today).available));
+  return { key, start, end, items, needs, have, income: round(income), missing: round(Math.max(0, needs - have)), afterIncome: round(have + income - needs) };
+}

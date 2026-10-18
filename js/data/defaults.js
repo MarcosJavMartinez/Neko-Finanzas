@@ -154,7 +154,8 @@ export function createEmptyState() {
       region,
       mainCurrency: REGIONS[region].currency,
       currencies: startingCurrencies(region),
-      reserveHorizon: "30d", // "30d" | "month"
+      reserveHorizon: "month", // "month" (lo normal) | "30d" (solo si se elige)
+      horizonChosen: false,
       budgetReference: 0,
       billCushion: false, // guardar lo que sobra de las facturas para las próximas
       billCushionReleased: 0,

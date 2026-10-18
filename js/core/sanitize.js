@@ -78,7 +78,10 @@ export function sanitizeState(input) {
     region: REGIONS[s.region] ? s.region : legacy ? DEFAULT_REGION : base.settings.region,
     mainCurrency: main,
     currencies: Array.isArray(s.currencies) ? s.currencies.filter((c) => CURRENCY_CODES.includes(c)) : legacy ? ["ARS", "USD", "EUR"] : base.settings.currencies,
-    reserveHorizon: s.reserveHorizon === "month" ? "month" : "30d",
+    // "Hasta fin de mes" es lo normal. "Próximos 30 días" queda solo si la persona lo eligió
+    // (antes era lo predeterminado: quien nunca lo tocó pasa a fin de mes).
+    reserveHorizon: s.reserveHorizon === "30d" && s.horizonChosen ? "30d" : "month",
+    horizonChosen: bool(s.horizonChosen),
     budgetReference: positive(s.budgetReference) || 0,
     billCushion: bool(s.billCushion),
     billCushionReleased: positive(s.billCushionReleased) || 0,

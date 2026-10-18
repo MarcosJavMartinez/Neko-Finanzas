@@ -3103,3 +3103,51 @@ button.inline-link {
   color: var(--expense-ink);
   font-weight: 700;
 }
+
+/* El mes que viene */
+.avail-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.avail-next.is-short {
+  color: var(--expense-ink);
+}
+
+.next-verdict {
+  margin: 4px 0 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+}
+
+.next-verdict span {
+  display: block;
+  margin-top: 4px;
+  font-weight: 500;
+  font-size: 0.86rem;
+}
+
+.next-verdict.is-ok {
+  background: var(--income-soft);
+  color: var(--income-ink);
+}
+
+.next-verdict.is-short {
+  background: var(--expense-soft);
+  color: var(--expense-ink);
+}
+
+.next-detail summary {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  color: var(--action-ink, var(--action));
+  cursor: pointer;
+}

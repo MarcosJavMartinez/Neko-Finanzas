@@ -122,4 +122,5 @@ export default {
   "En Más → Préstamos → Préstamo en cuotas (banco o billetera). Pones quién te prestó, cuántas cuotas, de cuánto y cuándo vence la próxima. Si ese dinero ya no está en tus cuentas, activa «Ya lo gasté».": "In More → Loans → Instalment loan (bank or wallet). You enter who lent it, how many instalments, how much each one is and when the next one is due. If that money is no longer in your accounts, turn on “I already spent it”.",
 
   "Sí. En Más → Categorías puedes crear categorías de gasto o de ingreso, cambiarles el nombre, el ícono y el color, y agregarles subcategorías (por ejemplo, Veterinaria dentro de Mascotas).": "Yes. In More → Categories you can create expense or income categories, change their name, icon and colour, and add subcategories (for example, Vet inside Pets).",
+  "Cuota o gasto programado": "Instalment or scheduled expense",
 };

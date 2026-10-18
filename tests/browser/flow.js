@@ -22,7 +22,7 @@ return (async () => {
     link.click(); await wait(500);
 
     const s = F.balanceSummary(store.getState());
-    const lines = [...d.querySelectorAll(".flow-line dd")].map((e) => e.textContent.trim());
+    const lines = [...d.querySelectorAll(".flow-sum .flow-line dd")].map((e) => e.textContent.trim());
     const want = [M.formatMoney(s.total, main), "− " + M.formatMoney(s.inGoals, main), "− " + M.formatMoney(s.reserved, main), M.formatMoney(s.available, main)];
     log("cuenta: " + lines.join(" | ") + (JSON.stringify(lines) === JSON.stringify(want) ? "" : " ✗ esperaba " + want.join(" | ")));
 

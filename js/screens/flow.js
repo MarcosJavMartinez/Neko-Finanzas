@@ -7,8 +7,8 @@ import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
 import { approx, shortDay } from "../ui/components.js";
 import { formatMoney } from "../core/money.js";
-import { balanceSummary, findCategory, findSubcategory, goalSaved, loanSaveCurrency, loanSetAsideStatus, toMain } from "../core/finance.js";
-import { formatDue, monthRange, monthKey, todayISO } from "../core/dates.js";
+import { balanceSummary, findCategory, findSubcategory, goalSaved, loanSaveCurrency, loanSetAsideStatus, nextMonthPlan, toMain } from "../core/finance.js";
+import { formatDate, formatDue, formatMonth, midSentence, monthRange, monthKey, todayISO } from "../core/dates.js";
 
 /** Una fila: burbuja con emoji, la frase (con el monto en negrita) y una línea de detalle. */
 function flowRow({ emoji, color = "var(--brand)", text, meta = "", extra = "", action = "", id = "", href = "" }) {
@@ -87,6 +87,44 @@ function reservedGroups(state, summary, today) {
     rows.push(flowRow({ emoji: goal.icon, color: goal.color, text: html`<strong>${m(saved, goal.currency)}</strong> apartados en ${goal.name}`, meta: "Meta", extra: goal.currency !== main ? approx(state, saved, goal.currency) : "", action: "goal-detail", id: goal.id }));
   }
   return groups.filter((g) => g.rows.length);
+}
+
+/** El mes que viene: lo que hay que pagar, lo que ya tienes y lo que falta juntar. */
+function nextMonthCard(state, today) {
+  const plan = nextMonthPlan(state, today);
+  if (!plan.items.length) return "";
+  const main = state.settings.mainCurrency;
+  const m = (n) => formatMoney(n, main);
+  const month = midSentence(formatMonth(plan.key).split(" ")[0]);
+  const verdict = plan.income > 0
+    ? plan.afterIncome >= 0
+      ? html`<p class="next-verdict is-ok">${msg`Con lo que esperas cobrar te alcanza: te sobrarían ${m(plan.afterIncome)}.`}</p>`
+      : html`<p class="next-verdict is-short">${msg`Aun con lo que esperas cobrar te faltarían ${m(-plan.afterIncome)}.`}</p>`
+    : plan.missing > 0
+      ? html`<p class="next-verdict is-short">${msg`Te falta juntar ${m(plan.missing)}.`} <span>Si cargas tu sueldo como ingreso que se repite, la cuenta lo tiene en cuenta.</span></p>`
+      : html`<p class="next-verdict is-ok">Ya lo tienes cubierto con lo que te sobra de este mes.</p>`;
+  const label = { bill: "Factura", scheduled: "Cuota o gasto programado", debt: "Deuda que vence", setAside: "Apartar para la deuda", budget: "Presupuesto reservado" };
+  return html`<section class="card next-month reveal" aria-labelledby="flow-next-title">
+    <h2 id="flow-next-title" class="section-title">${msg`El mes que viene (${month})`}</h2>
+    <dl class="flow-lines">
+      <div class="flow-line"><dt>Vas a tener que pagar</dt><dd>${m(plan.needs)}</dd></div>
+      <div class="flow-line"><dt>Te sobra hoy de este mes</dt><dd>${m(plan.have)}</dd></div>
+      ${plan.income > 0 ? html`<div class="flow-line"><dt>Ingresos que se repiten</dt><dd>+ ${m(plan.income)}</dd></div>` : ""}
+    </dl>
+    ${verdict}
+    <details class="next-detail">
+      <summary>${msg`Ver lo que hay que pagar (${plan.items.length})`}</summary>
+      <div class="flow-list">
+        ${plan.items.map((i) => flowRow({
+          emoji: i.icon || (i.kind === "debt" || i.kind === "setAside" ? "🤝" : "🗓️"),
+          color: i.kind === "bill" ? "var(--bill)" : i.kind === "budget" ? "var(--action)" : i.kind === "scheduled" ? "var(--expense)" : "var(--goal)",
+          text: html`<strong>${formatMoney(i.amount, i.currency)}</strong> · ${i.name || label[i.kind]}`,
+          meta: [tr(label[i.kind]), i.kind === "budget" || i.kind === "setAside" ? "" : formatDate(i.date)].filter(Boolean).join(" · "),
+          extra: i.currency !== main ? approx(state, i.amount, i.currency) : "",
+        }))}
+      </div>
+    </details>
+  </section>`;
 }
 
 /** Lo que pasó este mes, de lo más nuevo a lo más viejo. */
@@ -179,6 +217,8 @@ export default {
           ? reserved.map((g) => html`<h3 class="flow-group"><a href="${g.href}">${g.title}</a><span>${m(g.total)}</span></h3><div class="flow-list">${g.rows}</div>`)
           : html`<p class="sheet-text">Por ahora no hay nada apartado ni reservado: todo tu dinero está disponible.</p>`}
       </section>
+
+      ${nextMonthCard(state, today)}
 
       <section class="card reveal" aria-labelledby="flow-month-title">
         <h2 id="flow-month-title" class="section-title">Lo que pasó este mes</h2>

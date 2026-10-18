@@ -15,7 +15,7 @@ import { daysBetween, formatDate, formatMonth, currentMonthKey, shiftMonthKey, t
 import { accountRow } from "./accounts.js";
 import { ratePair } from "./currencies.js";
 import { loanRow } from "./loans.js";
-import { accountBalances, balanceSummary, budgetLeftovers, dailyAllowance, treatAllowance, loansSummary, monthlyTotals, pendingRecurringIncomes, upcomingBills, budgetsOverview, percent, monthlySeries, monthToDate, expensesByCategory, transitStatus } from "../core/finance.js";
+import { accountBalances, balanceSummary, budgetLeftovers, dailyAllowance, treatAllowance, loansSummary, monthlyTotals, pendingRecurringIncomes, upcomingBills, budgetsOverview, percent, monthlySeries, monthToDate, expensesByCategory, transitStatus, nextMonthPlan } from "../core/finance.js";
 import { backupReminderDue, daysSinceBackup, getLastBackup, iosNoticeSnoozed } from "../core/prefs.js";
 import { needsIosInstall } from "../ui/install.js";
 import { extrasOfMonth } from "../ui/forms/incomeExtras.js";
@@ -32,6 +32,16 @@ function reserveLabel(summary) {
   const parts = ["facturas", summary.scheduled.amount > 0 && "cuotas", summary.debts.amount > 0 && "deudas", summary.envelopes.amount > 0 && "gastos del mes"].filter(Boolean);
   const names = parts.map(tr);
   return names.length > 1 ? msg`${names.slice(0, -1).join(tr(", "))} y ${names[names.length - 1]}` : names[0];
+}
+
+/** "Diciembre: necesitas $ 837.000 · te faltan $ 610.000", con enlace al detalle. */
+function nextLine(state, today) {
+  const plan = nextMonthPlan(state, today);
+  if (!plan.items.length) return "";
+  const m = (n) => formatMoney(n, state.settings.mainCurrency);
+  const month = formatMonth(plan.key).split(" ")[0];
+  const short = plan.income > 0 ? Math.max(0, -plan.afterIncome) : plan.missing;
+  return html`<a href="#/tu-dinero" class="avail-next ${short > 0 ? "is-short" : ""}">${icon("calendar", 14)}${short > 0 ? msg`${month}: necesitas ${m(plan.needs)} · te faltan ${m(short)}` : msg`${month}: necesitas ${m(plan.needs)} · cubierto`}</a>`;
 }
 
 export default {
@@ -138,6 +148,7 @@ export default {
               </div>
               ${summary.reserved > 0 ? html`<a href="#/tu-dinero" class="avail-reserve" data-pulse="reserve" title="Lo que vence en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${reserveLabel(summary)}</a>` : ""}
             </div>`}
+      ${isEmpty ? "" : nextLine(state, today)}
       ${isEmpty ? "" : html`<a href="#/tu-dinero" class="hero-flow-link">${icon("coinStack", 16)}<span>¿A dónde va tu dinero?</span>${icon("chevronRight", 16)}</a>`}
       ${trio}
       ${savings}
