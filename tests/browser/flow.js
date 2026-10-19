@@ -17,7 +17,7 @@ return (async () => {
 
     // Desde el inicio, "reservados para…" lleva a la pantalla
     w.location.hash = "#/inicio"; await wait(400);
-    const link = d.querySelector(".avail-reserve");
+    const link = d.querySelector(".hero-line");
     log("inicio: enlace " + (link?.getAttribute("href") === "#/tu-dinero" ? "a la pantalla" : `${link?.getAttribute("href")} ✗`));
     link.click(); await wait(500);
 

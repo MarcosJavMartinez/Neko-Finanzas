@@ -37,10 +37,11 @@ return (async () => {
 
     // 3) "Ingresar dinero" en verde de ingresos
     w.location.hash = "#/inicio"; await wait(300);
-    const qa = d.querySelector(".qa-income .qa-icon");
+    // Los ingresos de "Recientes" se ven en el verde de ingresos
+    const qa = d.querySelector("#view .tx-amount.is-income");
     const green = w.getComputedStyle(qa).color;
-    const probe = d.createElement("span"); probe.style.color = "var(--income)"; d.body.append(probe);
-    log("Ingresar dinero: " + (green === w.getComputedStyle(probe).color ? "verde de ingresos" : `otro color ✗ (${green})`));
+    const probe = d.createElement("span"); probe.style.color = "var(--income-ink)"; d.body.append(probe);
+    log("Ingresos en verde: " + (green === w.getComputedStyle(probe).color ? "verde de ingresos" : `otro color ✗ (${green})`));
     probe.remove();
 
     // 4) Modo oscuro teñido por la paleta

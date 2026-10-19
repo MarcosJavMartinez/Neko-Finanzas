@@ -835,3 +835,11 @@ export function nextMonthPlan(state, today = todayISO()) {
   const have = round(Math.max(0, balanceSummary(state, today).available));
   return { key, start, end, items, needs, have, saved: round(saved), income: round(income), missing: round(Math.max(0, needs - have - saved)), afterIncome: round(have + saved + income - needs) };
 }
+
+/** Gastos con fecha futura (cuotas, programados) y lo próximo de los que se repiten, por fecha. */
+export function scheduledReserveAll(state, today = todayISO()) {
+  const recurring = state.transactions
+    .filter((tx) => tx.type === "expense" && tx.recurrence)
+    .map((tx) => ({ ...tx, id: `${tx.id}:next`, amount: tx.recurrence.amount || tx.amount, date: tx.recurrence.nextDate, recurringOf: tx.id }));
+  return [...state.transactions.filter((tx) => tx.type === "expense" && tx.date > today), ...recurring].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 6);
+}

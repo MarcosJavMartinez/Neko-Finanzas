@@ -15,7 +15,7 @@ import { openSnapshots } from "../ui/snapshots.js";
 import { openTransfer } from "../ui/transfer.js";
 import { canPickFile, backupFileKnown } from "../ui/backupFile.js";
 import { remindersSupported, reminderPermission, enableReminders, disableReminders, syncPlan, fireDue, testReminder } from "../ui/reminders.js";
-import { remindersEnabled, getReminderDays, setReminderDays } from "../core/prefs.js";
+import { remindersEnabled, getReminderDays, setReminderDays, getHomeCards, setHomeCard, HOME_CARDS } from "../core/prefs.js";
 
 /** Avisos de vencimientos: interruptor, cuántos días antes y un aviso de prueba. */
 function remindersBlock() {
@@ -221,6 +221,9 @@ const handlers = {
       store.setBillCushion(el.checked);
       toast(el.checked ? "Listo: lo que sobre de tus facturas queda guardado para las próximas" : "Fondo de facturas desactivado", { type: "info" });
     },
+    "toggle-home-card"(el) {
+      setHomeCard(el.dataset.card, el.checked);
+    },
     "set-horizon"(el) {
       store.updateSettings({ reserveHorizon: el.value, horizonChosen: true });
       toast("Reserva de facturas actualizada");
@@ -308,11 +311,32 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
   `;
 });
 
+const HOME_CARD_LABELS = {
+  summary: ["Resumen del mes", "Ingresos, gastos, metas y cuánto ahorras"],
+  accounts: ["Tus cuentas", "Cuánto hay en cada una"],
+  loans: ["Préstamos", "Quién te debe y a quién le debes"],
+  budgets: ["Presupuestos para mirar", "Los que están cerca del límite o pasados"],
+  goals: ["Metas de ahorro", "Las primeras tres, con su avance"],
+  rates: ["Tipo de cambio", "Los valores que usas para convertir"],
+  charts: ["Gráficos", "Solo en pantallas grandes (compu o tablet)"],
+};
+
 export const settingsLook = sub("ajustes-apariencia", "Apariencia", () => {
   const palette = getPalette();
+  const homeCards = new Set(getHomeCards());
   const bg = getBackground();
   const bgColor = getBgColor();
   return html`
+      <section class="card reveal" id="tu-inicio">
+        <h2 class="section-title">Tu Inicio</h2>
+        <p class="section-sub">El Inicio muestra lo de todos los días: tu saldo, lo que puedes gastar hoy, lo que viene y lo último que anotaste. Suma lo que quieras tener a mano:</p>
+        ${HOME_CARDS.map(
+          (key) => html`<label class="toggle-field">
+            <span><span class="toggle-label">${HOME_CARD_LABELS[key][0]}</span><span class="field-hint">${HOME_CARD_LABELS[key][1]}</span></span>
+            <input type="checkbox" class="switch" data-change="toggle-home-card" data-card="${key}" ${homeCards.has(key) ? "checked" : ""} />
+          </label>`
+        )}
+      </section>
       <section class="card reveal">
         <h2 class="section-title">Apariencia</h2>
         <p class="section-sub">Como en Neko Lista: elige tema, color y fondo. Los colores de ingresos, gastos, facturas y metas no cambian, así siempre significan lo mismo.</p>

@@ -3210,3 +3210,78 @@ button.inline-link {
 .pause-option select {
   margin-top: 4px;
 }
+
+/* Inicio más corto: una línea bajo el saldo, un solo "Agregar" */
+.hero-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  margin-top: 6px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.hero-line.is-short {
+  color: var(--expense-ink);
+}
+
+.home-add {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: var(--radius-xl);
+  background: var(--action-gradient);
+  color: #fff;
+  text-align: start;
+  box-shadow: 0 6px 18px var(--action-glow);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.home-add-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.home-add-text {
+  display: grid;
+  gap: 2px;
+}
+
+.home-add-text strong {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.home-add-text span {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.home-add:active {
+  transform: scale(0.98);
+}
+
+.home-customize {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 0.86rem;
+}
+
+.home-summary .trio {
+  margin-top: 4px;
+}
+
+.home-customize a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+}

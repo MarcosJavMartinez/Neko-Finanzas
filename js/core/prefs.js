@@ -16,6 +16,7 @@ const KEYS = {
   lastAccount: "nekoFinanzas.lastAccount",
   reminders: "nekoFinanzas.reminders",
   reminderDays: "nekoFinanzas.reminderDays",
+  homeCards: "nekoFinanzas.homeCards",
 };
 
 const DAY = 86400000;
@@ -152,4 +153,25 @@ export function backupReminderDue(state, now = Date.now()) {
   const snooze = readTime(KEYS.backupSnooze);
   if (snooze && snooze > now) return false;
   return daysSinceBackup(state, now) >= every;
+}
+
+/** Tarjetas que se pueden sumar al Inicio (además de lo fijo). */
+export const HOME_CARDS = ["summary", "accounts", "loans", "budgets", "goals", "rates", "charts"];
+/** Las que vienen prendidas: los gráficos (solo se ven en pantallas anchas). */
+const HOME_DEFAULT = ["charts"];
+
+export function getHomeCards() {
+  try {
+    const list = JSON.parse(read(KEYS.homeCards) || "null");
+    return Array.isArray(list) ? list.filter((c) => HOME_CARDS.includes(c)) : HOME_DEFAULT;
+  } catch (error) {
+    return HOME_DEFAULT;
+  }
+}
+
+export function setHomeCard(card, on) {
+  const list = new Set(getHomeCards());
+  if (on) list.add(card);
+  else list.delete(card);
+  write(KEYS.homeCards, JSON.stringify(HOME_CARDS.filter((c) => list.has(c))));
 }

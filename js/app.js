@@ -251,7 +251,7 @@ function renderHeader() {
         </div>
       </div>
       <div class="header-actions">
-        <button type="button" class="btn btn-primary header-new" data-action="add-any">${icon("plus", 18)}Nuevo movimiento</button>
+        ${screen.id === "inicio" ? "" : html`<button type="button" class="btn btn-primary header-new" data-action="add-any">${icon("plus", 18)}Agregar</button>`}
         ${canPromptInstall() ? html`<button type="button" class="header-btn" data-action="install-app" aria-label="Instalar app" title="Instalar app">${icon("download", 18)}</button>` : ""}
         ${screen.id !== "reportes" ? html`<a class="header-btn" href="#/reportes" aria-label="Reportes" title="Reportes">${icon("chart", 18)}</a>` : ""}
         ${!screen.id.startsWith("ajustes") ? html`<a class="header-btn" href="#/ajustes" aria-label="Configuración" title="Configuración">${icon("settings", 18)}</a>` : ""}

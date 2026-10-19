@@ -20,7 +20,7 @@ return (async () => {
     w.location.hash = "#/prestamos"; await wait(400);
     log("totales: " + [...d.querySelectorAll(".loan-total")].map((e) => e.innerText.replace(/\s+/g, " ").trim()).join(" | ") + " · filas=" + d.querySelectorAll("#view .loan-row").length);
     w.location.hash = "#/inicio"; await wait(400);
-    log("inicio: tarjeta préstamos=" + [...d.querySelectorAll("#view .section-title")].some((h) => h.textContent === "Préstamos") + " · reserva: " + d.querySelector(".avail-reserve")?.textContent.trim());
+    log("inicio: tarjeta préstamos=" + [...d.querySelectorAll("#view .section-title")].some((h) => h.textContent === "Préstamos") + " · reserva: " + d.querySelector(".hero-line")?.textContent.trim());
 
     // 2) Prestar desde efectivo
     const c0 = bal(cash), total0 = F.totalBalance(store.getState()), exp0 = F.monthlyTotals(store.getState(), D.currentMonthKey()).expense;

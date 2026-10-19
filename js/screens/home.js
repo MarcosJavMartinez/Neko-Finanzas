@@ -11,12 +11,12 @@ import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, t
 import { barChart, donutChart } from "../ui/charts.js";
 import { PALETTE } from "../data/defaults.js";
 import { formatMoney, CURRENCIES, isMasked, symbolOf } from "../core/money.js";
-import { daysBetween, formatDate, formatMonth, currentMonthKey, shiftMonthKey, todayISO, midSentence } from "../core/dates.js";
+import { daysBetween, formatDate, formatMonth, currentMonthKey, shiftMonthKey, todayISO, midSentence, formatDue } from "../core/dates.js";
 import { accountRow } from "./accounts.js";
 import { ratePair } from "./currencies.js";
 import { loanRow } from "./loans.js";
-import { accountBalances, balanceSummary, budgetLeftovers, dailyAllowance, treatAllowance, loansSummary, monthlyTotals, pendingRecurringIncomes, upcomingBills, budgetsOverview, percent, monthlySeries, monthToDate, expensesByCategory, transitStatus, nextMonthPlan } from "../core/finance.js";
-import { backupReminderDue, daysSinceBackup, getLastBackup, iosNoticeSnoozed } from "../core/prefs.js";
+import { accountBalances, balanceSummary, budgetLeftovers, dailyAllowance, treatAllowance, loansSummary, monthlyTotals, pendingRecurringIncomes, upcomingBills, budgetsOverview, percent, monthlySeries, monthToDate, expensesByCategory, transitStatus, nextMonthPlan, scheduledReserveAll } from "../core/finance.js";
+import { backupReminderDue, daysSinceBackup, getLastBackup, iosNoticeSnoozed, getHomeCards } from "../core/prefs.js";
 import { needsIosInstall } from "../ui/install.js";
 import { extrasOfMonth } from "../ui/forms/incomeExtras.js";
 
@@ -32,6 +32,55 @@ function reserveLabel(summary) {
   const parts = ["facturas", summary.scheduled.amount > 0 && "cuotas", summary.debts.amount > 0 && "deudas", summary.envelopes.amount > 0 && "gastos del mes"].filter(Boolean);
   const names = parts.map(tr);
   return names.length > 1 ? msg`${names.slice(0, -1).join(tr(", "))} y ${names[names.length - 1]}` : names[0];
+}
+
+/** Debajo del saldo, una sola línea: "$ 204.500 reservados · noviembre: te faltan $ 610.000". */
+function heroLine(state, summary, today) {
+  const m = (n) => formatMoney(n, state.settings.mainCurrency);
+  const plan = nextMonthPlan(state, today);
+  const month = formatMonth(plan.key).split(" ")[0];
+  const short = plan.income > 0 ? Math.max(0, -plan.afterIncome) : plan.missing;
+  const next = plan.items.length ? (short > 0 ? msg`${midSentence(month)}: te faltan ${m(short)}` : msg`${midSentence(month)} cubierto`) : "";
+  const reserved = summary.reserved > 0 ? msg`${m(summary.reserved)} reservados` : "";
+  const text = [reserved, next].filter(Boolean).join(" · ");
+  if (!text) return "";
+  return html`<a href="#/tu-dinero" class="hero-line ${short > 0 ? "is-short" : ""}" data-pulse="reserve">${icon("receipt", 14)}<span>${text}</span></a>`;
+}
+
+/** Lo próximo a pagar (facturas, cuotas y gastos programados, deudas que vencen), por fecha: los 3 primeros. */
+function comingUp(state, today) {
+  const items = [];
+  for (const b of upcomingBills(state, today, 6)) items.push({ date: b.dueDate, row: billRow(state, b, { today, compact: true }) });
+  const scheduled = scheduledReserveAll(state, today);
+  for (const tx of scheduled) {
+    const category = state.categories.find((c) => c.id === tx.categoryId);
+    items.push({
+      date: tx.date,
+      row: html`<button type="button" class="row" data-action="edit-tx" data-id="${tx.recurringOf || tx.id}">
+        <span class="cat-bubble cat-bubble-md" style="--c:${category?.color || "#8b958e"}" aria-hidden="true">${category?.icon || "🗓️"}</span>
+        <span class="row-main">
+          <span class="row-title">${tx.description || category?.name || "Gasto programado"}</span>
+          <span class="row-meta">${tx.installment ? msg`Cuota ${tx.installment.n} de ${tx.installment.of}` : "Programado"} · ${tr(formatDue(tx.date, today))}</span>
+        </span>
+        <span class="account-balance">${formatMoney(tx.amount, tx.currency)}</span>
+      </button>`,
+    });
+  }
+  for (const i of loansSummary(state).items) {
+    if (i.loan.direction !== "borrowed" || i.outstanding <= 0 || !i.loan.dueDate || i.loan.plan) continue;
+    items.push({
+      date: i.loan.dueDate,
+      row: html`<button type="button" class="row" data-action="loan-detail" data-id="${i.loan.id}">
+        <span class="cat-bubble cat-bubble-md" style="--c:var(--goal)" aria-hidden="true">🤝</span>
+        <span class="row-main">
+          <span class="row-title">${msg`Devolverle a ${i.loan.person}`}</span>
+          <span class="row-meta">${tr(formatDue(i.loan.dueDate, today))}</span>
+        </span>
+        <span class="account-balance">${formatMoney(i.outstanding, i.loan.currency)}</span>
+      </button>`,
+    });
+  }
+  return items.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3);
 }
 
 /** "Diciembre: necesitas $ 837.000 · te faltan $ 610.000", con enlace al detalle. */
@@ -58,6 +107,7 @@ export default {
     const pendingIncomes = pendingRecurringIncomes(state, today);
     const bills = upcomingBills(state, today, 4);
     const budgetAlerts = budgetsOverview(state, currentMonthKey()).items.filter((b) => b.level === "near" || b.level === "over");
+    const extra = new Set(getHomeCards());
     const recent = [...state.transactions]
       .filter((tx) => tx.date <= today)
       .sort((a, b) => b.date.localeCompare(a.date) || (b.time || "").localeCompare(a.time || "") || b.createdAt.localeCompare(a.createdAt))
@@ -141,18 +191,12 @@ export default {
         ? html`<p class="hero-alert">${icon("alert", 15)} Lo apartado y reservado supera lo que tienes. Revisa metas, facturas, cuotas o deudas.</p>`
         : isEmpty
           ? html`<p class="hero-alert hero-alert-info">Para empezar, <button type="button" class="inline-link" data-action="setup-wizard">completa todo con el asistente</button> o registra un ingreso.</p>`
-          : html`<div class="avail">
-              <div class="avail-bar">
-                ${progressBar(availablePct, { color: "var(--brand)", label: "Porcentaje disponible del total" })}
-                <span class="avail-pct" data-count-up="${Math.round(availablePct)}" data-count-format="pct" data-count-key="avail">${Math.round(availablePct)}%</span>
-              </div>
-              ${summary.reserved > 0 ? html`<a href="#/tu-dinero" class="avail-reserve" data-pulse="reserve" title="Lo que vence en los ${horizonLabel}">${icon("receipt", 14)}${m(summary.reserved)} reservados para ${reserveLabel(summary)}</a>` : ""}
-            </div>`}
-      ${isEmpty ? "" : nextLine(state, today)}
+          : ""}
+      ${isEmpty ? "" : heroLine(state, summary, today)}
       ${isEmpty ? "" : html`<a href="#/tu-dinero" class="hero-flow-link">${icon("coinStack", 16)}<span>¿A dónde va tu dinero?</span>${icon("chevronRight", 16)}</a>`}
-      ${trio}
-      ${savings}
     </section>`;
+    // Resumen del mes (ingresos, gastos, metas y cuánto ahorras): tarjeta opcional.
+    const summaryCard = isEmpty ? "" : html`<section class="card home-summary reveal">${sectionHeader("Este mes", { href: "#/reportes", linkText: "Ver reportes" })}${trio}${savings}</section>`;
 
     // Para los gustos del día (un café, un helado). Con un presupuesto "por
     // día" se muestra lo acumulado; si no, el disponible repartido por día.
@@ -190,7 +234,7 @@ export default {
     // Tarjetas de transporte: saldo, pasajes que quedan y botones a mano.
     const transitCards = state.accounts
       .filter((a) => a.kind === "transit" && !a.archived)
-      .slice(0, 2)
+      .slice(0, 5)
       .map((a) => {
         const st = transitStatus(state, a, today);
         return html`<section class="transit-card reveal ${st.low ? "is-low" : ""} ${st.debt ? "is-debt" : ""}" aria-label="${a.name}">
@@ -223,12 +267,10 @@ export default {
       </div>`
     );
 
-    const actions = html`<nav class="quick-actions card reveal" aria-label="Acciones rápidas">
-      <button type="button" class="qa qa-primary" data-action="add-any"><span class="qa-icon">${icon("plus", 22)}</span><span>Agregar</span></button>
-      <button type="button" class="qa qa-expense" data-action="add-expense"><span class="qa-icon">${icon("arrowUp", 20)}</span><span>Gasto</span></button>
-      <button type="button" class="qa qa-income" data-action="add-income"><span class="qa-icon">${icon("arrowDown", 20)}</span><span>Ingreso</span></button>
-      <a class="qa qa-bill" href="#/facturas"><span class="qa-icon">${icon("receipt", 20)}</span><span>Pagar<br />factura</span></a>
-    </nav>`;
+    const actions = html`<button type="button" class="home-add reveal" data-action="add-any">
+      <span class="home-add-icon">${icon("plus", 24)}</span>
+      <span class="home-add-text"><strong>Agregar</strong><span>Gasto, ingreso, pago de una factura…</span></span>
+    </button>`;
 
     const pending = pendingIncomes.map(
       (tx) => html`<div class="card card-soft card-pending reveal">
@@ -270,10 +312,11 @@ export default {
         </section>`
       : "";
 
+    const coming = comingUp(state, today);
     const billsCard = html`<section class="card home-bills reveal">
-      ${sectionHeader("Próximas facturas", { href: "#/facturas", linkText: "Ver todas" })}
-      ${bills.length
-        ? html`<div class="rows">${bills.map((b) => billRow(state, b, { today, compact: true }))}</div>`
+      ${sectionHeader("Lo que viene", { href: "#/tu-dinero", linkText: "Ver todo" })}
+      ${coming.length
+        ? html`<div class="rows">${coming.map((c) => c.row)}</div>`
         : emptyState({ art: "neko-durmiendo", title: "Sin facturas registradas", text: "Suma luz, internet o suscripciones y te decimos cuánto reservar.", actionLabel: "Agregar factura", action: "add-bill", compact: true, mood: "sleepy" })}
     </section>`;
 
@@ -379,7 +422,8 @@ export default {
           <div class="home-side">${dailyCard}${transitCards}${showExtras ? extrasLine : ""}</div>
         </div>
         ${actions}${leftovers}${pending}
-        <div class="home-board">${isEmpty ? "" : barsCard}${isEmpty ? "" : donutCard}${accountsCard}${recents}${billsCard}${loansCard}${budgetsCard}${goalsCard}${ratesCard}</div>
+        <div class="home-board">${extra.has("charts") && !isEmpty ? barsCard : ""}${extra.has("charts") && !isEmpty ? donutCard : ""}${billsCard}${recents}${extra.has("summary") ? summaryCard : ""}${extra.has("accounts") ? accountsCard : ""}${extra.has("loans") ? loansCard : ""}${extra.has("budgets") ? budgetsCard : ""}${extra.has("goals") ? goalsCard : ""}${extra.has("rates") ? ratesCard : ""}</div>
+        ${isEmpty ? "" : html`<p class="home-customize"><a class="inline-link" href="#/ajustes-apariencia">${icon("settings", 14)} Personalizar el Inicio</a></p>`}
       </div>
       <p class="privacy-note">${icon("lock", 14)} Tus datos se guardan solo en este dispositivo.</p>
       ${appFooter()}

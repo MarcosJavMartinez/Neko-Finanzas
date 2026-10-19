@@ -51,7 +51,7 @@ return (async () => {
     store.addTransaction({ type: "expense", amount: 9000, currency: "ARS", date: today, categoryId: "exp-comida", description: "Almuerzo" });
     await home();
     log("tras pasarse: " + text(".daily-card .daily-main") + " · clase is-over=" + d.querySelector(".daily-card").classList.contains("is-over"));
-    log("reserva del inicio: " + text(".avail-reserve"));
+    log("reserva del inicio: " + text(".hero-line"));
 
     // 4) Pantalla de presupuestos
     w.location.hash = "#/presupuestos"; await wait(400);
