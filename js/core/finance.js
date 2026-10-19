@@ -630,9 +630,10 @@ export function budgetReserve(state, today = todayISO()) {
   const base = budgetBase(state, key).amount;
   const items = state.budgets
     .filter(isEnvelope)
-    // Liberado este mes ("no lo uso"): no se reserva. Guardado para el que viene: sí.
-    .filter((budget) => !(budget.pause?.month === key && !budget.pause.keep))
-    .map((budget) => ({ budget, amount: Math.max(0, budgetStatus(state, budget, key, base).remaining), keptForNext: budget.pause?.month === key }))
+    // "No lo uso": liberado, pasado a una meta o a otro presupuesto → ya no se reserva aquí.
+    // Guardado para el mes que viene (lo mismo o cualquier cosa) → sigue apartado.
+    .filter((budget) => !(budget.pause?.month === key && !budgetKeptForNext(budget, key)))
+    .map((budget) => ({ budget, amount: Math.max(0, budgetStatus(state, budget, key, base).remaining), keptForNext: budgetKeptForNext(budget, key) }))
     .filter((item) => item.amount > 0);
   return { amount: items.reduce((s, i) => s + i.amount, 0), items };
 }
@@ -675,8 +676,16 @@ export function treatAllowance(state, today = todayISO()) {
  * Los presupuestos que apuntan a una meta miden ahorro, no gasto: llegar al
  * 100% es bueno, así que usan "done" en vez de "near"/"over".
  */
+/** Lo que otros presupuestos le pasaron este mes ("Este mes no lo uso" → a otro presupuesto). */
+function budgetIncoming(state, budget, key) {
+  return state.budgets.reduce((s, b) => s + (b.id !== budget.id && b.pause?.month === key && b.pause.mode === "budget" && b.pause.targetId === budget.id ? b.pause.amount || 0 : 0), 0);
+}
+
+/** "Este mes no lo uso" con la plata que sigue apartada (para el mes que viene). */
+export const budgetKeptForNext = (budget, key) => budget.pause?.month === key && (budget.pause.mode === "same" || budget.pause.mode === "any");
+
 export function budgetStatus(state, budget, key, base = budgetBase(state, key).amount) {
-  const limit = budgetLimit(state, budget, base, key);
+  const limit = budgetLimit(state, budget, base, key) + budgetIncoming(state, budget, key);
   const spent = budgetSpent(state, budget, key);
   const pct = percent(spent, limit);
   let level = limit <= 0 ? (spent > 0 ? "over" : "ok") : pct > 100 ? "over" : pct >= 80 ? "near" : "ok";
@@ -806,7 +815,7 @@ export function nextMonthPlan(state, today = todayISO()) {
   for (const budget of state.budgets.filter(isEnvelope)) {
     const limit = budgetStatus(state, budget, key, base).limit;
     // Guardado este mes para el que viene: esa parte ya está cubierta.
-    const carried = budget.pause?.month === thisKey && budget.pause.keep ? Math.max(0, budgetStatus(state, budget, thisKey).remaining) : 0;
+    const carried = budget.pause?.month === thisKey && budget.pause.mode === "same" ? Math.max(0, budgetStatus(state, budget, thisKey).remaining) : 0;
     const amount = Math.round(Math.max(0, limit - carried) * 100) / 100;
     if (limit > 0) items.push({ kind: "budget", budget, icon: budget.icon, name: budget.name, date: start, amount, currency: state.settings.mainCurrency, amountMain: amount, carried: Math.min(carried, limit), id: budget.id });
   }
@@ -815,9 +824,11 @@ export function nextMonthPlan(state, today = todayISO()) {
     if (tx.type !== "income" || !tx.recurrence) continue;
     for (const date of occurrences(tx.recurrence.nextDate, tx.recurrence.freq)) income += toMain(state, tx.recurrence.amount || tx.amount, tx.currency);
   }
+  // Guardado este mes "para lo que haya que pagar el mes que viene": ya cuenta como juntado.
+  const saved = state.budgets.filter((b) => isEnvelope(b) && b.pause?.month === thisKey && b.pause.mode === "any").reduce((s, b) => s + Math.max(0, budgetStatus(state, b, thisKey).remaining), 0);
   items.sort((a, b) => a.date.localeCompare(b.date));
   const round = (n) => Math.round(n * 100) / 100;
   const needs = round(items.reduce((s, i) => s + i.amountMain, 0));
   const have = round(Math.max(0, balanceSummary(state, today).available));
-  return { key, start, end, items, needs, have, income: round(income), missing: round(Math.max(0, needs - have)), afterIncome: round(have + income - needs) };
+  return { key, start, end, items, needs, have, saved: round(saved), income: round(income), missing: round(Math.max(0, needs - have - saved)), afterIncome: round(have + saved + income - needs) };
 }

@@ -3171,3 +3171,42 @@ button.inline-link {
   flex-wrap: wrap;
   gap: 8px;
 }
+
+.pause-options {
+  display: grid;
+  gap: 8px;
+}
+
+.pause-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.pause-option:has(input:checked) {
+  border-color: var(--action);
+  background: var(--action-soft);
+}
+
+.pause-option input[type="radio"] {
+  margin-top: 3px;
+}
+
+.pause-option > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pause-option > span > span {
+  color: var(--text-2);
+  font-size: 0.86rem;
+}
+
+.pause-option select {
+  margin-top: 4px;
+}

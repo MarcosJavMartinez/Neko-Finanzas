@@ -74,7 +74,7 @@ function reservedGroups(state, summary, today) {
   }
   rows = group("Presupuestos", summary.envelopes.amount, "#/presupuestos");
   for (const { budget, amount } of summary.envelopes.items) {
-    rows.push(flowRow({ emoji: budget.icon, color: "var(--action)", text: html`<strong>${m(amount)}</strong> reservados para ${budget.name}`, meta: budget.pause?.month === monthKey(today) && budget.pause.keep ? "Guardado para el mes que viene" : "Lo que te falta gastar este mes", href: "#/presupuestos" }));
+    rows.push(flowRow({ emoji: budget.icon, color: "var(--action)", text: html`<strong>${m(amount)}</strong> reservados para ${budget.name}`, meta: budget.pause?.month === monthKey(today) && budget.pause.mode === "same" ? "Guardado para lo mismo el mes que viene" : budget.pause?.month === monthKey(today) && budget.pause.mode === "any" ? "Guardado para lo que haya que pagar el mes que viene" : "Lo que te falta gastar este mes", href: "#/presupuestos" }));
   }
   rows = group("Fondo de facturas", summary.cushion.amount, "#/facturas");
   if (summary.cushion.amount > 0) {
@@ -109,6 +109,7 @@ function nextMonthCard(state, today) {
     <dl class="flow-lines">
       <div class="flow-line"><dt>Vas a tener que pagar</dt><dd>${m(plan.needs)}</dd></div>
       <div class="flow-line"><dt>Te sobra hoy de este mes</dt><dd>${m(plan.have)}</dd></div>
+      ${plan.saved > 0 ? html`<div class="flow-line"><dt>Ya guardado para ese mes</dt><dd>${m(plan.saved)}</dd></div>` : ""}
       ${plan.income > 0 ? html`<div class="flow-line"><dt>Ingresos que se repiten</dt><dd>+ ${m(plan.income)}</dd></div>` : ""}
     </dl>
     ${verdict}

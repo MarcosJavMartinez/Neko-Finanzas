@@ -382,7 +382,16 @@ export function sanitizeState(input) {
     if (date(b.since)) budget.since = b.since;
     if (typeof b.settledMonth === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(b.settledMonth)) budget.settledMonth = b.settledMonth;
     // "Este mes no lo uso": guardado para el mes que viene (keep) o liberado.
-    if (isObj(b.pause) && typeof b.pause.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(b.pause.month)) budget.pause = { month: b.pause.month, keep: bool(b.pause.keep) };
+    if (isObj(b.pause) && typeof b.pause.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(b.pause.month)) {
+      // same: lo mismo el mes que viene · any: lo que haya que pagar el mes que viene
+      // goal: pasado a una meta · budget: pasado a otro presupuesto · release: liberado
+      const modes = ["same", "any", "goal", "budget", "release"];
+      const mode = modes.includes(b.pause.mode) ? b.pause.mode : b.pause.keep ? "same" : "release";
+      budget.pause = { month: b.pause.month, mode };
+      if (mode === "budget" && id(b.pause.targetId)) budget.pause.targetId = b.pause.targetId;
+      if ((mode === "budget" || mode === "goal") && positive(b.pause.amount)) budget.pause.amount = positive(b.pause.amount);
+      if (mode === "budget" && !(budget.pause.targetId && budget.pause.amount)) budget.pause.mode = "release";
+    }
     budgets.push(budget);
   }
 

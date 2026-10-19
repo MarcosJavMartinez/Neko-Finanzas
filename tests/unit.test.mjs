@@ -574,8 +574,14 @@ mem.delete("nekoFinanzas.hideAmounts");
     return [Math.round(F.balanceSummary(st, today).available), p.items[0].amount, p.items[0].carried, F.budgetLeftovers(st, "2026-04-02").length];
   };
   eq("no lo uso: normal / guardarlo para el que viene / liberarlo", [run(null), run({ month: "2026-03", keep: true }), run({ month: "2026-03", keep: false })], [[80000, 20000, 0, 1], [80000, 0, 20000, 0], [100000, 20000, 0, 0]]);
+  eq("no lo uso: para lo mismo / para cualquier cosa del mes que viene", [run({ month: "2026-03", mode: "same" }), run({ month: "2026-03", mode: "any" })], [[80000, 0, 20000, 0], [80000, 20000, 0, 0]]);
+  const anySt = sanitizeState({ ...base, budgets: [{ ...base.budgets[0], pause: { month: "2026-03", mode: "any" } }] });
+  eq("para cualquier cosa: ya cuenta como guardado para el mes que viene", [F.nextMonthPlan(anySt, today).saved, F.nextMonthPlan(anySt, today).missing], [20000, 0]);
+  const moved = sanitizeState({ ...base, budgets: [{ ...base.budgets[0], pause: { month: "2026-03", mode: "budget", targetId: "gus", amount: 20000 } }, { id: "gus", name: "Gustos", icon: "☕", mode: "fixed", value: 5000, reserve: true, since: "2026-03-01", target: { kind: "categories", categoryIds: ["exp-comida"] } }] });
+  const gus = moved.budgets.find((b) => b.id === "gus");
+  eq("pasarlo a otro presupuesto: ese tiene más este mes y el disponible no cambia", [F.budgetStatus(moved, gus, "2026-03").limit, Math.round(F.balanceSummary(moved, today).available)], [25000, 75000]);
   const keep = sanitizeState({ ...base, budgets: [{ ...base.budgets[0], pause: { month: "2026-03", keep: true } }] });
-  eq("no lo uso: los datos son válidos", JSON.stringify(sanitizeState(JSON.parse(JSON.stringify(keep))).budgets[0].pause), JSON.stringify({ month: "2026-03", keep: true }));
+  eq("no lo uso: los datos son válidos", JSON.stringify(sanitizeState(JSON.parse(JSON.stringify(keep))).budgets[0].pause), JSON.stringify({ month: "2026-03", mode: "same" }));
 }
 
 // Una moneda con datos no se saca de las que se usan

@@ -1,11 +1,12 @@
 // Presupuestos mensuales: por porcentaje de los ingresos o monto fijo, y
 // aplicados a categorías de gasto, a una meta (ahorro) o "al resto".
 
+import { budgetStatus } from "../../core/finance.js";
 import { currentMonthKey, shiftMonthKey, formatMonth, midSentence } from "../../core/dates.js";
 import { msg, tr } from "../../core/i18n.js";
 import { html } from "../dom.js";
 import { icon } from "../icons.js";
-import { openSheet, confirmDialog } from "../sheet.js";
+import { openSheet, confirmDialog, whenHistorySettled } from "../sheet.js";
 import { toast } from "../toast.js";
 import { segmented, currencyOptions } from "../components.js";
 import {
@@ -20,7 +21,7 @@ import {
   clearErrors,
 } from "./fields.js";
 import * as store from "../../core/store.js";
-import { amountToInput, parseAmount, zeroAmount } from "../../core/money.js";
+import { amountToInput, parseAmount, zeroAmount, formatMoney, convert } from "../../core/money.js";
 
 const BUDGET_ICONS = ["🧾", "🛒", "🍔", "✈️", "👕", "🛟", "🎮", "🏠", "🚗", "💊", "🎁", "📚", "🐱", "💰", "🎯", "✨"];
 
@@ -110,17 +111,14 @@ export function openBudgetForm({ budget, preset } = {}) {
       form.querySelector("[data-pause-box]")?.addEventListener("click", (event) => {
         const what = event.target.closest("[data-pause]")?.dataset.pause;
         if (!what) return;
+        if (what === "open") {
+          close();
+          return whenHistorySettled(() => openPauseSheet(budget.id));
+        }
         const backup = store.snapshot();
-        const month = currentMonthKey();
-        const next = midSentence(formatMonth(shiftMonthKey(month, 1)).split(" ")[0]);
-        if (what === "keep") store.pauseBudget(budget.id, month, true);
-        if (what === "release") store.pauseBudget(budget.id, month, false);
-        if (what === "undo") store.pauseBudget(budget.id, "");
+        store.pauseBudget(budget.id, "");
         close();
-        toast(
-          what === "keep" ? msg`Guardado para ${next}: sigue apartado y ya cuenta para ese mes` : what === "release" ? "Liberado: este mes pasa a tu disponible" : "Listo, este mes vuelve a reservarse",
-          { type: "info", actionLabel: "Deshacer", onAction: () => store.restore(backup) }
-        );
+        toast("Listo, este mes vuelve a reservarse", { type: "info", actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
       form.addEventListener("change", (event) => {
         if (event.target.name === "mode") {
@@ -191,20 +189,90 @@ export function openBudgetForm({ budget, preset } = {}) {
   });
 }
 
-/** "Este mes no lo uso": guardarlo para el mes que viene o liberarlo (vuelve solo el mes siguiente). */
+/** Qué se eligió hacer este mes con lo que no se usa, en una frase. */
+function pauseText(state, budget, next) {
+  const p = budget.pause;
+  const target = p.mode === "budget" && state.budgets.find((b) => b.id === p.targetId);
+  return {
+    same: msg`No lo usas este mes: queda guardado para lo mismo en ${next}.`,
+    any: msg`No lo usas este mes: queda guardado para lo que haya que pagar en ${next}.`,
+    goal: msg`No lo usas este mes: pasaste ${formatMoney(p.amount || 0, state.settings.mainCurrency)} a una meta.`,
+    budget: target ? msg`No lo usas este mes: pasaste ${formatMoney(p.amount || 0, state.settings.mainCurrency)} a “${target.name}”.` : "No lo usas este mes.",
+    release: "No lo usas este mes: lo que tenía reservado pasó a tu disponible.",
+  }[p.mode];
+}
+
+/** "Este mes": qué hacer con lo que queda si este mes no se usa. */
 function pauseBox(budget) {
+  const state = store.getState();
   const month = currentMonthKey();
   const next = midSentence(formatMonth(shiftMonthKey(month, 1)).split(" ")[0]);
+  const remaining = Math.max(0, budgetStatus(state, budget, month).remaining);
   const paused = budget.pause?.month === month;
   return html`<div class="pause-box" data-pause-box>
     <span class="field-label">Este mes</span>
     ${paused
-      ? html`<p class="notice notice-info">${icon("info", 16)}<span>${budget.pause.keep ? msg`No lo usas este mes: queda guardado para ${next}.` : "No lo usas este mes: lo que tenía reservado pasó a tu disponible."}</span></p>
-          <button type="button" class="btn btn-ghost btn-sm" data-pause="undo">${icon("undo", 16)} Volver a usarlo este mes</button>`
-      : html`<p class="field-hint">¿Este mes no lo vas a usar? Vuelve solo el mes que viene.</p>
-          <div class="pause-actions">
-            <button type="button" class="btn btn-soft btn-sm" data-pause="keep">${icon("lock", 16)} ${msg`Guardarlo para ${next}`}</button>
-            <button type="button" class="btn btn-ghost btn-sm" data-pause="release">${icon("check", 16)} Liberarlo</button>
-          </div>`}
+      ? html`<p class="notice notice-info">${icon("info", 16)}<span>${pauseText(state, budget, next)}</span></p>
+          ${budget.pause.mode === "goal" ? "" : html`<button type="button" class="btn btn-ghost btn-sm" data-pause="undo">${icon("undo", 16)} Volver a usarlo este mes</button>`}`
+      : remaining > 0
+        ? html`<p class="field-hint">${msg`Te quedan ${formatMoney(remaining, state.settings.mainCurrency)}. ¿No los vas a usar este mes? Decide para qué guardarlos.`}</p>
+            <button type="button" class="btn btn-soft btn-sm" data-pause="open">${icon("lock", 16)} Este mes no lo uso…</button>`
+        : html`<p class="field-hint">Este mes ya lo usaste entero.</p>`}
   </div>`;
+}
+
+/** Hoja: a dónde va lo que queda de un presupuesto que este mes no se usa. */
+export function openPauseSheet(budgetId) {
+  const state = store.getState();
+  const budget = state.budgets.find((b) => b.id === budgetId);
+  if (!budget) return;
+  const main = state.settings.mainCurrency;
+  const month = currentMonthKey();
+  const next = midSentence(formatMonth(shiftMonthKey(month, 1)).split(" ")[0]);
+  const remaining = Math.round(Math.max(0, budgetStatus(state, budget, month).remaining) * 100) / 100;
+  const others = state.budgets.filter((b) => b.id !== budget.id && b.target.kind !== "goal");
+  const option = (value, title, sub, extra = "") => html`<label class="pause-option">
+      <input type="radio" name="mode" value="${value}" ${value === "same" ? "checked" : ""} />
+      <span><strong>${title}</strong><span>${sub}</span>${extra}</span>
+    </label>`;
+  openSheet({
+    title: msg`${budget.name}: este mes no lo uso`,
+    body: html`<form class="form" novalidate>
+      <p class="sheet-text">${msg`Te quedan ${formatMoney(remaining, main)}. Es tu dinero: elige para qué queda guardado.`}</p>
+      <div class="pause-options">
+        ${option("same", msg`Para ${budget.name} en ${next}`, "Sigue apartado y ya cuenta para ese mes.")}
+        ${option("any", msg`Para lo que haya que pagar en ${next}`, "Sigue apartado y cubre cualquier cosa de ese mes (alquiler, facturas…).")}
+        ${state.goals.length
+          ? option("goal", "Pasarlo a una meta", "Queda ahorrado en la meta que elijas.", html`<select name="goalId" aria-label="Meta">${state.goals.map((g) => html`<option value="${g.id}">${g.icon} ${g.name}</option>`)}</select>`)
+          : ""}
+        ${others.length
+          ? option("budget", "Pasarlo a otro presupuesto este mes", "Ese presupuesto tiene este dinero de más este mes.", html`<select name="budgetId" aria-label="Presupuesto">${others.map((b) => html`<option value="${b.id}">${b.icon} ${b.name}</option>`)}</select>`)
+          : ""}
+        ${option("release", "Liberarlo", "Pasa a tu disponible para usarlo en lo que quieras.")}
+      </div>
+      ${formActions({ submitLabel: "Listo" })}
+    </form>`,
+    onMount(panel, close) {
+      const form = panel.querySelector("form");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const mode = form.querySelector("input[name=mode]:checked")?.value || "same";
+        const backup = store.snapshot();
+        const s = store.getState();
+        if (mode === "goal") {
+          const goal = s.goals.find((g) => g.id === form.elements.goalId.value);
+          store.pauseBudget(budget.id, month, { mode, targetId: goal.id, amount: remaining, goalAmount: convert(remaining, main, goal.currency, s.rates), note: msg`De ${budget.name}` });
+          toast(msg`${formatMoney(remaining, main)} pasaron a “${goal.name}”`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        } else if (mode === "budget") {
+          const target = s.budgets.find((b) => b.id === form.elements.budgetId.value);
+          store.pauseBudget(budget.id, month, { mode, targetId: target.id, amount: remaining });
+          toast(msg`${formatMoney(remaining, main)} pasaron a “${target.name}” este mes`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        } else {
+          store.pauseBudget(budget.id, month, { mode });
+          toast(mode === "release" ? "Liberado: este mes pasa a tu disponible" : msg`Guardado para ${next}: sigue apartado y ya cuenta para ese mes`, { type: "info", actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        }
+        close();
+      });
+    },
+  });
 }

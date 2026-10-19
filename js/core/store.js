@@ -877,13 +877,26 @@ export function saveBudget(data) {
  * pasarlo a una meta (goalId + amount en la moneda principal) o dejarlo
  * disponible. En los dos casos ese mes queda resuelto y no se vuelve a ofrecer.
  */
-/** "Este mes no lo uso": guardarlo para el mes que viene (keep) o liberarlo. Con month vacío, se deshace. */
-export function pauseBudget(id, month, keep) {
+/**
+ * "Este mes no lo uso…": qué hacer con lo que queda (mode: same, any, goal,
+ * budget, release). Con month vacío, se deshace. Pasarlo a una meta además
+ * deposita el monto en esa meta.
+ */
+export function pauseBudget(id, month, { mode = "release", targetId = "", amount = 0, goalAmount = 0, note = "" } = {}) {
   commit((s) => {
     const budget = find(s.budgets, id);
     if (!budget) return;
-    if (month) budget.pause = { month, keep: Boolean(keep) };
-    else delete budget.pause;
+    if (!month) {
+      delete budget.pause;
+      return;
+    }
+    budget.pause = { month, mode };
+    if (mode === "budget" && find(s.budgets, targetId)) Object.assign(budget.pause, { targetId, amount: Math.round(amount * 100) / 100 });
+    if (mode === "goal") {
+      budget.pause.amount = Math.round(amount * 100) / 100;
+      const goal = find(s.goals, targetId);
+      if (goal && goalAmount > 0) goal.movements.push({ id: uid("mov"), date: todayISO(), amount: Math.round(goalAmount * 100) / 100, note: String(note).slice(0, 80) });
+    }
   });
 }
 
