@@ -161,7 +161,7 @@ export default {
               // Las transferencias no suman ni restan: solo cambian de cuenta.
               const net = items.reduce((s, t) => s + (t.type === "transfer" || t.type === "loan" ? 0 : (t.type === "income" ? 1 : -1) * toMain(state, t.amount, t.currency)), 0);
               return html`<div class="day-group">
-                <h3 class="day-head"><span>${formatDayHeading(date)}${searching && date.slice(0, 4) !== currentMonthKey().slice(0, 4) ? ` de ${date.slice(0, 4)}` : ""}</span><span class="day-net">${formatMoney(net, main, { sign: true })}</span></h3>
+                <h3 class="day-head"><span>${formatDayHeading(date)}${searching && date.slice(0, 4) !== currentMonthKey().slice(0, 4) ? ` de ${date.slice(0, 4)}` : ""}</span><span class="day-net">${items.some((t) => t.type === "income" || t.type === "expense") ? formatMoney(net, main, { sign: true }) : ""}</span></h3>
                 <div class="tx-list">${items.map((tx) => txRow(state, tx))}</div>
               </div>`;
             })}

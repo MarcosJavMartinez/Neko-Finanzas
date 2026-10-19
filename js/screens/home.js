@@ -287,7 +287,7 @@ export default {
     );
 
     const recents = html`<section class="card home-recents reveal">
-      ${sectionHeader("Recientes", { href: "#/transacciones", linkText: "Ver todos" })}
+      ${sectionHeader("Recientes", { href: "#/transacciones", linkText: "Ver todo" })}
       ${recent.length
         ? html`<div class="tx-list">${recent.map((tx) => txRow(state, tx, { withDate: true }))}</div>`
         : emptyState({ art: "neko-anotando", title: "Todavía no hay movimientos", text: "Registra tu primer ingreso o gasto y va a aparecer aquí.", actionLabel: "Agregar", action: "add-expense", compact: true, mood: "sleepy" })}
@@ -297,7 +297,7 @@ export default {
     const activeAccounts = accountBalances(state, today).filter((e) => !e.account.archived);
     const accountsCard = activeAccounts.length > 1
       ? html`<section class="card home-accounts reveal">
-          ${sectionHeader("Tus cuentas", { href: "#/cuentas", linkText: "Ver todas" })}
+          ${sectionHeader("Tus cuentas", { href: "#/cuentas", linkText: "Ver todo" })}
           <div class="rows rows-plain">${activeAccounts.slice(0, 6).map((e) => accountRow(state, e))}</div>
           <button type="button" class="btn btn-soft btn-sm btn-block" data-action="add-transfer">${icon("swap", 16)} Mover dinero entre cuentas</button>
         </section>`
@@ -307,7 +307,7 @@ export default {
     const openLoans = loansSummary(state).items.filter((i) => i.outstanding > 0);
     const loansCard = openLoans.length
       ? html`<section class="card home-loans reveal">
-          ${sectionHeader("Préstamos", { href: "#/prestamos", linkText: "Ver todos" })}
+          ${sectionHeader("Préstamos", { href: "#/prestamos", linkText: "Ver todo" })}
           <div class="rows rows-plain">${openLoans.slice(0, 3).map((i) => loanRow(i, today))}</div>
         </section>`
       : "";
@@ -322,7 +322,7 @@ export default {
 
     const budgetsCard = budgetAlerts.length
       ? html`<section class="card home-budgets reveal">
-          ${sectionHeader("Presupuestos para mirar", { href: "#/presupuestos", linkText: "Ver" })}
+          ${sectionHeader("Presupuestos para mirar", { href: "#/presupuestos", linkText: "Ver todo" })}
           ${budgetAlerts.slice(0, 3).map(
             (b) => html`<div class="budget-mini">
               <span class="budget-mini-name">${b.budget.icon} ${b.budget.name}</span>
@@ -334,7 +334,7 @@ export default {
       : "";
 
     const goalsCard = html`<section class="card home-goals reveal">
-      ${sectionHeader("Metas de ahorro", { href: "#/metas", linkText: "Ver todas" })}
+      ${sectionHeader("Metas de ahorro", { href: "#/metas", linkText: "Ver todo" })}
       ${state.goals.length
         ? html`<div class="goal-list">${state.goals.slice(0, 3).map((g) => goalCard(state, g, { compact: true }))}</div>`
         : emptyState({ art: "neko-ahorrando", title: "Todavía no tienes metas", text: "Crea una y empieza a separar dinero para eso que quieres.", actionLabel: "Crear meta", action: "add-goal", compact: true })}

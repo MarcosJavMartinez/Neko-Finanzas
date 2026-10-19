@@ -67,6 +67,9 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         ${dateField({ name: "date", label: "Fecha", value: current.date })}
         ${dateField({ name: "dueDate", label: "Devolver antes del", value: current.dueDate, required: false })}
       </div>
+      <details class="more-options" data-loan-more ${current.saveMonthly || current.note ? "open" : ""}>
+        <summary>${icon("plus", 16)} Más opciones <span class="optional">(reservar por mes, nota)</span></summary>
+        <div class="more-options-body">
       <div class="field" data-save-monthly ${current.direction === "borrowed" ? "" : "hidden"}>
         <label class="field-label" for="f-saveMonthly">Reservar por mes para devolverlo (opcional)</label>
         <div class="amount-input amount-input-sm">${state.settings.currencies.length > 1
@@ -77,6 +80,8 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         <p class="field-error" data-error-for="saveMonthly"></p>
       </div>
       ${textField({ name: "note", label: "Nota", value: current.note, maxlength: 120, placeholder: "Ej.: para el auto, en 3 partes" })}
+        </div>
+      </details>
       <p class="field-hint" data-loan-hint>${current.direction === "lent" ? "No es un gasto: el dinero vuelve cuando te lo devuelvan." : "No es un ingreso: si pones fecha para devolverlo, la app lo reserva de tu disponible cuando se acerque."}</p>
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Guardar préstamo", deletable: isEdit })}
     </form>`,

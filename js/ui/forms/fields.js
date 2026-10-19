@@ -106,7 +106,7 @@ export function categoryPicker(state, type, selectedId, { name = "categoryId", m
  * deja el movimiento solo en la categoría.
  */
 export function subcategoryPicker(category, selectedId = "") {
-  return html`<div class="field" data-sub-field>
+  return html`<div class="field" data-sub-field ${category ? "" : "hidden"}>
     <span class="field-label">Subcategoría <span class="optional">(opcional)</span></span>
     ${category
       ? html`<div class="sub-picker" style="--c:${category.color}">
@@ -116,7 +116,7 @@ export function subcategoryPicker(category, selectedId = "") {
           )}
           <button type="button" class="sub-chip sub-chip-new" data-new-subcategory="${category.id}">${icon("plus", 14)}Nueva</button>
         </div>`
-      : html`<p class="field-hint">Elige una categoría para ver sus subcategorías.</p>`}
+      : ""}
   </div>`;
 }
 

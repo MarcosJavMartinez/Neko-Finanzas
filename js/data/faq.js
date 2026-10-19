@@ -57,7 +57,7 @@ export const FAQ = [
       },
       {
         q: "¿Cómo paso dinero de una cuenta a otra? (por ejemplo, de Mercado Pago a efectivo)",
-        a: "Con «Mover dinero»: en el Inicio, en la tarjeta Tus cuentas; en Agregar → Pasar dinero entre cuentas; o en Más → Cuentas. Eliges desde dónde, hacia dónde y el monto. No es un gasto: tu total no cambia. Si las cuentas están en monedas distintas, te pide cuánto llegó a la otra.",
+        a: "Con «Mover dinero»: en Agregar → Pasar dinero entre cuentas, o en Más → Cuentas. Eliges desde dónde, hacia dónde y el monto. No es un gasto: tu total no cambia. Si las cuentas están en monedas distintas, te pide cuánto llegó a la otra.",
         action: "add-transfer",
       },
       {

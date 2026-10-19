@@ -24,7 +24,7 @@ import {
 import { bindCategoryPickers } from "./categoryForm.js";
 import { getLastAccount, setLastAccount } from "../../core/prefs.js";
 import * as store from "../../core/store.js";
-import { todayISO, FREQUENCIES } from "../../core/dates.js";
+import { todayISO, formatDate, FREQUENCIES } from "../../core/dates.js";
 import { formatMoney, amountToInput, parseAmount } from "../../core/money.js";
 import { ACCOUNT_KINDS, FALLBACK_CATEGORY, INSTALLMENT_OPTIONS } from "../../data/defaults.js";
 import { confirmDialog, whenHistorySettled } from "../sheet.js";
@@ -89,15 +89,12 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
           </div>`}
       ${categoryPicker(state, current.type, current.categoryId, { limit: 6 })}
       ${subcategoryPicker(findCategory(state, current.categoryId), current.subcategoryId)}
-      <div class="field-row">
-        <div class="field">
-          <label class="field-label" for="f-date">Fecha</label>
-          <input id="f-date" name="date" type="date" value="${current.date}" required />
-        </div>
-        <div class="field field-time">
-          <label class="field-label" for="f-time">Hora <span class="optional">(opcional)</span></label>
-          <input id="f-time" name="time" type="time" value="${current.time || ""}" />
-        </div>
+      <details class="more-options" data-tx-more ${current.time || current.description || current.recurrence || current.date !== todayISO() ? "open" : ""}>
+        <summary>${icon("calendar", 16)} <span data-date-label>${current.date === todayISO() ? tr("Hoy") : formatDate(current.date)}</span> · Más detalles <span class="optional">(fecha, descripción, hora, repetir)</span></summary>
+        <div class="more-options-body">
+      <div class="field">
+        <label class="field-label" for="f-date">Fecha</label>
+        <input id="f-date" name="date" type="date" value="${current.date}" required />
       </div>
       ${textField({ name: "description", label: "Descripción", value: current.description, placeholder: current.type === "income" ? "Ej.: Sueldo de septiembre" : "Ej.: Supermercado del sábado" })}
       <div class="recurrence-field" ${bill || plan ? "hidden" : ""}>
@@ -110,6 +107,12 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
           <p class="field-error" data-error-for="usualAmount"></p>
         </div>
       </div>
+        <div class="field field-time">
+          <label class="field-label" for="f-time">Hora <span class="optional">(opcional)</span></label>
+          <input id="f-time" name="time" type="time" value="${current.time || ""}" />
+        </div>
+        </div>
+      </details>
       ${isEdit ? "" : html`<p class="notice notice-info extras-link" data-extras-link ${current.type === "income" ? "" : "hidden"}>${icon("sparkle", 16)}<span>¿Es paga extra (aguinaldo), horas extra, comisión o propinas? <button type="button" class="inline-link" data-open-extras>Registra los extras del mes</button></span></p>`}
       ${formActions({ submitLabel: isEdit ? "Guardar cambios" : "Guardar", deletable: isEdit })}
     </form>`,
@@ -202,6 +205,11 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
       form.addEventListener("input", (event) => {
         if (event.target.name === "amount") syncInstallments();
       });
+      // La línea de "Más detalles" dice qué fecha se usa ("Hoy" o la elegida).
+      form.elements.date.addEventListener("change", () => {
+        const value = form.elements.date.value;
+        form.querySelector("[data-date-label]").textContent = value === todayISO() ? tr("Hoy") : isISODate(value) ? formatDate(value) : "";
+      });
 
       form.querySelector("[data-open-extras]")?.addEventListener("click", () => {
         close();
@@ -231,7 +239,10 @@ export function openTransactionForm({ type = "expense", tx, accountId: presetAcc
         const data = readForm(form);
         const amount = readAmount(form);
         if (!(amount > 0)) return fieldError(form, "amount", "Ingresa un monto mayor a cero.");
-        if (!isISODate(data.date)) return fieldError(form, "date", "Elige una fecha válida.");
+        if (!isISODate(data.date)) {
+          form.querySelector("[data-tx-more]").open = true;
+          return fieldError(form, "date", "Elige una fecha válida.");
+        }
         const values = {
           type: selectedType,
           amount,

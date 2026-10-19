@@ -3309,3 +3309,12 @@ button.inline-link {
 .chooser-more[open] summary {
   margin-bottom: 8px;
 }
+
+/* Cuentas: los dos botones bajan de renglón si no entran (celulares chicos) */
+.accounts-actions {
+  flex-wrap: wrap;
+}
+
+.accounts-actions .btn {
+  flex: 1 1 auto;
+}

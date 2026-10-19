@@ -69,20 +69,21 @@ const SIDE_NAV = [
   ["inicio", "home", "Inicio"],
   ["transacciones", "swap", "Transacciones"],
   ["metas", "target", "Metas"],
+  ["tu-dinero", "coins", "¿A dónde va?"],
   ["facturas", "receipt", "Facturas"],
-  ["reportes", "chart", "Reportes"],
   ["presupuestos", "pie", "Presupuestos"],
   ["cuentas", "wallet", "Cuentas"],
-  ["categorias", "tag", "Categorías"],
   ["prestamos", "coinStack", "Préstamos"],
-  ["monedas", "coins", "Idioma y monedas"],
+  ["reportes", "chart", "Reportes"],
 ];
+// Categorías e Idioma y monedas están dentro de Configuración (como en el celular).
+const INSIDE_SETTINGS = ["categorias", "monedas"];
 
 function renderSidebar() {
   if (!sidebarEl) return;
   const here = currentScreen.id;
   const link = ([id, glyph, label]) => {
-    const active = here === id || (id === "ajustes" && here.startsWith("ajustes"));
+    const active = here === id || (id === "ajustes" && (here.startsWith("ajustes") || INSIDE_SETTINGS.includes(here)));
     return html`<a class="side-link ${active ? "is-active" : ""}" href="#/${id}" ${active ? html`aria-current="page"` : ""} title="${label}">${icon(glyph, 20)}<span>${label}</span></a>`;
   };
   setHTML(
@@ -94,7 +95,7 @@ function renderSidebar() {
       <nav class="side-nav" aria-label="Navegación principal">${SIDE_NAV.map(link)}</nav>
       <div class="side-foot">
         ${link(["ajustes", "settings", "Configuración"])}
-        <button type="button" class="side-link" data-action="show-onboarding" title="Cómo funciona">${icon("help", 20)}<span>Cómo funciona</span></button>
+        ${link(["ayuda", "help", "Ayuda"])}
         <button type="button" class="side-link" data-action="share-app" title="Compartir Neko Finanzas">${icon("share", 20)}<span>Compartir</span></button>
         <div class="side-neko" aria-hidden="true">
           <img src="img/neko-hola.webp" alt="" width="72" height="72" loading="lazy" />

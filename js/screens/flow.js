@@ -188,7 +188,7 @@ function monthEvents(state, today) {
 export default {
   id: "tu-dinero",
   tab: "inicio",
-  title: "Tu dinero",
+  title: "¿A dónde va?",
   back: "#/inicio",
   render(state) {
     const today = todayISO();
@@ -197,11 +197,10 @@ export default {
     const summary = balanceSummary(state, today);
     const reserved = reservedGroups(state, summary, today);
     const events = monthEvents(state, today);
-    const shown = events.slice(0, 40);
+    const shown = events.slice(0, 8);
 
     return html`
       <section class="card flow-sum reveal" aria-labelledby="flow-sum-title">
-        <h1 class="flow-title">¿A dónde va tu dinero?</h1>
         <h2 id="flow-sum-title" class="section-title">Así se calcula tu disponible</h2>
         <dl class="flow-lines">
           <div class="flow-line"><dt>Tienes en tus cuentas</dt><dd>${m(summary.total)}</dd></div>
@@ -224,7 +223,7 @@ export default {
       <section class="card reveal" aria-labelledby="flow-month-title">
         <h2 id="flow-month-title" class="section-title">Lo que pasó este mes</h2>
         ${shown.length ? html`<div class="flow-list">${shown}</div>` : html`<p class="sheet-text">Todavía no hay movimientos este mes.</p>`}
-        <a class="inline-link flow-more" href="#/transacciones">${icon("list", 16)} Ver todos los movimientos</a>
+        <a class="inline-link flow-more" href="#/transacciones">${icon("list", 16)} ${events.length > shown.length ? msg`Ver los ${events.length} movimientos del mes` : "Ver todos los movimientos"}</a>
       </section>
     `;
   },
