@@ -62,7 +62,7 @@ export const FAQ = [
       },
       {
         q: "¿Por qué ya se reserva una factura que vence el mes que viene?",
-        a: "Porque la app reserva lo que vence en los próximos 30 días. Si prefieres que reserve solo lo que vence hasta fin de mes, cámbialo en Configuración → Cálculo del disponible → Reservar facturas que vencen…",
+        a: "Solo pasa si elegiste reservar lo que vence en los próximos 30 días. Lo normal es reservar hasta fin de mes: para volver a eso, entra en Configuración → Cálculo del disponible → Reservar lo que vence… y elige «Hasta fin de mes».",
         href: "#/ajustes-calculo",
       },
       {

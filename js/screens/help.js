@@ -10,7 +10,9 @@ import { FAQ_TAGS } from "../data/faqTags.js";
 import { openTransfer } from "../ui/transfer.js";
 import { openSnapshots } from "../ui/snapshots.js";
 
-const view = { query: "" };
+// pick: la búsqueda frecuente tocada; se busca con su palabra en español,
+// así encuentra lo mismo en cualquier idioma.
+const view = { query: "", pick: null };
 
 /** "Préstamo" y "prestamo" son lo mismo para buscar; los signos no cuentan. */
 const plain = (text) =>
@@ -44,11 +46,15 @@ function tagsOf(item) {
   return lang === "es" ? es : lang.startsWith("en") ? en : `${es} ${en}`;
 }
 
-/** Puntaje de una pregunta: más si la palabra está en la pregunta, después en las palabras clave, después en la respuesta. */
-function score(item, words) {
-  const q = plain(tr(item.q)).replace(/\s+/g, " ");
-  const tags = plain(tagsOf(item));
-  const a = plain(tr(item.a)).replace(/\s+/g, " ");
+/**
+ * Puntaje de una pregunta: más si la palabra está en la pregunta, después en
+ * las palabras clave, después en la respuesta. inSpanish mira el texto
+ * original (para las búsquedas frecuentes).
+ */
+function score(item, words, inSpanish = false) {
+  const q = plain(inSpanish ? item.q : tr(item.q)).replace(/\s+/g, " ");
+  const tags = plain(inSpanish ? (FAQ_TAGS[item.q] || [""])[0] : tagsOf(item));
+  const a = plain(inSpanish ? item.a : tr(item.a)).replace(/\s+/g, " ");
   let points = 0;
   let found = 0;
   for (const w of words) {
@@ -64,7 +70,7 @@ function score(item, words) {
 const QUICK = ["Negativo", "Deudas", "Cuotas", "Dólares", "Tarjeta", "Propinas", "Backup", "Otro celular"];
 const quickChips = () => html`<div class="faq-quick">
   <span class="faq-quick-label">Búsquedas frecuentes:</span>
-  ${QUICK.map((w) => html`<button type="button" class="chip chip-action" data-action="faq-pick" data-q="${tr(w)}">${w}</button>`)}
+  ${QUICK.map((w, i) => html`<button type="button" class="chip chip-action" data-action="faq-pick" data-q="${tr(w)}" data-pick="${i}">${w}</button>`)}
 </div>`;
 
 function faqItem(item, open) {
@@ -89,11 +95,12 @@ export default {
   back: "#/mas",
   search: () => ({ value: view.query, placeholder: "Buscar una pregunta...", input: "faq-search" }),
   render() {
-    const words = plain(view.query).split(/\s+/).filter((w) => w.length > 1);
+    const picked = Boolean(view.pick) && view.query === view.pick.label;
+    const words = plain(picked ? view.pick.key : view.query).split(/\s+/).filter((w) => w.length > 1);
     // Sin buscar: todo, por grupos. Buscando: una sola lista, lo más parecido primero
     // (si ninguna tiene todas las palabras, las que tienen más).
     const ranked = words.length
-      ? FAQ.flatMap((g) => g.items.map((item) => ({ item, ...score(item, words) })))
+      ? FAQ.flatMap((g) => g.items.map((item) => ({ item, ...score(item, words, picked) })))
           .filter((r) => r.found > 0)
           .sort((a, b) => b.found - a.found || b.points - a.points)
       : [];
@@ -132,6 +139,8 @@ export default {
   actions: {
     "faq-pick"(el) {
       view.query = el.dataset.q || "";
+      // El número del botón (no la palabra: el html la traduciría).
+      view.pick = { label: view.query, key: QUICK[Number(el.dataset.pick)] || view.query };
       return true;
     },
     "transfer-data"() {

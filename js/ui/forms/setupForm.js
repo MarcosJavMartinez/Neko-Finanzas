@@ -213,7 +213,7 @@ const RENDER = {
               </label>`;
             })}
           </div>
-          <p class="field-hint">Escribe el valor que tú uses. Si lo dejas vacío, ponemos uno aproximado y lo corriges después en Más → Idioma y monedas.</p>
+          <p class="field-hint">Escribe el valor que tú uses. Si lo dejas vacío, ponemos uno aproximado y lo corriges después en Configuración → Idioma y monedas.</p>
         </div>`
       : ""}`;
   },

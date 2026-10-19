@@ -433,7 +433,7 @@ export function openTripForm(accountId) {
         <span class="field-label">¿Cuántos viajes?</span>
         <div class="stepper">
           <button type="button" class="btn btn-ghost btn-sm" data-step="-1" aria-label="Uno menos">${icon("minus", 18)}</button>
-          <input type="number" name="trips" min="1" max="50" value="1" inputmode="numeric" aria-label="Viajes" />
+          <input type="number" name="trips" min="1" max="50" value="1" inputmode="numeric" aria-label="Cantidad de viajes" />
           <button type="button" class="btn btn-ghost btn-sm" data-step="1" aria-label="Uno más">${icon("plus", 18)}</button>
         </div>
       </div>
