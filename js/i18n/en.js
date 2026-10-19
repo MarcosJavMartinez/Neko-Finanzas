@@ -1648,4 +1648,5 @@ export default {
   "¿A dónde va?": "Where does it go?",
   "· Más detalles": "· More details",
   "(fecha, descripción, hora, repetir)": "(date, description, time, repeat)",
+  "¿Cómo se calcula?": "How is it worked out?",
 };

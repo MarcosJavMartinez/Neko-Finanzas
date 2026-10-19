@@ -7,7 +7,7 @@ import { msg, tr } from "../core/i18n.js";
 import { tripsLeftText } from "../ui/forms/accountForms.js";
 import { html } from "../ui/dom.js";
 import { icon } from "../ui/icons.js";
-import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, txRow, chartSize } from "../ui/components.js";
+import { sectionHeader, billRow, goalCard, emptyState, progressBar, appFooter, txRow, chartSize, dueTile } from "../ui/components.js";
 import { barChart, donutChart } from "../ui/charts.js";
 import { PALETTE } from "../data/defaults.js";
 import { formatMoney, CURRENCIES, isMasked, symbolOf } from "../core/money.js";
@@ -34,8 +34,11 @@ function reserveLabel(summary) {
   return names.length > 1 ? msg`${names.slice(0, -1).join(tr(", "))} y ${names[names.length - 1]}` : names[0];
 }
 
+/** En pantallas anchas sobra lugar: la explicación de "Hoy puedes gastar" va abierta. */
+const wideScreen = () => typeof matchMedia === "function" && matchMedia("(min-width: 1024px)").matches;
+
 /** Debajo del saldo, una sola línea: "$ 204.500 reservados · noviembre: te faltan $ 610.000". */
-function heroLine(state, summary, today) {
+function heroLine(state, summary, today, where = "") {
   const m = (n) => formatMoney(n, state.settings.mainCurrency);
   const plan = nextMonthPlan(state, today);
   const month = formatMonth(plan.key).split(" ")[0];
@@ -44,7 +47,7 @@ function heroLine(state, summary, today) {
   const reserved = summary.reserved > 0 ? msg`${m(summary.reserved)} reservados` : "";
   const text = [reserved, next].filter(Boolean).join(" · ");
   if (!text) return "";
-  return html`<a href="#/tu-dinero" class="hero-line ${short > 0 ? "is-short" : ""}" data-pulse="reserve">${icon("receipt", 14)}<span>${text}</span></a>`;
+  return html`<a href="#/tu-dinero" class="hero-line ${where} ${short > 0 ? "is-short" : ""}" data-pulse="reserve">${icon("receipt", 14)}<span>${text}</span></a>`;
 }
 
 /** Lo próximo a pagar (facturas, cuotas y gastos programados, deudas que vencen), por fecha: los 3 primeros. */
@@ -56,10 +59,10 @@ function comingUp(state, today) {
     const category = state.categories.find((c) => c.id === tx.categoryId);
     items.push({
       date: tx.date,
-      row: html`<button type="button" class="row" data-action="edit-tx" data-id="${tx.recurringOf || tx.id}">
-        <span class="cat-bubble cat-bubble-md" style="--c:${category?.color || "#8b958e"}" aria-hidden="true">${category?.icon || "🗓️"}</span>
+      row: html`<button type="button" class="row row-bill" data-action="edit-tx" data-id="${tx.recurringOf || tx.id}">
+        ${dueTile(tx.date, "pending", today)}
         <span class="row-main">
-          <span class="row-title">${tx.description || category?.name || "Gasto programado"}</span>
+          <span class="row-title">${category?.icon || "🗓️"} ${tx.description || category?.name || "Gasto programado"}</span>
           <span class="row-meta">${tx.installment ? msg`Cuota ${tx.installment.n} de ${tx.installment.of}` : "Programado"} · ${tr(formatDue(tx.date, today))}</span>
         </span>
         <span class="account-balance">${formatMoney(tx.amount, tx.currency)}</span>
@@ -70,10 +73,10 @@ function comingUp(state, today) {
     if (i.loan.direction !== "borrowed" || i.outstanding <= 0 || !i.loan.dueDate || i.loan.plan) continue;
     items.push({
       date: i.loan.dueDate,
-      row: html`<button type="button" class="row" data-action="loan-detail" data-id="${i.loan.id}">
-        <span class="cat-bubble cat-bubble-md" style="--c:var(--goal)" aria-hidden="true">🤝</span>
+      row: html`<button type="button" class="row row-bill" data-action="loan-detail" data-id="${i.loan.id}">
+        ${dueTile(i.loan.dueDate, i.loan.dueDate < today ? "overdue" : "pending", today)}
         <span class="row-main">
-          <span class="row-title">${msg`Devolverle a ${i.loan.person}`}</span>
+          <span class="row-title">🤝 ${msg`Devolverle a ${i.loan.person}`}</span>
           <span class="row-meta">${tr(formatDue(i.loan.dueDate, today))}</span>
         </span>
         <span class="account-balance">${formatMoney(i.outstanding, i.loan.currency)}</span>
@@ -184,6 +187,7 @@ export default {
           </div>
           <p class="hero-amount ${negative ? "is-negative" : ""} ${heroSize(m(summary.available))}" data-pulse="hero" data-count="${isMasked() ? 0 : summary.available}">${m(summary.available)}</p>
           <p class="hero-sub">de <strong>${m(summary.total)}</strong> totales</p>
+          ${isEmpty ? "" : heroLine(state, summary, today, "hero-line-side")}
         </div>
         <img class="hero-art ${negative ? "hero-art-neko" : ""}" src="img/${negative ? "neko-preocupado" : "hero-wallet"}.webp" alt="" width="120" height="${negative ? 120 : 129}" />
       </div>
@@ -192,7 +196,7 @@ export default {
         : isEmpty
           ? html`<p class="hero-alert hero-alert-info">Para empezar, <button type="button" class="inline-link" data-action="setup-wizard">completa todo con el asistente</button> o registra un ingreso.</p>`
           : ""}
-      ${isEmpty ? "" : heroLine(state, summary, today)}
+      ${isEmpty ? "" : heroLine(state, summary, today, "hero-line-below")}
       ${isEmpty ? "" : html`<a href="#/tu-dinero" class="hero-flow-link">${icon("coinStack", 16)}<span>¿A dónde va tu dinero?</span>${icon("chevronRight", 16)}</a>`}
     </section>`;
     // Resumen del mes (ingresos, gastos, metas y cuánto ahorras): tarjeta opcional.
@@ -213,7 +217,7 @@ export default {
                 ? html`<p class="daily-main">Para gustos tienes <strong data-pulse="daily">${m(treats.accumulated)}</strong></p>`
                 : html`<p class="daily-main">En gustos te pasaste por <strong data-pulse="daily">${m(-treats.accumulated)}</strong></p>`}
               <p class="daily-sub">${m(treats.perDay)} por día${treats.spentToday > 0 ? msg` · hoy llevas ${m(treats.spentToday)}` : ""}</p>
-              <p class="daily-note">${treats.accumulated >= 0 ? "Lo que no gastas hoy se acumula para mañana." : "Se va recuperando con los días que no gastes."} Cuenta: ${treats.budget.name}.</p>
+              <details class="daily-more" ${wideScreen() ? "open" : ""}><summary>¿Cómo se calcula?</summary><p class="daily-note">${treats.accumulated >= 0 ? "Lo que no gastas hoy se acumula para mañana." : "Se va recuperando con los días que no gastes."} Cuenta: ${treats.budget.name}.</p></details>
             </div>
           </section>`
         : daily.available > 0
@@ -224,9 +228,9 @@ export default {
                   ? html`<p class="daily-main">Hoy puedes gastar <strong data-pulse="daily">${m(daily.leftToday)}</strong></p>`
                   : html`<p class="daily-main">Hoy ya te pasaste por <strong data-pulse="daily">${m(-daily.leftToday)}</strong></p>`}
                 <p class="daily-sub">${m(daily.perDay)} por día ${untilText}${daily.spentToday > 0 ? msg` · hoy llevas ${m(daily.spentToday)}` : ""}</p>
-                <p class="daily-note">${daily.days === 1
+                <details class="daily-more" ${wideScreen() ? "open" : ""}><summary>¿Cómo se calcula?</summary><p class="daily-note">${daily.days === 1
                   ? msg`Es todo tu disponible: ${daily.reason === "income" ? "mañana cobras" : "hoy termina el mes"}. La comida`
-                  : msg`Es tu disponible repartido en los ${daily.days} días que faltan ${daily.reason === "income" ? "para tu próximo cobro" : "para terminar el mes"}, contando hoy: la comida`} y el transporte también salen de aquí. <button type="button" class="inline-link" data-action="add-treats">Ponte un límite de gustos por día</button> y lo que no gastes se acumula.</p>
+                  : msg`Es tu disponible repartido en los ${daily.days} días que faltan ${daily.reason === "income" ? "para tu próximo cobro" : "para terminar el mes"}, contando hoy: la comida`} y el transporte también salen de aquí. <button type="button" class="inline-link" data-action="add-treats">Ponte un límite de gustos por día</button> y lo que no gastes se acumula.</p></details>
               </div>
             </section>`
           : "";
@@ -421,8 +425,8 @@ export default {
           <div class="home-main">${hero}</div>
           <div class="home-side">${dailyCard}${transitCards}${showExtras ? extrasLine : ""}</div>
         </div>
-        ${actions}${leftovers}${pending}
-        <div class="home-board">${extra.has("charts") && !isEmpty ? barsCard : ""}${extra.has("charts") && !isEmpty ? donutCard : ""}${billsCard}${recents}${extra.has("summary") ? summaryCard : ""}${extra.has("accounts") ? accountsCard : ""}${extra.has("loans") ? loansCard : ""}${extra.has("budgets") ? budgetsCard : ""}${extra.has("goals") ? goalsCard : ""}${extra.has("rates") ? ratesCard : ""}</div>
+        ${extra.has("summary") ? summaryCard : ""}${actions}${leftovers}${pending}
+        <div class="home-board">${extra.has("charts") && !isEmpty ? barsCard : ""}${extra.has("charts") && !isEmpty ? donutCard : ""}${billsCard}${recents}${extra.has("accounts") ? accountsCard : ""}${extra.has("loans") ? loansCard : ""}${extra.has("budgets") ? budgetsCard : ""}${extra.has("goals") ? goalsCard : ""}${extra.has("rates") ? ratesCard : ""}</div>
         ${isEmpty ? "" : html`<p class="home-customize"><a class="inline-link" href="#/ajustes-apariencia">${icon("settings", 14)} Personalizar el Inicio</a></p>`}
       </div>
       <p class="privacy-note">${icon("lock", 14)} Tus datos se guardan solo en este dispositivo.</p>

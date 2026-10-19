@@ -4,7 +4,7 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v107";
+const CACHE_VERSION = "neko-finanzas-v108";
 const APP_SHELL = [
   "./",
   "index.html",

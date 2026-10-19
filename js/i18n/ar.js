@@ -1649,4 +1649,5 @@ export default {
   "¿A dónde va?": "إلى أين تذهب؟",
   "· Más detalles": "· مزيد من التفاصيل",
   "(fecha, descripción, hora, repetir)": "(التاريخ، الوصف، الوقت، التكرار)",
+  "¿Cómo se calcula?": "كيف يُحسب؟",
 };

@@ -1648,4 +1648,5 @@ export default {
   "¿A dónde va?": "Nereye gidiyor?",
   "· Más detalles": "· Daha fazla ayrıntı",
   "(fecha, descripción, hora, repetir)": "(tarih, açıklama, saat, tekrar)",
+  "¿Cómo se calcula?": "Nasıl hesaplanır?",
 };

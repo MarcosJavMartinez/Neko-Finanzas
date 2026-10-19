@@ -3318,3 +3318,33 @@ button.inline-link {
 .accounts-actions .btn {
   flex: 1 1 auto;
 }
+
+/* "Hoy puedes gastar": la explicación, plegada */
+.daily-more summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--action-ink, var(--action));
+  cursor: pointer;
+}
+
+.daily-more[open] summary {
+  margin-bottom: 2px;
+}
+
+/* La línea del saldo: al lado del monto en pantallas anchas, debajo en el celular */
+.hero-line-side {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .hero-line-side {
+    display: flex;
+  }
+
+  .hero-line-below {
+    display: none;
+  }
+}

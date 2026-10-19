@@ -1650,4 +1650,5 @@ export default {
   "¿A dónde va?": "お金の行き先",
   "· Más detalles": "· 詳細",
   "(fecha, descripción, hora, repetir)": "（日付・説明・時刻・くり返し）",
+  "¿Cómo se calcula?": "計算方法",
 };

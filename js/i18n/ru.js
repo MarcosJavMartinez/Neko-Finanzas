@@ -1648,4 +1648,5 @@ export default {
   "¿A dónde va?": "Куда уходят?",
   "· Más detalles": "· Подробнее",
   "(fecha, descripción, hora, repetir)": "(дата, описание, время, повтор)",
+  "¿Cómo se calcula?": "Как это считается?",
 };
