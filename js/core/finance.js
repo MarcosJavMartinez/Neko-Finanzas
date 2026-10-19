@@ -814,10 +814,10 @@ export function nextMonthPlan(state, today = todayISO()) {
   const thisKey = monthKey(today);
   for (const budget of state.budgets.filter(isEnvelope)) {
     const limit = budgetStatus(state, budget, key, base).limit;
-    // Guardado este mes para el que viene: esa parte ya está cubierta.
-    const carried = budget.pause?.month === thisKey && budget.pause.mode === "same" ? Math.max(0, budgetStatus(state, budget, thisKey).remaining) : 0;
-    const amount = Math.round(Math.max(0, limit - carried) * 100) / 100;
-    if (limit > 0) items.push({ kind: "budget", budget, icon: budget.icon, name: budget.name, date: start, amount, currency: state.settings.mainCurrency, amountMain: amount, carried: Math.min(carried, limit), id: budget.id });
+    // Guardado este mes para lo mismo el que viene: lo que necesitas sigue siendo el
+    // presupuesto entero, pero esa parte ya la tienes (baja lo que falta juntar).
+    const carried = budget.pause?.month === thisKey && budget.pause.mode === "same" ? Math.min(limit, Math.max(0, budgetStatus(state, budget, thisKey).remaining)) : 0;
+    if (limit > 0) items.push({ kind: "budget", budget, icon: budget.icon, name: budget.name, date: start, amount: limit, currency: state.settings.mainCurrency, amountMain: limit, carried, id: budget.id });
   }
   let income = 0;
   for (const tx of state.transactions) {
@@ -825,7 +825,10 @@ export function nextMonthPlan(state, today = todayISO()) {
     for (const date of occurrences(tx.recurrence.nextDate, tx.recurrence.freq)) income += toMain(state, tx.recurrence.amount || tx.amount, tx.currency);
   }
   // Guardado este mes "para lo que haya que pagar el mes que viene": ya cuenta como juntado.
-  const saved = state.budgets.filter((b) => isEnvelope(b) && b.pause?.month === thisKey && b.pause.mode === "any").reduce((s, b) => s + Math.max(0, budgetStatus(state, b, thisKey).remaining), 0);
+  // y lo guardado "para lo mismo" (arriba, en cada presupuesto).
+  const saved =
+    state.budgets.filter((b) => isEnvelope(b) && b.pause?.month === thisKey && b.pause.mode === "any").reduce((s, b) => s + Math.max(0, budgetStatus(state, b, thisKey).remaining), 0) +
+    items.reduce((s, i) => s + (i.carried || 0), 0);
   items.sort((a, b) => a.date.localeCompare(b.date));
   const round = (n) => Math.round(n * 100) / 100;
   const needs = round(items.reduce((s, i) => s + i.amountMain, 0));
