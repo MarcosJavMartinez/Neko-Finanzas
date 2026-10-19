@@ -30,7 +30,7 @@ return (async () => {
     log("grupos: " + groups.join(", ") + (["Facturas", "Deudas", "Metas"].every((g) => groups.includes(g)) ? "" : " ✗"));
     const rows = [...d.querySelectorAll(".flow-row")].map((r) => r.innerText.replace(/\s+/g, " ").trim());
     const gab = rows.filter((r) => r.includes("Gabriel"));
-    log("Gabriel: " + gab.join(" | ") + (gab.some((r) => r.includes("apartados para devolverle")) && gab.some((r) => r.includes("te costó")) && gab.some((r) => r.includes("Se apartaron")) ? "" : " ✗"));
+    log("Gabriel: " + gab.join(" | ") + (gab.some((r) => r.includes("reservados para devolverle")) && gab.some((r) => r.includes("te costó")) && gab.some((r) => r.includes("Se reservaron")) ? "" : " ✗"));
     log("del mes: " + rows.filter((r) => r.includes("se usaron en")).length + " gastos · ej.: " + (rows.find((r) => r.includes("se usaron en")) || "ninguno ✗"));
 
     // Tocar una fila abre su detalle

@@ -32,17 +32,15 @@ export default {
     const activeAccounts = state.accounts.filter((a) => !a.archived).length;
     const groups = [
       { title: "Tu dinero", items: [
-      { href: "#/tu-dinero", icon: "coinStack", title: "¿A dónde va tu dinero?", sub: "Lo apartado, lo reservado y lo que pasó este mes" },
+      { href: "#/tu-dinero", icon: "coinStack", title: "¿A dónde va tu dinero?", sub: "Lo reservado, lo ahorrado y lo que pasó este mes" },
       { href: "#/cuentas", icon: "wallet", title: "Cuentas", sub: activeAccounts > 1 ? msg`${activeAccounts} cuentas · efectivo, banco, billeteras` : "Efectivo, banco, billeteras virtuales" },
       { href: "#/presupuestos", icon: "pie", title: "Presupuestos", sub: state.budgets.length ? msg`${state.budgets.length} activos${alerts ? msg` · ${alerts} para revisar` : ""}` : "Reparte tus ingresos" },
       { href: "#/prestamos", icon: "swap", title: "Préstamos", sub: loanSub(state) },
       { href: "#/facturas", icon: "receipt", title: "Facturas y servicios", sub: state.bills.length ? msg`${formatMoney(reserve.amount, main)} a reservar` : "Luz, internet, suscripciones…" },
       { href: "#/reportes", icon: "chart", title: "Reportes", sub: "Tu mes de un vistazo" },
       ] },
-      { title: "Ajustes", items: [
-      { href: "#/categorias", icon: "tag", title: "Categorías", sub: msg`${state.categories.length} categorías` },
-      { href: "#/monedas", icon: "coins", title: "Idioma y monedas", sub: msg`Principal: ${main}` },
-      { href: "#/ajustes", icon: "settings", title: "Configuración", sub: "Apariencia, tus datos, instalar la app" },
+      { title: "Configuración", items: [
+      { href: "#/ajustes", icon: "settings", title: "Configuración", sub: "Categorías, idioma y monedas, apariencia, tus datos" },
       ] },
       { title: "Ayuda", items: [
       { href: "#/ayuda", icon: "search", title: "Preguntas frecuentes", sub: "Cómo se hace cada cosa, con buscador" },

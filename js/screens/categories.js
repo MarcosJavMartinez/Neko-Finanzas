@@ -12,7 +12,7 @@ export default {
   id: "categorias",
   tab: "mas",
   title: "Categorías",
-  back: "#/mas",
+  back: "#/ajustes",
   render(state) {
     const list = state.categories.filter((c) => c.type === view.type);
     return html`

@@ -188,7 +188,7 @@ export default {
         <img class="hero-art ${negative ? "hero-art-neko" : ""}" src="img/${negative ? "neko-preocupado" : "hero-wallet"}.webp" alt="" width="120" height="${negative ? 120 : 129}" />
       </div>
       ${negative
-        ? html`<p class="hero-alert">${icon("alert", 15)} Lo apartado y reservado supera lo que tienes. Revisa metas, facturas, cuotas o deudas.</p>`
+        ? html`<p class="hero-alert">${icon("alert", 15)} Lo reservado y ahorrado supera lo que tienes. Revisa metas, facturas, cuotas o deudas.</p>`
         : isEmpty
           ? html`<p class="hero-alert hero-alert-info">Para empezar, <button type="button" class="inline-link" data-action="setup-wizard">completa todo con el asistente</button> o registra un ingreso.</p>`
           : ""}

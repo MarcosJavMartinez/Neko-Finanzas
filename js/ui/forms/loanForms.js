@@ -33,9 +33,9 @@ function setAsideCard(state, loan, outstanding, today) {
   const st = loanSetAsideStatus(state, loan, outstanding, today);
   const money = (n) => formatMoney(n, st.currency);
   return html`<div class="loan-aside">
-    <p class="loan-aside-title">${msg`Llevas apartado ${money(st.saved)} de ${money(st.target)}`}</p>
-    ${progressBar(percent(st.saved, st.target), { color: "var(--action)", label: "Apartado para devolver" })}
-    <p class="fine-print">${st.monthsLeft > 0 ? msg`${money(loan.saveMonthly)} por mes · la juntas en ${st.monthsLeft} meses` : "Ya tienes apartado todo lo que debes."}</p>
+    <p class="loan-aside-title">${msg`Llevas reservado ${money(st.saved)} de ${money(st.target)}`}</p>
+    ${progressBar(percent(st.saved, st.target), { color: "var(--action)", label: "Reservado para devolver" })}
+    <p class="fine-print">${st.monthsLeft > 0 ? msg`${money(loan.saveMonthly)} por mes · la juntas en ${st.monthsLeft} meses` : "Ya tienes reservado todo lo que debes."}</p>
     ${st.currency !== loan.currency && st.monthsLeft > 0 ? html`<p class="fine-print">Lo que falta cambia con el tipo de cambio.</p>` : ""}
   </div>`;
 }
@@ -68,7 +68,7 @@ export function openLoanForm({ loan, direction = "lent" } = {}) {
         ${dateField({ name: "dueDate", label: "Devolver antes del", value: current.dueDate, required: false })}
       </div>
       <div class="field" data-save-monthly ${current.direction === "borrowed" ? "" : "hidden"}>
-        <label class="field-label" for="f-saveMonthly">Apartar por mes para devolverlo (opcional)</label>
+        <label class="field-label" for="f-saveMonthly">Reservar por mes para devolverlo (opcional)</label>
         <div class="amount-input amount-input-sm">${state.settings.currencies.length > 1
           ? html`<select class="amount-currency" name="saveCurrency" aria-label="Moneda">${state.settings.currencies.map((code) => html`<option value="${code}" ${code === (current.saveCurrency || current.currency) ? "selected" : ""}>${symbolOf(code)}</option>`)}</select>`
           : ""}<input id="f-saveMonthly" name="saveMonthly" type="text" inputmode="decimal" autocomplete="off" placeholder="${zeroAmount()}" value="${current.saveMonthly ? amountToInput(current.saveMonthly) : ""}" /></div>

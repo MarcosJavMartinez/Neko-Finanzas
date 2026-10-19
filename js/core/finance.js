@@ -631,7 +631,7 @@ export function budgetReserve(state, today = todayISO()) {
   const items = state.budgets
     .filter(isEnvelope)
     // "No lo uso": liberado, pasado a una meta o a otro presupuesto → ya no se reserva aquí.
-    // Guardado para el mes que viene (lo mismo o cualquier cosa) → sigue apartado.
+    // Reservado para el mes que viene (lo mismo o cualquier cosa) → sigue apartado.
     .filter((budget) => !(budget.pause?.month === key && !budgetKeptForNext(budget, key)))
     .map((budget) => ({ budget, amount: Math.max(0, budgetStatus(state, budget, key, base).remaining), keptForNext: budgetKeptForNext(budget, key) }))
     .filter((item) => item.amount > 0);

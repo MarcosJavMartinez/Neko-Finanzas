@@ -37,7 +37,7 @@ export const FAQ = [
     items: [
       {
         q: "¿Qué es el saldo disponible?",
-        a: "Es lo que puedes gastar sin tocar lo comprometido: el dinero de todas tus cuentas, menos lo apartado en metas, menos lo reservado para facturas, cuotas, deudas y presupuestos. Ese dinero sigue en tus cuentas; solo no cuenta como disponible.",
+        a: "Es lo que puedes gastar sin tocar lo comprometido: el dinero de todas tus cuentas, menos lo ahorrado en metas, menos lo reservado para facturas, cuotas, deudas y presupuestos. Ese dinero sigue en tus cuentas; solo no cuenta como disponible.",
         href: "#/tu-dinero",
       },
       {
@@ -140,7 +140,7 @@ export const FAQ = [
       },
       {
         q: "¿Puedo crear o cambiar categorías?",
-        a: "Sí. En Más → Categorías puedes crear categorías de gasto o de ingreso, cambiarles el nombre, el ícono y el color, y agregarles subcategorías (por ejemplo, Veterinaria dentro de Mascotas).",
+        a: "Sí. En Configuración → Categorías puedes crear categorías de gasto o de ingreso, cambiarles el nombre, el ícono y el color, y agregarles subcategorías (por ejemplo, Veterinaria dentro de Mascotas).",
         href: "#/categorias",
       },
     ],
@@ -150,7 +150,7 @@ export const FAQ = [
     items: [
       {
         q: "¿Cómo creo una meta y le pongo o le saco dinero?",
-        a: "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para apartar dinero y «Retirar» para sacarlo. Apartar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.",
+        a: "En la pestaña Metas toca «Nueva meta»: pones el nombre, cuánto quieres reunir, la moneda y, si quieres, una fecha. Después, en el detalle de la meta, usa «Depositar» para ahorrar dinero y «Retirar» para sacarlo. Ahorrar no es un gasto: el dinero sigue en tu total, pero deja de contar como disponible.",
         href: "#/metas",
       },
     ],
@@ -175,17 +175,17 @@ export const FAQ = [
       },
       {
         q: "¿Qué pasa si no le pongo fecha para devolver a una deuda?",
-        a: "Queda anotada, pero no se reserva nada de tu disponible. Si quieres ir juntando para devolverla, usa «Apartar por mes».",
+        a: "Queda anotada, pero no se reserva nada de tu disponible. Si quieres ir juntando para devolverla, usa «Reservar por mes».",
         href: "#/prestamos",
       },
       {
         q: "¿Cómo junto dinero por mes para devolver una deuda?",
-        a: "Edita la deuda y completa «Apartar por mes para devolverlo». Cada mes se reserva ese monto de tu disponible hasta juntar lo que debes, y debajo ves en cuántos meses la juntas. En el detalle de la deuda ves cuánto llevas apartado.",
+        a: "Edita la deuda y completa «Reservar por mes para devolverlo». Cada mes se reserva ese monto de tu disponible hasta juntar lo que debes, y debajo ves en cuántos meses la juntas. En el detalle de la deuda ves cuánto llevas reservado.",
         href: "#/prestamos",
       },
       {
         q: "Debo en dólares pero cobro en pesos. ¿Cómo junto para pagar?",
-        a: "En «Apartar por mes» elige la moneda en la que juntas (por ejemplo, pesos) al lado del monto. La app convierte lo que debes con tu tipo de cambio y te muestra cuánto llevas y cuánto falta; lo que falta cambia si cambia el tipo de cambio.",
+        a: "En «Reservar por mes» elige la moneda en la que juntas (por ejemplo, pesos) al lado del monto. La app convierte lo que debes con tu tipo de cambio y te muestra cuánto llevas y cuánto falta; lo que falta cambia si cambia el tipo de cambio.",
         href: "#/prestamos",
       },
       {
@@ -200,22 +200,22 @@ export const FAQ = [
     items: [
       {
         q: "¿Puedo usar varias monedas? (ahorrar o deber en dólares, euros…)",
-        a: "Sí. En Más → Idioma y monedas eliges tu moneda principal, las otras que usas y a cuánto está cada una. Cuentas, metas y préstamos pueden estar en cualquiera de ellas; los totales se muestran convertidos a tu moneda principal.",
+        a: "Sí. En Configuración → Idioma y monedas eliges tu moneda principal, las otras que usas y a cuánto está cada una. Cuentas, metas y préstamos pueden estar en cualquiera de ellas; los totales se muestran convertidos a tu moneda principal.",
         href: "#/monedas",
       },
       {
         q: "¿Cómo actualizo el tipo de cambio?",
-        a: "En Más → Idioma y monedas, escribe a cuánto está hoy cada moneda. La app no lo busca en internet: usa el valor que tú pongas.",
+        a: "En Configuración → Idioma y monedas, escribe a cuánto está hoy cada moneda. La app no lo busca en internet: usa el valor que tú pongas.",
         href: "#/monedas",
       },
       {
         q: "¿Cómo cambio dólares a pesos (o al revés)?",
-        a: "En Agregar → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.",
+        a: "En Agregar → Más opciones → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.",
         action: "exchange-currency",
       },
       {
         q: "¿Cómo cambio el idioma o el país?",
-        a: "En Más → Idioma y monedas. La app viene en español, inglés, portugués, turco, ruso, japonés y árabe.",
+        a: "En Configuración → Idioma y monedas. La app viene en español, inglés, portugués, turco, ruso, japonés y árabe.",
         href: "#/monedas",
       },
     ],

@@ -81,8 +81,8 @@ export function openGoalForm({ goal } = {}) {
         const ok = await confirmDialog({
           title: msg`¿Eliminar “${goal.name}”?`,
           text: saved > 0
-            ? msg`Los ${formatMoney(saved, goal.currency)} apartados vuelven a tu saldo disponible.`
-            : "La meta no tiene dinero apartado.",
+            ? msg`Los ${formatMoney(saved, goal.currency)} ahorrados vuelven a tu saldo disponible.`
+            : "La meta todavía no tiene dinero ahorrado.",
           confirmLabel: "Eliminar meta",
           danger: true,
         });
@@ -110,7 +110,7 @@ export function openGoalMove(goalId, direction = "deposit") {
     title: isDeposit ? msg`Depositar en ${goal.name}` : msg`Retirar de ${goal.name}`,
     body: html`<form class="form" novalidate>
       <p class="sheet-text">${isDeposit
-        ? html`Este dinero queda <strong>apartado</strong> para tu meta: sigue siendo tuyo, pero deja de contar como disponible.`
+        ? html`Este dinero queda <strong>ahorrado</strong> en tu meta: sigue siendo tuyo, pero deja de contar como disponible.`
         : html`Lo que retires vuelve a tu <strong>saldo disponible</strong>. Tienes ${formatMoney(saved, goal.currency)} en esta meta.`}</p>
       <div class="field field-amount tone-${isDeposit ? "goal" : "income"}">
         <label class="field-label" for="f-amount">Monto en ${goal.currency}</label>
@@ -160,7 +160,7 @@ export function openGoalMove(goalId, direction = "deposit") {
         const message = isDeposit
           ? after.done
             ? msg`¡Llegaste a tu meta “${goal.name}”! 🎉`
-            : msg`${formatMoney(amount, goal.currency)} apartados para “${goal.name}”`
+            : msg`${formatMoney(amount, goal.currency)} ahorrados en “${goal.name}”`
           : msg`${formatMoney(amount, goal.currency)} volvieron a tu disponible`;
         toast(message, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
         // Recién cumplida: confeti y el Neko festejando.

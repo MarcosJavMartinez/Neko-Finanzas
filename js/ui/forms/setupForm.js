@@ -348,7 +348,7 @@ const RENDER = {
 
   goals: (a, additive, state) => html`
     <h3 class="setup-title">¿Estás ahorrando para algo?</h3>
-    <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Una <strong>meta</strong> es dinero que apartas para algo. Sigue siendo tuyo, pero deja de contar como disponible para que no lo gastes sin querer.</p></details>
+    <details class="setup-why"><summary>¿Para qué sirve?</summary><p class="sheet-text">Una <strong>meta</strong> es dinero que ahorras para algo. Sigue siendo tuyo, pero deja de contar como disponible para que no lo gastes sin querer.</p></details>
     ${a.goals.map(
       (g, i) => html`<div class="setup-group">
         ${textInput(`goal-name-${i}`, "¿Para qué?", g.name, "Ej.: Vacaciones")}
@@ -370,7 +370,7 @@ const RENDER = {
       ${lines.length
         ? html`<ul class="setup-summary">${lines.map(([emoji, text]) => html`<li><span aria-hidden="true">${emoji}</span><span>${text}</span></li>`)}</ul>`
         : html`<p class="notice notice-info">${icon("info", 16)}No ingresaste nada todavía. Puedes volver atrás, o empezar con la app vacía e ir sumando poco a poco.</p>`}
-      <p class="sheet-text">Con eso, el Inicio te va a mostrar tu <strong>saldo disponible</strong>: tu dinero total, menos lo reservado (facturas, cuotas, deudas, supermercado y gustos), menos lo apartado en metas.</p>
+      <p class="sheet-text">Con eso, el Inicio te va a mostrar tu <strong>saldo disponible</strong>: tu dinero total, menos lo reservado (facturas, cuotas, deudas, supermercado y gustos), menos lo ahorrado en metas.</p>
       <p class="field-hint">Después sigues con normalidad: registras cada gasto e ingreso con «Agregar».</p>`;
   },
 };
@@ -400,7 +400,7 @@ function summaryLines(a, state) {
   const borrowed = loans.filter((l) => l.direction === "borrowed").reduce((s, l) => s + inMain(num(l.amount), l), 0);
   if (loans.length) lines.push(["🤝", [lent > 0 && msg`Te deben ${m(lent)}`, borrowed > 0 && msg`debes ${m(borrowed)}`].filter(Boolean).join(" · ")]);
   const goals = validGoals(a);
-  if (goals.length) lines.push(["🎯", msg`${goals.length} meta${goals.length === 1 ? "" : "s"}: ${goals.map((g) => g.name.trim()).join(", ")} · ${m(goals.reduce((s, g) => s + inMain(num(g.saved) || 0, g), 0))} ya apartados`]);
+  if (goals.length) lines.push(["🎯", msg`${goals.length} meta${goals.length === 1 ? "" : "s"}: ${goals.map((g) => g.name.trim()).join(", ")} · ${m(goals.reduce((s, g) => s + inMain(num(g.saved) || 0, g), 0))} ya ahorrados`]);
   // Las otras monedas solo acompañan: si no se respondió nada más, el resumen sigue vacío.
   if (lines.length && a.extras.length) lines.unshift(["💱", msg`Otras monedas: ${a.extras.map((e) => e.code).join(", ")}`]);
   return lines;

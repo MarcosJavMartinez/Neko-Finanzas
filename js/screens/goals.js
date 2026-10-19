@@ -31,7 +31,7 @@ export default {
       <section class="summary-card summary-goal has-art reveal">
         ${art("ilus-alcancia", 84, "summary-art")}
         <div class="summary-text">
-          <p class="summary-label">Apartado en metas</p>
+          <p class="summary-label">Ahorrado en metas</p>
           <p class="summary-amount" data-count-up="${saved}" data-count-key="saved">${formatMoney(saved, main)}</p>
           <p class="summary-sub">de ${formatMoney(target, main)} entre ${state.goals.length} meta${state.goals.length === 1 ? "" : "s"}</p>
         </div>
@@ -41,7 +41,7 @@ export default {
       ${done.length
         ? html`<h2 class="section-title section-title-spaced section-title-art">${art("neko-festejando", 56)}Cumplidas</h2><div class="goal-list">${done.map((g) => goalCard(state, g))}</div>`
         : ""}
-      <p class="fine-print center">${icon("info", 14)} Apartar dinero para una meta no es un gasto: sigue en tu dinero total, pero no cuenta como disponible.</p>
+      <p class="fine-print center">${icon("info", 14)} Ahorrar en una meta no es un gasto: sigue en tu dinero total, pero no cuenta como disponible.</p>
     `;
   },
 };

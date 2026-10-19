@@ -20,7 +20,7 @@ const STEPS = [
     icon: "wallet",
     tone: "brand",
     title: "Tu saldo disponible",
-    text: "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que apartaste para tus metas. Y te decimos cuánto puedes gastar por día.",
+    text: "Es lo que puedes gastar con tranquilidad: tu dinero total, menos lo reservado para lo que viene (facturas, cuotas, deudas) y lo que ahorraste en tus metas. Y te decimos cuánto puedes gastar por día.",
   },
   {
     icon: "plus",

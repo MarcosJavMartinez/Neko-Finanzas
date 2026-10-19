@@ -277,7 +277,7 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
         <div class="formula">
           <span class="formula-row"><span>Dinero total</span><span class="muted-text">la suma de tus cuentas</span></span>
           <span class="formula-row"><span>− A reservar</span><span class="muted-text">facturas pendientes</span></span>
-          <span class="formula-row"><span>− En metas</span><span class="muted-text">lo que apartaste</span></span>
+          <span class="formula-row"><span>− En metas</span><span class="muted-text">lo que ahorraste</span></span>
           <span class="formula-row formula-total"><span>= Disponible</span></span>
         </div>
 
@@ -463,6 +463,8 @@ export const settingsData = sub("ajustes-datos", "Tus datos", () => html`
 `);
 
 const SECTIONS = [
+  { href: "#/categorias", icon: "tag", title: "Categorías", sub: () => msg`${store.getState().categories.length} categorías` },
+  { href: "#/monedas", icon: "coins", title: "Idioma y monedas", sub: () => msg`Principal: ${store.getState().settings.mainCurrency}` },
   { href: "#/ajustes-calculo", icon: "pie", title: "Cálculo del disponible", sub: () => "Reserva de facturas e ingreso de referencia" },
   { href: "#/ajustes-apariencia", icon: "sparkle", title: "Apariencia", sub: () => "Tema, color principal y fondo" },
   { href: "#/ajustes-dispositivo", icon: "phone", title: "En este dispositivo", sub: () => "Avisos, ocultar montos, instalar" },

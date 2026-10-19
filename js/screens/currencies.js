@@ -31,7 +31,7 @@ export default {
   id: "monedas",
   tab: "mas",
   title: "Idioma y monedas",
-  back: "#/mas",
+  back: "#/ajustes",
   render(state) {
     const main = state.settings.mainCurrency;
     const active = state.settings.currencies;

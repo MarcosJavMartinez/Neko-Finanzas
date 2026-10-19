@@ -19,8 +19,8 @@ const LEVEL_TEXT = {
 };
 
 const PAUSE_TAG = {
-  same: "Guardado para el mes que viene",
-  any: "Guardado para el mes que viene",
+  same: "Reservado para el mes que viene",
+  any: "Reservado para el mes que viene",
   goal: "Pasado a una meta",
   budget: "Pasado a otro presupuesto",
   release: "Sin usar este mes",

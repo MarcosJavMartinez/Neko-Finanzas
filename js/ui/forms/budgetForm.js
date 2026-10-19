@@ -194,8 +194,8 @@ function pauseText(state, budget, next) {
   const p = budget.pause;
   const target = p.mode === "budget" && state.budgets.find((b) => b.id === p.targetId);
   return {
-    same: msg`No lo usas este mes: queda guardado para lo mismo en ${next}.`,
-    any: msg`No lo usas este mes: queda guardado para lo que haya que pagar en ${next}.`,
+    same: msg`No lo usas este mes: queda reservado para lo mismo en ${next}.`,
+    any: msg`No lo usas este mes: queda reservado para lo que haya que pagar en ${next}.`,
     goal: msg`No lo usas este mes: pasaste ${formatMoney(p.amount || 0, state.settings.mainCurrency)} a una meta.`,
     budget: target ? msg`No lo usas este mes: pasaste ${formatMoney(p.amount || 0, state.settings.mainCurrency)} a “${target.name}”.` : "No lo usas este mes.",
     release: "No lo usas este mes: lo que tenía reservado pasó a tu disponible.",
@@ -215,7 +215,7 @@ function pauseBox(budget) {
       ? html`<p class="notice notice-info">${icon("info", 16)}<span>${pauseText(state, budget, next)}</span></p>
           ${budget.pause.mode === "goal" ? "" : html`<button type="button" class="btn btn-ghost btn-sm" data-pause="undo">${icon("undo", 16)} Volver a usarlo este mes</button>`}`
       : remaining > 0
-        ? html`<p class="field-hint">${msg`Te quedan ${formatMoney(remaining, state.settings.mainCurrency)}. ¿No los vas a usar este mes? Decide para qué guardarlos.`}</p>
+        ? html`<p class="field-hint">${msg`Te quedan ${formatMoney(remaining, state.settings.mainCurrency)}. ¿No los vas a usar este mes? Decide para qué reservarlos.`}</p>
             <button type="button" class="btn btn-soft btn-sm" data-pause="open">${icon("lock", 16)} Este mes no lo uso…</button>`
         : html`<p class="field-hint">Este mes ya lo usaste entero.</p>`}
   </div>`;
@@ -240,8 +240,8 @@ export function openPauseSheet(budgetId) {
     body: html`<form class="form" novalidate>
       <p class="sheet-text">${msg`Te quedan ${formatMoney(remaining, main)}. Es tu dinero: elige para qué queda guardado.`}</p>
       <div class="pause-options">
-        ${option("same", msg`Para ${budget.name} en ${next}`, "Sigue apartado y ya cuenta para ese mes.")}
-        ${option("any", msg`Para lo que haya que pagar en ${next}`, "Sigue apartado y cubre cualquier cosa de ese mes (alquiler, facturas…).")}
+        ${option("same", msg`Para ${budget.name} en ${next}`, "Sigue reservado y ya cuenta para ese mes.")}
+        ${option("any", msg`Para lo que haya que pagar en ${next}`, "Sigue reservado y cubre cualquier cosa de ese mes (alquiler, facturas…).")}
         ${state.goals.length
           ? option("goal", "Pasarlo a una meta", "Queda ahorrado en la meta que elijas.", html`<select name="goalId" aria-label="Meta">${state.goals.map((g) => html`<option value="${g.id}">${g.icon} ${g.name}</option>`)}</select>`)
           : ""}
@@ -269,7 +269,7 @@ export function openPauseSheet(budgetId) {
           toast(msg`${formatMoney(remaining, main)} pasaron a “${target.name}” este mes`, { actionLabel: "Deshacer", onAction: () => store.restore(backup) });
         } else {
           store.pauseBudget(budget.id, month, { mode });
-          toast(mode === "release" ? "Liberado: este mes pasa a tu disponible" : msg`Guardado para ${next}: sigue apartado y ya cuenta para ese mes`, { type: "info", actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+          toast(mode === "release" ? "Liberado: este mes pasa a tu disponible" : msg`Reservado para ${next}: ya cuenta para ese mes`, { type: "info", actionLabel: "Deshacer", onAction: () => store.restore(backup) });
         }
         close();
       });

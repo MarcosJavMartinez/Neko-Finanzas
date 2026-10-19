@@ -3285,3 +3285,27 @@ button.inline-link {
   gap: 6px;
   min-height: 40px;
 }
+
+/* Agregar: lo de todos los días a la vista, el resto en "Más opciones" */
+.chooser-more {
+  margin-top: 12px;
+}
+
+.chooser-more summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-weight: 700;
+  color: var(--action-ink, var(--action));
+  cursor: pointer;
+  list-style: none;
+}
+
+.chooser-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.chooser-more[open] summary {
+  margin-bottom: 8px;
+}

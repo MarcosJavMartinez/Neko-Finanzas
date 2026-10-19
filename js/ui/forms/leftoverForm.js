@@ -25,7 +25,7 @@ export function openLeftoverSheet(budgetId) {
     title: msg`Sobrante de ${budget.name}`,
     body: state.goals.length
       ? html`<form class="form" novalidate>
-          <p class="sheet-text">En ${midSentence(formatMonth(month))} te sobraron <strong>${formatMoney(amount, main)}</strong>. Pásalos a una meta y quedan apartados como ahorro.</p>
+          <p class="sheet-text">En ${midSentence(formatMonth(month))} te sobraron <strong>${formatMoney(amount, main)}</strong>. Pásalos a una meta y quedan ahorrados.</p>
           <div class="field">
             <label class="field-label" for="f-goalId">¿A qué meta?</label>
             <select id="f-goalId" name="goalId">
@@ -81,7 +81,7 @@ export function openCushionSheet() {
     title: "Fondo de facturas",
     body: state.goals.length
       ? html`<form class="form" novalidate>
-          <p class="sheet-text">Tienes <strong>${formatMoney(amount, main)}</strong> guardados de facturas que vinieron por menos. Lo que pases a una meta deja de cubrir tus próximas facturas y queda apartado como ahorro.</p>
+          <p class="sheet-text">Tienes <strong>${formatMoney(amount, main)}</strong> guardados de facturas que vinieron por menos. Lo que pases a una meta deja de cubrir tus próximas facturas y queda ahorrado.</p>
           <div class="field">
             <label class="field-label" for="f-goalId">¿A qué meta?</label>
             <select id="f-goalId" name="goalId">
