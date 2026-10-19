@@ -3348,3 +3348,25 @@ button.inline-link {
     display: none;
   }
 }
+
+/* Preguntas frecuentes: búsquedas rápidas */
+.faq-quick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.faq-quick-label {
+  font-size: 0.84rem;
+  color: var(--text-2);
+}
+
+a.hero-alert {
+  text-decoration: none;
+}
+
+a.hero-alert strong {
+  text-decoration: underline;
+}

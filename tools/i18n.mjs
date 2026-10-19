@@ -14,12 +14,14 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { LANGUAGES, translateSource } from "../js/core/i18n.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SKIP = new Set(["js/i18n", "js/vendor"]);
+// faqTags.js son palabras para el buscador, no textos que se muestran.
+const SKIP = new Set(["js/i18n", "js/vendor", "js/data/faqTags.js"]);
 
 export function sourceFiles(dir = "js") {
   const out = [];
   for (const entry of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
     const rel = `${dir}/${entry.name}`;
+    if (SKIP.has(rel)) continue;
     if (entry.isDirectory()) {
       if (!SKIP.has(rel)) out.push(...sourceFiles(rel));
     } else if (entry.name.endsWith(".js")) out.push(rel);

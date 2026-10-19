@@ -164,7 +164,7 @@ export function openPayBill(billId) {
         const diff = after.settings.billCushion ? toMain(after, bill.amount, bill.currency) - toMain(after, amount, currency) : 0;
         const main = after.settings.mainCurrency;
         const extra = diff > 0.005 ? msg` · ${formatMoney(diff, main)} menos de lo esperado: quedan guardados para tus próximas facturas` : diff < -0.005 ? msg` · ${formatMoney(-diff, main)} más de lo esperado${billCushion(after).saved - (after.settings.billCushionReleased || 0) >= 0 ? ": salieron del fondo" : ""}` : "";
-        toast(msg`${bill.name} pagada · se registró el gasto${extra}`, { duration: extra ? 7000 : undefined, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
+        toast(msg`${bill.name} pagada · ya estaba reservada, por eso tu disponible no cambia${extra}`, { duration: extra ? 7000 : undefined, actionLabel: "Deshacer", onAction: () => store.restore(backup) });
       });
     },
   });

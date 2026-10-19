@@ -30,6 +30,11 @@ export const FAQ = [
         q: "Subieron una versión nueva y no la veo. ¿Qué hago?",
         a: "Cierra la app del todo (también desde la lista de apps abiertas) y vuelve a abrirla. Si sigue igual, ciérrala y ábrela una vez más.",
       },
+      {
+        q: "¿Puedo elegir qué se ve en el Inicio?",
+        a: "Sí. En Configuración → Apariencia → «Tu Inicio» puedes sumar el resumen del mes, tus cuentas, préstamos, presupuestos, metas, el tipo de cambio y los gráficos.",
+        href: "#/ajustes-apariencia",
+      },
     ],
   },
   {
@@ -39,6 +44,16 @@ export const FAQ = [
         q: "¿Qué es el saldo disponible?",
         a: "Es lo que puedes gastar sin tocar lo comprometido: el dinero de todas tus cuentas, menos lo ahorrado en metas, menos lo reservado para facturas, cuotas, deudas y presupuestos. Ese dinero sigue en tus cuentas; solo no cuenta como disponible.",
         href: "#/tu-dinero",
+      },
+      {
+        q: "¿Por qué mi saldo disponible está en negativo?",
+        a: "Porque lo que tienes comprometido (facturas, cuotas, deudas y presupuestos reservados, más lo ahorrado en metas) suma más que el dinero de tus cuentas. No es plata que debas: te avisa que no alcanza para todo lo planeado. Toca «¿A dónde va tu dinero?» para ver qué lo reserva; puedes marcar facturas que ya pagaste, bajar un presupuesto o usar «Este mes no lo uso…».",
+        href: "#/tu-dinero",
+      },
+      {
+        q: "Pagué una factura y mi disponible no cambió. ¿Está bien?",
+        a: "Sí. Esa plata ya estaba reservada para la factura, así que ya no contaba como disponible. Al pagarla baja tu total y baja lo reservado en el mismo monto: el disponible queda igual.",
+        href: "#/facturas",
       },
       {
         q: "¿Qué es «Hoy puedes gastar» y cómo se calcula?",
@@ -53,6 +68,11 @@ export const FAQ = [
       {
         q: "¿Cómo veo a dónde va mi dinero?",
         a: "Toca «¿A dónde va tu dinero?» en el Inicio (o Más → ¿A dónde va tu dinero?). Muestra cómo se calcula tu disponible, todo lo reservado cosa por cosa y lo que pasó este mes en frases simples.",
+        href: "#/tu-dinero",
+      },
+      {
+        q: "¿Qué es «El mes que viene»?",
+        a: "Está en «¿A dónde va tu dinero?»: suma lo que vas a tener que pagar el mes que viene (facturas, cuotas, deudas y presupuestos), lo compara con lo que te sobra hoy, lo que ya reservaste para ese mes y tus ingresos que se repiten, y te dice cuánto te falta juntar.",
         href: "#/tu-dinero",
       },
       {
@@ -139,6 +159,11 @@ export const FAQ = [
         href: "#/presupuestos",
       },
       {
+        q: "¿Qué hago si este mes no voy a usar un presupuesto?",
+        a: "Abre el presupuesto y toca «Este mes no lo uso…». Puedes reservarlo para lo mismo el mes que viene, para cualquier cosa del mes que viene, pasarlo a una meta o a otro presupuesto, o liberarlo para tu disponible. El mes siguiente vuelve solo.",
+        href: "#/presupuestos",
+      },
+      {
         q: "¿Puedo crear o cambiar categorías?",
         a: "Sí. En Configuración → Categorías puedes crear categorías de gasto o de ingreso, cambiarles el nombre, el ícono y el color, y agregarles subcategorías (por ejemplo, Veterinaria dentro de Mascotas).",
         href: "#/categorias",
@@ -212,6 +237,11 @@ export const FAQ = [
         q: "¿Cómo cambio dólares a pesos (o al revés)?",
         a: "En Agregar → Más opciones → Cambiar divisas. Eliges de qué cuenta sale (por ejemplo, Efectivo USD) y a cuál entra (Efectivo o tu billetera en pesos), cuánto entregaste y cuánto te dieron de verdad. No es un gasto: una cuenta baja y la otra sube. Si te cambiaron a otro valor que el que tienes cargado, la app te ofrece usarlo como tu tipo de cambio.",
         action: "exchange-currency",
+      },
+      {
+        q: "¿Por qué al elegir US$ (u otra moneda) cambia la cuenta?",
+        a: "Porque cada moneda va a una cuenta en esa moneda: así 700 dólares no se suman como pesos. Si no tienes una cuenta en esa moneda, la lista te ofrece crear una (efectivo, banco o billetera) con el nombre que quieras, y se crea al guardar. Las tarjetas de crédito aceptan compras en cualquier moneda.",
+        action: "add-income",
       },
       {
         q: "¿Cómo cambio el idioma o el país?",

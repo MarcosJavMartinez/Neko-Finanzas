@@ -276,13 +276,14 @@ export const settingsCalc = sub("ajustes-calculo", "Cálculo del disponible", (s
         <h2 class="section-title">Cómo se calcula tu disponible</h2>
         <div class="formula">
           <span class="formula-row"><span>Dinero total</span><span class="muted-text">la suma de tus cuentas</span></span>
-          <span class="formula-row"><span>− A reservar</span><span class="muted-text">facturas pendientes</span></span>
-          <span class="formula-row"><span>− En metas</span><span class="muted-text">lo que ahorraste</span></span>
+          <span class="formula-row"><span>− Reservado</span><span class="muted-text">facturas, cuotas, deudas y presupuestos</span></span>
+          <span class="formula-row"><span>− Ahorrado en metas</span><span class="muted-text">lo que ahorraste</span></span>
           <span class="formula-row formula-total"><span>= Disponible</span></span>
         </div>
 
         <div class="setting">
-          <span class="setting-label">Reservar facturas que vencen…</span>
+          <span class="setting-label">Reservar lo que vence…</span>
+          <span class="field-hint">Facturas, cuotas y deudas con fecha: cuánto antes se aparta el dinero.</span>
           ${segmented("horizon", [{ value: "month", label: "Hasta fin de mes" }, { value: "30d", label: "Próximos 30 días" }], s.reserveHorizon, { action: "set-horizon" })}
         </div>
 

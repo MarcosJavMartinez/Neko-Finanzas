@@ -4,7 +4,7 @@
 // última versión publicada; sin internet responde desde el cache.
 // Subí CACHE_VERSION cuando cambie la lista de archivos.
 
-const CACHE_VERSION = "neko-finanzas-v108";
+const CACHE_VERSION = "neko-finanzas-v109";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -93,6 +93,7 @@ const APP_SHELL = [
   "./js/ui/celebrate.js",
   "./js/ui/segmentedPill.js",
   "./js/data/faq.js",
+  "./js/data/faqTags.js",
   "./js/core/transfer.js",
   "./js/ui/transfer.js",
   "js/screens/reports.js",
