@@ -818,7 +818,9 @@
 .card:not(.card-soft),
 .goal-card,
 .summary-card,
-.hero-card {
+.hero-card,
+.daily-card,
+.transit-card {
   box-shadow: var(--shadow-float);
   transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
@@ -834,7 +836,9 @@
 @media (hover: hover) and (pointer: fine) {
   .card:not(.card-soft):hover,
   .summary-card:hover,
-  .hero-card:hover {
+  .hero-card:hover,
+  .daily-card:hover,
+  .transit-card:hover {
     box-shadow: var(--shadow-lift);
   }
 
@@ -849,7 +853,9 @@
   /* Contenedores grandes: se levantan poco; lo que se toca, un poco más. */
   .card:not(.card-soft):hover,
   .summary-card:hover,
-  .hero-card:hover {
+  .hero-card:hover,
+  .daily-card:hover,
+  .transit-card:hover {
     transform: translateY(-3px);
   }
 
